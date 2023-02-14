@@ -1,0 +1,53 @@
+.container {
+    margin: 50px;
+    margin-left: 50vw;
+    transform: translateX(-50%);
+    width: fit-content;
+    padding: 0px 20px 0px 20px;
+
+    border: 5px solid #3f51b5;
+    border-radius: 10px;
+    text-align: center;
+    align-items: center;
+
+    margin-bottom: 25px;
+
+}
+
+p {
+    font-size: large;
+}
+
+.analysisWindow {
+    display: block;
+}
+
+#differencesImg {
+    height: 40vh;
+}
+
+button {
+    margin: 5px;
+    color: inherit;
+    display: flex;
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 5px 8px 5px 8px;
+    align-items: center;
+    height: max-content;
+    min-width: fit-content;
+    width: min-content;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+button:active {
+    scale: 95%;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: center;
+}

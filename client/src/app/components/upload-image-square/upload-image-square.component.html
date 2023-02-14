@@ -1,0 +1,13 @@
+<main>
+    <h2>{{this.title}}</h2>
+    <div class="imgContainer">
+        <label *ngIf="!this.imageURL" class="abs-center" for="image-input-{{this.id}}">
+            <mat-icon class="uploadImage">photo_camera</mat-icon>
+            <p>téléverser l'image</p>
+            <div>l'image doit suivre le format<br>BMP 24-bit 640x480</div>
+        </label>
+        <img *ngIf="this.imageURL" id="image-display-{{this.id}}" [src]="getImageURL()"/>
+    </div>
+    <button type="button" (click)="dispatchClearImage()">Retirer l"image</button>
+    <input #imageInput id="image-input-{{this.id}}" type="file" (input)="dispatchUploadEvent(imageInput)" accept="image/BMP" class="invisible"/>
+</main>

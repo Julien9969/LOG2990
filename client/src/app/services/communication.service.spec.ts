@@ -1,6 +1,11 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-throw-literal */
+import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { PATH_TO_VALID_IMAGE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication.service';
+import { Game } from '@common/game';
 import { Message } from '@common/message';
 
 describe('CommunicationService', () => {
@@ -14,7 +19,6 @@ describe('CommunicationService', () => {
         });
         service = TestBed.inject(CommunicationService);
         httpMock = TestBed.inject(HttpTestingController);
-        // eslint-disable-next-line dot-notation -- baseUrl is private and we need access for the test
         baseUrl = service['baseUrl'];
     });
 
@@ -69,5 +73,263 @@ describe('CommunicationService', () => {
         const req = httpMock.expectOne(`${baseUrl}/example`);
         expect(req.request.method).toBe('GET');
         req.error(new ProgressEvent('Random error occurred'));
+    });
+
+    describe('postRequest', () => {
+        let pathExtension: string;
+        let body: object;
+        let headers: HttpHeaders;
+
+        beforeEach(() => {
+            pathExtension = 'test';
+            body = { test: 'test' };
+            headers = new HttpHeaders();
+        });
+
+        it('should send a POST request to the given server route with the given payload', async () => {
+            service.postRequest(pathExtension, body);
+            const req = httpMock.expectOne(`${baseUrl}/${pathExtension}`);
+            expect(req.request.method).toBe('POST');
+            expect(req.request.body).toEqual(body);
+            req.flush(null, { status: 200, statusText: 'Ok' });
+        });
+
+        it('should send a POST request to the given server route with the given payload and headers', async () => {
+            service.postRequest(pathExtension, body, headers);
+            const req = httpMock.expectOne(`${baseUrl}/${pathExtension}`);
+            expect(req.request.method).toBe('POST');
+            expect(req.request.body).toEqual(body);
+            expect(req.request.headers).toEqual(headers);
+            req.flush(null, { status: 200, statusText: 'Ok' });
+        });
+    });
+
+    describe('compareImages', () => {
+        let originalImageId: number;
+        let modifiedImageId: number;
+        let radius: number;
+        let body: object;
+        let pathExtension: string;
+
+        let postRequestSpy: jasmine.Spy;
+
+        let validServerResponse: HttpResponse<object>;
+
+        beforeEach(() => {
+            originalImageId = 1111;
+            modifiedImageId = 2222;
+            radius = 3;
+            body = { imageMain: originalImageId, imageAlt: modifiedImageId, radius };
+            pathExtension = 'images/compare';
+
+            validServerResponse = new HttpResponse({
+                status: 200,
+                body: {
+                    isValid: true,
+                    isHard: true,
+                    differenceCount: 3,
+                    differenceImageId: 3333,
+                },
+            });
+            postRequestSpy = spyOn(service, 'postRequest').and.callFake(async () => Promise.resolve(validServerResponse));
+        });
+
+        it('should call postRequest with the correct parameters', async () => {
+            await service.compareImages(originalImageId, modifiedImageId, radius);
+            expect(postRequestSpy).toHaveBeenCalledWith(pathExtension, body);
+        });
+
+        it('should throw error if response is not ok', async () => {
+            postRequestSpy.and.callFake(() => new HttpErrorResponse({ status: 400, statusText: 'Test-Bad Request' }));
+            try {
+                await service.compareImages(originalImageId, modifiedImageId, radius);
+                fail('Should have thrown an error');
+            } catch (error) {
+                expect(error).toBeTruthy();
+            }
+        });
+
+        it('should throw error if response body is not valid', async () => {
+            postRequestSpy.and.callFake(async () => Promise.resolve(new HttpResponse({ status: 200, body: {} })));
+            try {
+                await service.compareImages(originalImageId, modifiedImageId, radius);
+                fail('Should have thrown an error');
+            } catch (error) {
+                expect(error).toBeTruthy();
+            }
+        });
+    });
+
+    describe('saveImage', () => {
+        let validFile: File;
+
+        let postRequestSpy: jasmine.Spy;
+
+        let validServerResponse: HttpResponse<number>;
+
+        beforeEach(async () => {
+            validFile = new File([await (await fetch(PATH_TO_VALID_IMAGE)).blob()], 'valid-image.BMP', { type: 'image/bmp' });
+
+            validServerResponse = new HttpResponse({
+                status: 200,
+                body: 1111,
+            });
+            postRequestSpy = spyOn(service, 'postRequest').and.callFake(async () => Promise.resolve(validServerResponse));
+        });
+
+        it('should call postRequest with the correct parameters', async () => {
+            await service.saveImage(validFile);
+            expect(postRequestSpy).toHaveBeenCalled();
+        });
+
+        it('should throw error if response is not ok', async () => {
+            postRequestSpy.and.callFake(() => new HttpErrorResponse({ status: 400, statusText: 'Test-Bad Request' }));
+            try {
+                await service.saveImage(validFile);
+                fail('Should have thrown an error');
+            } catch (error) {
+                expect(error).toBeTruthy();
+            }
+        });
+    });
+
+    describe('getImageURL', () => {
+        it('should return the correct URL', () => {
+            const imageId = 1111;
+            const expectedURL = `${baseUrl}/images/${imageId}`;
+            expect(service.getImageURL(imageId)).toEqual(expectedURL);
+        });
+    });
+
+    it('customPost should return expected message (HttpClient called once)', () => {
+        const expectedMessage = 1;
+        service.customPost('session/1').subscribe((response: number) => {
+            expect(response).toEqual(expectedMessage);
+        });
+
+        const req = httpMock.expectOne(`${baseUrl}/session/1`);
+        expect(req.request.method).toBe('POST');
+        req.flush(1);
+    });
+
+    it('customPost should handle http error', () => {
+        service.customPost('session/1').subscribe({
+            next: (response: number) => {
+                expect(response).toBeUndefined();
+            },
+            error: fail,
+        });
+
+        const req = httpMock.expectOne(`${baseUrl}/session/1`);
+        expect(req.request.method).toBe('POST');
+        req.error(new ProgressEvent('Random error occurred'));
+    });
+
+    it('sendCoordinates should return expected message (HttpClient called once)', () => {
+        const expectedMessage = { body: { correct: true, alreadyFound: false, differenceNum: 1 } };
+
+        service.sendCoordinates(1, { x: 1, y: 2 }).subscribe((response) => {
+            expect(response.body).toEqual(expectedMessage);
+        });
+
+        const req = httpMock.expectOne(`${baseUrl}/session/1/guess`);
+        expect(req.request.method).toBe('POST');
+        req.flush(expectedMessage);
+    });
+
+    it('sendCoordinates should handle http error', () => {
+        service.sendCoordinates(1, { x: 1, y: 2 }).subscribe({
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            next: () => {},
+            error: fail,
+        });
+
+        const req = httpMock.expectOne(`${baseUrl}/session/1/guess`);
+        expect(req.request.method).toBe('POST');
+        req.flush({ x: 1, y: 2 });
+    });
+
+    it('gameInfoGet should return expected message (HttpClient called once)', () => {
+        const expectedMessage: Game = {
+            id: 0,
+            name: '',
+            imageMain: 0,
+            imageAlt: 0,
+            scoreBoardSolo: [['', 0]],
+            scoreBoardMulti: [['', 0]],
+            isValid: true,
+            isHard: false,
+            differenceCount: 0,
+            time: 0,
+            penalty: 0,
+            reward: 0,
+        };
+
+        service.gameInfoGet(1).subscribe({
+            next: (response) => {
+                expect(response).toEqual(expectedMessage);
+            },
+        });
+
+        const req = httpMock.expectOne(`${baseUrl}/games/1`);
+        expect(req.request.method).toBe('GET');
+        req.flush(expectedMessage);
+    });
+
+    it('gameInfoGet should handle http error', () => {
+        service.gameInfoGet(1).subscribe({
+            next: (response: Game) => {
+                expect(response).toBeUndefined();
+            },
+            error: fail,
+        });
+
+        const req = httpMock.expectOne(`${baseUrl}/games/1`);
+        expect(req.request.method).toBe('GET');
+        req.error(new ProgressEvent('Random error occurred'));
+    });
+
+    it('getRequest should all games', async () => {
+        const expectedGames: Game[] = [
+            {
+                id: 0,
+                name: '',
+                imageMain: 0,
+                imageAlt: 0,
+                scoreBoardSolo: [['', 0]],
+                scoreBoardMulti: [['', 0]],
+                isValid: true,
+                isHard: false,
+                differenceCount: 0,
+                time: 0,
+                penalty: 0,
+                reward: 0,
+            },
+        ];
+
+        service.getRequest('test').then((games) => {
+            expect(games).toEqual(expectedGames);
+        });
+
+        const req = httpMock.expectOne(`${baseUrl}/test`);
+        expect(req.request.method).toEqual('GET');
+        req.flush(expectedGames);
+    });
+
+    it('getRequest should handle http error', () => {
+        service.getRequest('test').then((games) => {
+            expect(games).toBeUndefined();
+        });
+
+        const req = httpMock.expectOne(`${baseUrl}/test`);
+        expect(req.request.method).toEqual('GET');
+        req.error(new ProgressEvent('Random error occurred'));
+    });
+
+    it('getImageURL should return correct image URL', () => {
+        const id = 123;
+        const expectedUrl = `${baseUrl}/images/${id}`;
+        const url = service.getImageURL(id);
+        expect(url).toEqual(expectedUrl);
     });
 });

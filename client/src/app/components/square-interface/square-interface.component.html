@@ -1,0 +1,62 @@
+<mat-stepper headerPosition="bottom" class="wraper">
+    <mat-step *ngFor="let page of groupedGames; index as i" id="step">
+        <mat-grid-list id="square-list" cols="2" rowHeight="10:4" gutterSize="1%">
+            <mat-grid-tile id="square" *ngFor="let gameData of page">
+                <mat-card class="card mat-elevation-z4">
+                    <mat-card-header id="header">
+                        <mat-card-title id="title">
+                            {{ gameData.name }}
+                        </mat-card-title>
+                        <mat-card-subtitle class="subtitle" *ngIf="gameData.isHard">Difficulté: difficile</mat-card-subtitle>
+                        <mat-card-subtitle class="subtitle" *ngIf="!gameData.isHard">Difficulté: facile</mat-card-subtitle>
+                        <div *ngIf="configPage" id="time-infos">
+                            <div class="info">
+                                <a><mat-icon>alarm</mat-icon></a>
+                                Temps initial : {{ gameData.time }}s
+                            </div>
+                            <div class="info">
+                                <a><mat-icon>alarm_add</mat-icon></a>
+                                Récompense : {{ gameData.reward }}s
+                            </div>
+                            <div class="info">
+                                <a><mat-icon>alarm_off</mat-icon></a>
+                                Pénalité : {{ gameData.penalty }}s
+                            </div>
+                        </div>
+                    </mat-card-header>
+                    <img mat-card-image [src]="getImage(gameData)" />
+                    <div id="right-elements">
+                        <mat-card-content class="content">
+                            <a><mat-icon>stars</mat-icon></a>
+                            <div class="best-times">
+                                Classement solo:
+                                <div *ngFor="let entry of gameData.scoreBoardSolo; index as i">{{ i + 1 }}. {{ entry[0] }} : {{ entry[1] }} s</div>
+                            </div>
+                            <div class="best-times">
+                                Classement multi joueur:
+                                <div *ngFor="let entry of gameData.scoreBoardMulti; index as i">{{ i + 1 }}. {{ entry[0] }} : {{ entry[1] }} s</div>
+                            </div>
+                        </mat-card-content>
+                        <mat-card-actions *ngIf="!configPage" class="buttons">
+                            <button mat-raised-button color="primary" (click)="openFormDialog(gameData)">Partie Solo</button>
+                            <button mat-raised-button color="primary">Créer</button>
+                        </mat-card-actions>
+
+                        <mat-card-actions *ngIf="configPage" class="buttons">
+                            <button mat-raised-button color="primary">Supprimer</button>
+                            <button mat-raised-button color="primary">Réintialiser</button>
+                        </mat-card-actions>
+                    </div>
+                </mat-card>
+            </mat-grid-tile>
+        </mat-grid-list>
+        <div>
+            <div class="page-button">
+                <button *ngIf="i !== 0" mat-raised-button color="primary" mat-button matStepperPrevious class="left">Précédent</button>
+                <button *ngIf="i !== groupedGames.length - 1" mat-raised-button color="primary" mat-button matStepperNext class="right">
+                    Prochain
+                </button>
+            </div>
+        </div>
+    </mat-step>
+</mat-stepper>

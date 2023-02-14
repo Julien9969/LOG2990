@@ -1,0 +1,23 @@
+<div ngClass="game-theme" class="wrap">
+    <mat-toolbar id="top-bar" color="primary">
+        <span>Choisissez un jeu</span>
+        <div id="quit-button">
+            <button mat-button aria-label="Quitter" routerLink="/main">
+                <mat-icon>home</mat-icon>
+                Quitter
+            </button>
+        </div>
+    </mat-toolbar>
+    <mat-toolbar id="top-bar" color="primary">
+        <span>Choisissez un jeu</span>
+        <div id="quit-button">
+            <button mat-button aria-label="Quitter" routerLink="/main">
+                <mat-icon>home</mat-icon>
+                Quitter
+            </button>
+        </div>
+    </mat-toolbar>
+    <div class="squares">
+        <app-square-interface [configPage]="false"></app-square-interface>
+    </div>
+</div>

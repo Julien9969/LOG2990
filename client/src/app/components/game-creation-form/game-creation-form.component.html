@@ -1,0 +1,42 @@
+<div>
+    <p id="errorMessage" class="message" *ngIf="this.errorMessage">{{this.errorMessage}}</p>
+    <p id="successMessage" class="message" *ngIf="this.successMessage">{{this.successMessage}}</p>
+    <form>
+        <input #title id="title" placeholder="Titre du nouveau jeu" (change)="setTitle(title.value)"/>
+        <div *ngIf="!isValid" class="flex">
+            <app-upload-image-square 
+                id="left-{{this.id}}" 
+                title="Image d'origine" 
+                imageURL="{{this.originalImageURL}}" 
+                (uploadImage)="handleOriginalImageUpload($event)"
+                (clearImage)="clearOriginalImage()"></app-upload-image-square>
+            <div id="middleMenu">
+                <label for="globalImageUploader-{{this.id}}" class="button">
+                    <mat-icon>arrow_upward</mat-icon>
+                    téléverser les 2 images
+                </label>
+                <div>
+                    <label>Rayon des cercles de différences</label>
+                    <input #radius type="range" min="0" max="3" step="1" value="1" (input)="setRadius(radius.value)"/>
+                    <span>{{this.differenceRadius}} pixels</span>
+                </div>
+                <button type="button" (click)="this.validateImageDifferences()">Commencer l'analyse</button>
+            </div>
+            <input #globalImageUploader type="file" id="globalImageUploader-{{this.id}}" class="invisible" accept="image/BMP" (input)="setBothImages(globalImageUploader)"/>
+            <app-upload-image-square 
+                id="right-{{this.id}}" 
+                title="Image modifiée" 
+                imageURL="{{this.altImageURL}}" 
+                (uploadImage)="handleAltImageUpload($event)"
+                (clearImage)="clearAltImage()"></app-upload-image-square>
+        </div>
+        <app-image-difference-popup 
+            *ngIf="this.isValid" 
+            imgDifferencesUrl="{{this.differencesImageUrl}}" 
+            [nbDifferences]="this.nbDifferences" 
+            [isHard]="this.isHard"
+            (createGame)="this.submitNewGame()"
+            (cancelGamCreation)="this.isValid = false"
+            ></app-image-difference-popup>
+    </form>
+</div>
