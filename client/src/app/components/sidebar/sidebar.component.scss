@@ -1,7 +1,17 @@
 .container {
-    height: auto;
-    min-height: 98vh;
-    border: 1px solid black;
+    height: 100%;
+    border: 3px solid black;
     padding: 0 5px 0 5px;
-    margin-right: 5px;
+}
+
+.flex {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#title {
+    justify-content: space-around;
+    font-size: 1.5em;
+    font-weight: bold;
 }

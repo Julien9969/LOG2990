@@ -1,0 +1,22 @@
+<div mat-dialog-content>
+    <h1 id="title" mat-dialog-title>Entrez votre nom.</h1>
+    <form class="name-form">
+        <mat-form-field class="full-width">
+            <mat-label>Nom de joueur</mat-label>
+            <input
+                #box
+                type="text"
+                (keyup)="this.playerName = box.value"
+                matInput
+                [formControl]="nameFormControl"
+                placeholder="Ex. Michel : 3 - 12 lettres"
+            />
+            <mat-error *ngIf="!nameFormControl.hasError('required')"> Entrez un nom valide </mat-error>
+            <mat-error *ngIf="nameFormControl.hasError('required')"> Nom de joueur <strong>requis</strong> </mat-error>
+        </mat-form-field>
+    </form>
+    <div class="button-row">
+        <button mat-button [disabled]="!this.nameFormControl.valid" matDialogClose (click)="navigateToGame()" aria-label="OUI">OUI</button>
+        <button mat-button matDialogClose aria-label="NON">NON</button>
+    </div>
+</div>

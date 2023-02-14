@@ -1,0 +1,19 @@
+<div ngClass="game-theme" class="wrap">
+    <div class="squares">
+        <div>
+            <mat-toolbar id="top" color="primary">
+                <div>Modifiez un jeu</div>
+                <div id="quit-button">
+                    <button mat-button routerLink="/main">
+                        <mat-icon>home</mat-icon>
+                        Quitter
+                    </button>
+                </div>
+                <div id="">
+                    <button mat-button routerLink="/game-creation"><mat-icon>build</mat-icon>Créer un jeu</button>
+                </div>
+            </mat-toolbar>
+            <app-square-interface [configPage]="true"></app-square-interface>
+        </div>
+    </div>
+</div>

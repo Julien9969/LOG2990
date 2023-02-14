@@ -1,22 +1,33 @@
 <div class="container justified">
-    <h1 class="header-item">Bienvenue au cours {{ title }}</h1>
-    <img src="https://bit.ly/3QofL1J" alt="Logo Projet" />
-    <section id="server-message" class="justified">
-        <p>Petit message du serveur : {{ message.getValue() }}</p>
-        <div class="justified">
-            <button class="button" (click)="getMessagesFromServer()">Récupérer un message du serveur</button>
-            <button class="button" (click)="sendTimeToServer()">Envoyer un message au serveur</button>
-            <button class="button" routerLink="/material">Voir la page démo Angular Material</button>
+    <div id="header">
+        <img id="main-logo" src="../assets/logo/amongoDB.png" alt="Logo Projet" />
+    </div>
+    <div id="subtitle">
+        <h3>Il y a une différence parmis nous</h3>
+    </div>
+    <div id="buttons">
+        <div>
+            <button mat-raised-button color="primary" routerLink="/selection-view" class="buttons">Classique</button>
         </div>
-    </section>
-
-    <button class="button" routerLink="/game">Jouer!</button>
-
+        <div>
+            <button mat-raised-button color="primary" class="buttons">Temps Limité</button>
+        </div>
+        <div>
+            <button mat-raised-button color="primary" routerLink="/config" class="buttons">Configuration</button>
+        </div>
+    </div>
     <footer class="footer-item">
-        <h4 class="team-name">Équipe Poly</h4>
-        <p>
-            <span>Coéquipier #1</span>, <span>Coéquipier #2</span>, <span>Coéquipier #3</span>, 
-            <span>Coéquipier #4</span>, <span>Coéquipier #5</span>, <span>Coéquipier #6</span>
-        </p>
+        <h4 class="team-name">Équipe Poly: 107</h4>
+        <div id="names">
+            <span>Majeed Abdul Baki</span>
+
+            <span>Victor Gilbert</span>
+
+            <span>Sébastien Roy</span>
+
+            <span>Maxime Pageot</span>
+
+            <span>Julien Roux</span>
+        </div>
     </footer>
 </div>

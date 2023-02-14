@@ -1,0 +1,57 @@
+@import "../../../styles.scss";
+
+$image-min-width: 300px;
+$image-width: 32vw;
+$image-max-width: 640px;
+$aspect-ratio: calc(640/480);
+
+main {
+    text-align: center;
+}
+
+input.invisible {
+    display: none;
+}
+
+.imgContainer {
+    border: 2px dashed black;
+    min-width: $image-min-width;
+    min-height: calc($image-min-width / $aspect-ratio);;
+    width: $image-width;
+    height: calc($image-width / $aspect-ratio);
+    max-width: $image-max-width;
+    max-height: calc($image-max-width / $aspect-ratio);
+    position: relative;
+    margin: 20px;  
+    p {
+        font-size: large;
+    }
+
+    img {
+        border: none;
+        min-width: inherit;
+        min-height: inherit;
+        width: inherit;
+        height: inherit;
+        max-width: inherit;
+        max-height: inherit;
+    }
+
+    label.abs-center {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: block;
+        text-align: center;
+    }
+
+    label:hover {
+        cursor: pointer;
+    }
+}
+
+.flex {
+    display: flex;
+    justify-content: space-around;
+}

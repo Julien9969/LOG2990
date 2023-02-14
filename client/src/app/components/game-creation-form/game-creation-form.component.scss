@@ -1,0 +1,94 @@
+@import '../../../styles.scss';
+
+.formContainer {
+    margin: 4vh;
+    width: 100%;
+
+    * {
+        display: block;
+        margin-left: 50%;
+    }
+}
+
+.message {
+    margin: 3vh;
+    margin-left: 50%;
+    padding: 15px;
+    transform: translateX(-50%);
+    width: fit-content;
+    border: 3px solid black;
+    border-radius: 10px;
+    font-size: large;
+}
+
+#errorMessage {
+    color: rgb(176, 0, 0);
+    background-color: rgba(255, 118, 118, 0.431);
+    border-color: red;
+}
+
+#successMessage {
+    color: rgb(20, 91, 0);
+    background-color: rgba(68, 255, 0, 0.431);
+    border-color: green;
+}
+
+input#title {
+    margin-top: 3vh;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    width: 20vw;
+    height: 3vh;
+    font-size: x-large;
+    border: 0px;
+    background-color: transparent;
+    border-bottom: 2px solid black;
+    text-align: center;
+}
+
+input[type=range] {
+    accent-color: blue;
+}
+
+// styles for the uploadImage
+
+.flex {
+    padding-top: 8vh;
+    display: flex;
+    justify-content: space-around;
+}
+
+label.button, button {
+    color: inherit;
+    display: flex;
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 5px 8px 5px 8px;
+    align-items: center;
+    height: max-content;
+    min-width: fit-content;
+    width: min-content;
+}
+
+label.button:hover, button:hover {
+    cursor: pointer;
+}
+
+label.button:active, button:active {
+    scale: 98%;
+}
+
+button {
+    font-size: x-large;
+}
+
+#middleMenu {
+    font-size: medium;
+    min-width: 250px;
+    width: 20vw;
+    justify-content: center;
+    > * {
+        display: block;
+        margin: 30px auto 30px auto;
+    }
+}

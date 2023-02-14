@@ -1,0 +1,14 @@
+<div>
+    <div class="container" >
+        <h2>résultat de l'analyse</h2>
+        <div class="analysisWindow">
+            <img src="{{imgDifferencesUrl}}" id="differencesImg">
+            <p>Nombre de différences trouvées: <strong>{{this.nbDifferences}}</strong> </p>
+            <p>Difficulté du jeu: <strong>{{this.isHard ? 'Difficile': 'facile'}}</strong> </p>
+        </div>   
+    </div>
+    <div class="buttonContainer">
+        <button type="button cancel" (click)="this.cancelGamCreation.emit()">Annuler</button>
+        <button *ngIf="!isPressed" type="button approve" (click)="this.dispatchGameCreationRequest()">Créer le jeu</button>
+    </div>
+</div>
