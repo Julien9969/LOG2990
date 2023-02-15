@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 /**
- * @title Injecting data when opening a dialog
+ * @title Fenetre modale en cas d'erreur de chargement des jeux
  */
 @Component({
     selector: 'app-name-form-dialog',
