@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DPI_125, zoomFactor, MouseButton } from '@app/constants/utils-constants';
+import { MouseButton } from '@app/constants/utils-constants';
 import { Coordinate } from '@common/coordinate';
 
 @Injectable({
@@ -15,11 +15,7 @@ export class MouseService {
      */
     clickProcessing(event: MouseEvent) {
         if (event.button === MouseButton.Left) {
-            if (window.devicePixelRatio >= DPI_125) {
-                this.mousePosition = { x: Math.round(event.offsetX / zoomFactor), y: Math.round(event.offsetY / zoomFactor) };
-            } else {
-                this.mousePosition = { x: event.offsetX, y: event.offsetY };
-            }
+            this.mousePosition = { x: event.offsetX, y: event.offsetY };
         }
     }
 }

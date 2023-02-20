@@ -21,10 +21,8 @@ img {
 
 
 .play-areas {
-    gap: 3vw;
-    margin-top: 4vh;
-    margin-left: 5vw;
-    margin-right: 5vw;
+    margin-right: 5%;
+    margin-left: 5%;
 }
 
 .error {
@@ -34,27 +32,8 @@ img {
 
 canvas {
     border: 1px solid black;
-    margin: 0 auto;
+    margin: 8px;
     display: block;
-}
-
-
-@media (-webkit-device-pixel-ratio: 1.25),
-(-webkit-device-pixel-ratio: 1.50) {
-    .play-areas {
-        gap: 1vw;
-        margin-top: 2vh;
-        margin-left: 1vw;
-        margin-right: 1vw;
-    }   
-
-    #global-container {
-        zoom: 90%;
-    }
-
-    .error {
-        transform: translate(-50%, -50%);
-    }
 }
 
 

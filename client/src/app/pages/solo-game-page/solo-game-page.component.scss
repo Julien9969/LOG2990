@@ -63,7 +63,6 @@ mat-toolbar {
 
 #game-container {
     display: flex;
-    padding: 10px;
     height: 100%;
 }
 
@@ -73,6 +72,7 @@ app-play-image {
 
 app-sidebar {
     width: 100%;
+    padding: 5px;
 }
 
 #bottom-bar {
