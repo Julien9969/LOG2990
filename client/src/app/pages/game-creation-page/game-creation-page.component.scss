@@ -1,5 +1,4 @@
 @use '@angular/material' as mat;
-@include mat.core();
 
 $top-bar-height: 80px;
 
@@ -14,8 +13,9 @@ main {
         height: $top-bar-height;
         z-index: 1;
 
-        a {
+        button {
             text-decoration: none;
+            font-size: medium;
             color: inherit;
             border: 1px solid white;
             padding: 5px 8px 5px 8px;
