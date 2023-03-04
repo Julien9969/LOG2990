@@ -9,7 +9,7 @@ export const stubInputGame: InputGame = {
     radius: 0,
 };
 export const stubGame: Game = {
-    id: 0,
+    id: '0',
     name: 'gamename',
     imageMain: 0,
     imageAlt: 0,
@@ -24,7 +24,7 @@ export const stubGame: Game = {
     time: undefined,
 };
 export const stubGameWithScore: Game = {
-    id: 0,
+    id: '0',
     name: 'gamename',
     imageMain: 0,
     imageAlt: 0,
@@ -45,44 +45,44 @@ export const stubGameWithScore: Game = {
 export const gameListStub: Game[] = [
     {
         ...stubGame,
-        id: 3,
+        id: '3',
     },
     {
         ...stubGame,
-        id: 2,
+        id: '2',
     },
     {
         ...stubGame,
-        id: 1,
+        id: '1',
     },
     {
         ...stubGame,
-        id: 0,
+        id: '0',
     },
 ];
 
 export const gameListStubWithout3: Game[] = [
     {
         ...stubGame,
-        id: 2,
+        id: '2',
     },
     {
         ...stubGame,
-        id: 1,
+        id: '1',
     },
     {
         ...stubGame,
-        id: 0,
+        id: '0',
     },
 ];
 
 export const gameListStubWithout3Nor0: Game[] = [
     {
         ...stubGame,
-        id: 2,
+        id: '2',
     },
     {
         ...stubGame,
-        id: 1,
+        id: '1',
     },
 ];

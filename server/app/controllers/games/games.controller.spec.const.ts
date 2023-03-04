@@ -7,7 +7,7 @@ export const exampleScoreBoard: [string, number][] = [
 ];
 
 export const exampleGame: Game = {
-    id: 8861,
+    id: '8861',
     name: 'Ingenieur logiciel au travail',
     imageMain: 9205,
     imageAlt: 6752,

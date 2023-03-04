@@ -1,6 +1,6 @@
 
 <div mat-dialog-content>
-    <ng-container #container *ngTemplateOutlet="witchTemplate === 'quit' ? quit : (witchTemplate === 'clue' ? clue : endGame) " ></ng-container>
+    <ng-container #container *ngTemplateOutlet="templateName === 'quit' ? quit : (templateName === 'clue' ? clue : endGame) " ></ng-container>
 </div>
 
 <ng-template #quit>

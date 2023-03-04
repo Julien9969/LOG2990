@@ -24,82 +24,66 @@ describe('GameController tests', () => {
             ],
         }).compile();
         controller = module.get<GamesController>(GamesController);
-
-        jest.spyOn(controller['gameService'], 'saveState').mockImplementation(() => {});
     });
 
     it('should be defined', () => {
         expect(controller).toBeDefined();
     });
 
-    it('findall should retrun a list of games', () => {
-        jest.spyOn(controller['gameService'], 'findAll').mockImplementation(() => {
-            return [];
-        });
-        const games = controller.getAllGames();
-        expect(games).toEqual([]);
+    it('findall should retrun a list of games', async () => {
+        jest.spyOn(controller['gameService'], 'findAll').mockReturnValue(Promise.resolve([exampleGame]));
+        const games = await controller.getAllGames();
+        expect(games).toEqual([exampleGame]);
     });
 
-    it('deletebyId should call delete() with the correct id', () => {
-        const deleteSpy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(() => '');
-        controller.deleteById('5');
+    it('deletebyId should call delete() with the correct id', async () => {
+        const deleteSpy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(async () => {});
+        await controller.deleteById('5');
 
-        expect(deleteSpy).toBeCalledWith(5);
+        expect(deleteSpy).toBeCalledWith('5');
     });
 
     it('creating a valid game returns created game', async () => {
-        jest.spyOn(controller['gameService'], 'create').mockImplementation(async () => {
-            return new Promise<Game>((resolve) => {
-                resolve(stubGame);
-            });
-        });
+        jest.spyOn(controller['gameService'], 'create').mockReturnValue(Promise.resolve(stubGame));
 
         const result = await controller.newGame(stubInputGame);
         expect(result).toEqual(stubGame);
     });
 
     it('trying to create an invalid game should return an error', () => {
-        const testGame = undefined;
+        let testGame: undefined;
 
-        jest.spyOn(controller['gameService'], 'create').mockImplementation(async () => {
-            return new Promise<Game>((resolve) => {
-                resolve(testGame);
-            });
-        });
+        jest.spyOn(controller['gameService'], 'create').mockReturnValue(Promise.resolve(testGame));
 
         expect(async () => {
             await controller.newGame(testGame);
         }).rejects.toThrowError(HttpException);
     });
 
-    it('get should return an error if the id is invalid', () => {
-        jest.spyOn(controller['gameService'], 'findById').mockImplementation(() => {
-            return undefined;
-        });
-        expect(() => {
-            controller.getGame('-1');
-        }).toThrowError(new HttpException('Jeu -1 non existant.', HttpStatus.NOT_FOUND));
+    it('get should return an error if the id is invalid', async () => {
+        jest.spyOn(controller['gameService'], 'findById').mockReturnValue(undefined);
+        expect(async () => {
+            await controller.getGame('-1');
+        }).rejects.toThrowError(HttpException);
     });
 
-    it('get should call findById()', () => {
-        const getGameByIdSpy = jest.spyOn(controller['gameService'], 'findById').mockImplementation(() => {
-            return exampleGame;
-        });
-        const message = controller.getGame('12');
-        expect(getGameByIdSpy).toHaveBeenCalledWith(12);
+    it('get should call findById()', async () => {
+        const getGameByIdSpy = jest.spyOn(controller['gameService'], 'findById').mockReturnValue(Promise.resolve(exampleGame));
+        const message = await controller.getGame('12');
+        expect(getGameByIdSpy).toHaveBeenCalledWith('12');
         expect(message).toEqual(exampleGame);
     });
 
-    it('deleteById should call the coresponding service function', () => {
-        const spy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(() => {});
-        controller.deleteById('12');
-        expect(spy).toHaveBeenCalledWith(12);
+    it('deleteById should call the coresponding service function', async () => {
+        const spy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(async () => {});
+        await controller.deleteById('12');
+        expect(spy).toHaveBeenCalledWith('12');
     });
-    it('GetAllGames should call the coresponding service function', () => {
-        const spy = jest.spyOn(controller['gameService'], 'findAll').mockImplementation(() => {
+    it('GetAllGames should call the coresponding service function', async () => {
+        const spy = jest.spyOn(controller['gameService'], 'findAll').mockImplementation(async () => {
             return [exampleGame];
         });
-        controller.getAllGames();
+        await controller.getAllGames();
         expect(spy).toHaveBeenCalled();
     });
 

@@ -1,5 +1,4 @@
 import { GameService } from '@app/services/game/game.service';
-import { Utils } from '@app/services/utils/utils.service';
 import { Game } from '@common/game';
 import { InputGame } from '@common/input-game';
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
@@ -37,8 +36,8 @@ export class GamesController {
      * @returns La liste de tous les Game dans la persistance.
      */
     @Get()
-    getAllGames() {
-        return this.gameService.findAll();
+    async getAllGames() {
+        return await this.gameService.findAll();
     }
 
     /**
@@ -48,8 +47,8 @@ export class GamesController {
      * @returns Le jeu
      */
     @Get(':id')
-    getGame(@Param('id') id: string) {
-        const game = this.gameService.findById(Utils.convertToInt(id));
+    async getGame(@Param('id') id: string) {
+        const game = await this.gameService.findById(id);
         if (game) {
             return game;
         } else {
@@ -63,7 +62,7 @@ export class GamesController {
      * @param params une id de l'element game a detruire
      */
     @Delete(':id')
-    deleteById(@Param('id') id: string) {
-        this.gameService.delete(Utils.convertToInt(id));
+    async deleteById(@Param('id') id: string) {
+        await this.gameService.delete(id);
     }
 }

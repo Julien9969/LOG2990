@@ -251,7 +251,7 @@ describe('CommunicationService', () => {
 
     it('gameInfoGet should return expected message (HttpClient called once)', () => {
         const expectedMessage: Game = {
-            id: 0,
+            id: '0',
             name: '',
             imageMain: 0,
             imageAlt: 0,
@@ -265,7 +265,7 @@ describe('CommunicationService', () => {
             reward: 0,
         };
 
-        service.gameInfoGet(1).subscribe({
+        service.gameInfoGet('1').subscribe({
             next: (response) => {
                 expect(response).toEqual(expectedMessage);
             },
@@ -277,7 +277,7 @@ describe('CommunicationService', () => {
     });
 
     it('gameInfoGet should handle http error', () => {
-        service.gameInfoGet(1).subscribe({
+        service.gameInfoGet('1').subscribe({
             next: (response: Game) => {
                 expect(response).toBeUndefined();
             },
@@ -292,7 +292,7 @@ describe('CommunicationService', () => {
     it('getRequest should all games', async () => {
         const expectedGames: Game[] = [
             {
-                id: 0,
+                id: '0',
                 name: '',
                 imageMain: 0,
                 imageAlt: 0,

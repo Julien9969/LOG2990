@@ -3,7 +3,7 @@ import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 
 export class Session {
-    gameID: number;
+    gameID: string;
     id: number;
     nGuesses: number = 0;
     nPenalties: number = 0;
