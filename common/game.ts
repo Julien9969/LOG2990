@@ -1,5 +1,4 @@
-export interface Game {
-    id: number;
+export interface unsavedGame {
     name: string;
     imageMain: number;
     imageAlt: number;
@@ -12,4 +11,8 @@ export interface Game {
     time: number;
     penalty: number;
     reward: number;
+}
+
+export interface Game extends unsavedGame {
+    id: string;
 }

@@ -12,7 +12,7 @@ export class SessionService {
      * @param id L'identifiant du jeu voulu
      * @returns L'identifiant de la session créée
      */
-    create(id: number): number {
+    create(id: string): number {
         const newSession = new Session();
         newSession.gameID = id;
         this.addToList(newSession);

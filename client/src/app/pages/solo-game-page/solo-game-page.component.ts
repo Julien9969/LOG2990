@@ -12,18 +12,23 @@ import { Game } from '@common/game';
 })
 export class SoloGamePageComponent implements OnInit {
     playerName: string;
+    opponentName: string;
     isLoaded: boolean = false;
     isSolo: boolean;
     sessionId: number;
     gameInfos: Game;
-    gameID: number;
+    gameID: string;
     nDiffFound: number = 0;
     timer = new Timer();
 
     constructor(private readonly dialog: MatDialog, private readonly communicationService: CommunicationService) {
-        this.playerName = window.history.state.playerName as string;
-        this.sessionId = window.history.state.sessionID as number;
-        this.gameID = window.history.state.gameID as number;
+        this.isSolo = window.history.state.isSolo;
+        if (!this.isSolo) {
+            this.opponentName = window.history.state.opponentName;
+        }
+        this.playerName = window.history.state.playerName;
+        this.sessionId = window.history.state.sessionId;
+        this.gameID = window.history.state.gameID;
     }
 
     get getTimer(): Timer {
@@ -47,7 +52,6 @@ export class SoloGamePageComponent implements OnInit {
 
     getGameInfos(): void {
         // Define to true for Sprint 1 (no multiplayer)
-        this.isSolo = true;
         this.communicationService.gameInfoGet(this.gameID).subscribe({
             next: (response) => {
                 this.gameInfos = response as Game;

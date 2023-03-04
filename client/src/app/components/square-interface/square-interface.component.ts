@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDuringLoadingComponent } from '@app/components/error-during-loading/error-during-loading.component';
-import { NameFormDialogComponent } from '@app/components/name-form-dialog/name-form-dialog.component';
+import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
 import { GameService } from '@app/services/game.service';
 import { Game } from '@common/game';
 
@@ -48,9 +48,10 @@ export class SquareInterfaceComponent {
      *
      * @param game game that the player wants to play
      */
-    openFormDialog(game: Game): void {
+    openFormDialog(game: Game, isSolo: boolean): void {
         this.dialog.closeAll();
-        this.dialog.open(NameFormDialogComponent, { closeOnNavigation: true, autoFocus: false, data: game.id });
+        const gameInfo = { id: game.id, isSolo };
+        this.dialog.open(MatchMakingDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: gameInfo });
     }
 
     // Utilise pour le Sprint 2

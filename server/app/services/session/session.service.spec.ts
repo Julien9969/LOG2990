@@ -8,7 +8,7 @@ let session: Session;
 describe('Session tests', () => {
     beforeAll(async () => {
         session = new Session();
-        session.gameID = 15;
+        session.gameID = '15';
     });
 
     afterEach(() => {
@@ -123,7 +123,7 @@ describe('Session Service tests', () => {
         const spy = jest.spyOn(sessionService, 'addToList').mockImplementation((newSession) => {
             newSession.id = 1;
         });
-        const result = sessionService.create(12);
+        const result = sessionService.create('12');
         expect(result).toEqual(1);
         expect(spy).toHaveBeenCalled();
     });

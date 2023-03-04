@@ -25,9 +25,9 @@ describe('PopupDialogComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('onInit should call playWinSound if witchTemplate is endGame', () => {
+    it('onInit should call playWinSound if templateName is endGame', () => {
         spyOn(component, 'playWinSound');
-        component.witchTemplate = 'endGame';
+        component.templateName = 'endGame';
         component.ngOnInit();
         expect(component.playWinSound).toHaveBeenCalled();
     });

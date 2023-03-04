@@ -63,7 +63,7 @@ export class CommunicationService {
      * @param gameId the id of the game
      * @returns the game infos
      */
-    gameInfoGet(gameId: number): Observable<Game> {
+    gameInfoGet(gameId: string): Observable<Game> {
         return this.http.get<Game>(`${this.baseUrl}/games/${gameId}`).pipe(catchError(this.handleError<Game>('error getting game info')));
     }
 

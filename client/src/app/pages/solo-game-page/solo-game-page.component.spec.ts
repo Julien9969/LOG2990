@@ -41,7 +41,7 @@ describe('SoloGamePageComponent', () => {
         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['gameInfoGet', 'customGet']);
         communicationServiceSpy.gameInfoGet.and.returnValue(
             of({
-                id: 1,
+                id: '1',
                 name: 'testName',
                 imageMain: 1,
                 imageAlt: 1,
@@ -73,7 +73,7 @@ describe('SoloGamePageComponent', () => {
     });
 
     beforeEach(() => {
-        window.history.pushState({ gameID: 0, playerName: '', sessionID: 1 }, '', '');
+        window.history.pushState({ isSolo: true, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
         fixture = TestBed.createComponent(SoloGamePageComponent);
         component = fixture.componentInstance;
         component.timer = timerSpy;
@@ -82,6 +82,16 @@ describe('SoloGamePageComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('constructor should call not define opponentName if isSolo is true', () => {
+        expect(component.opponentName).toBeUndefined();
+    });
+
+    it('constructor should define opponentName if isSolo is false', () => {
+        window.history.pushState({ isSolo: false, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
+        const newComponent = TestBed.createComponent(SoloGamePageComponent);
+        expect(newComponent.componentInstance.opponentName).toBeDefined();
     });
 
     it('onInit should call getGameInfo and startTimer', () => {
@@ -100,7 +110,7 @@ describe('SoloGamePageComponent', () => {
         component.getGameInfos();
         expect(communicationServiceSpy.gameInfoGet).toHaveBeenCalled();
         expect(component.gameInfos).toEqual({
-            id: 1,
+            id: '1',
             name: 'testName',
             imageMain: 1,
             imageAlt: 1,

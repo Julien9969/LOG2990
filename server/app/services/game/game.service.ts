@@ -1,33 +1,32 @@
+import { GameDocument } from '@app/Schemas/game/game.schema';
 import {
     DEFAULT_GAME_TIME,
     DEFAULT_PENALTY_TIME,
     DEFAULT_REWARD_TIME,
     DEFAULT_SCOREBOARD,
-    GAME_DATA_FILE_PATH,
-    GAME_ID_CAP,
     IMAGE_FOLDER_PATH,
-    IMAGE_FORMAT,
+    // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
+    // eslint-disable-next-line prettier/prettier
+    IMAGE_FORMAT
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
-import { Game } from '@common/game';
+import { Game, unsavedGame } from '@common/game';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { InputGame } from '@common/input-game';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as fs from 'fs';
+import { InjectModel } from '@nestjs/mongoose';
+import mongoose, { Model } from 'mongoose';
 
 @Injectable()
 export class GameService {
-    private allGames: Game[] = [];
-
-    constructor() {
-        this.populate();
-    }
+    prototype: unknown;
+    constructor(@InjectModel('Game') private gameModel: Model<GameDocument>) {}
 
     /**
      * @returns La liste de tous les jeux
      */
-    findAll() {
-        return this.allGames;
+    async findAll(): Promise<Game[]> {
+        return await this.gameModel.find();
     }
 
     /**
@@ -44,32 +43,25 @@ export class GameService {
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
         }
-
-        let newGame: Game;
-        if (result.isValid) {
-            newGame = {
-                id: undefined,
-                name: inputGame.name,
-                imageAlt: inputGame.imageAlt,
-                imageMain: inputGame.imageMain,
-                radius: inputGame.radius,
-                isHard: result.isHard,
-                isValid: result.isValid,
-                differenceCount: result.differenceCount,
-                scoreBoardSolo: [...DEFAULT_SCOREBOARD],
-                scoreBoardMulti: [...DEFAULT_SCOREBOARD],
-                time: DEFAULT_GAME_TIME,
-                penalty: DEFAULT_PENALTY_TIME,
-                reward: DEFAULT_REWARD_TIME,
-            };
-
-            const id = this.addToList(newGame);
-            diffDetectionService.saveDifferences(id.toString());
-            this.saveState();
-        } else {
+        if (!result.isValid) {
             throw new HttpException('Images choisies ne respectent pas les contraintes de jeu.', HttpStatus.BAD_REQUEST);
         }
-        return newGame;
+
+        const newGame: unsavedGame = {
+            ...inputGame,
+            isHard: result.isHard,
+            isValid: result.isValid,
+            differenceCount: result.differenceCount,
+            scoreBoardSolo: [...DEFAULT_SCOREBOARD],
+            scoreBoardMulti: [...DEFAULT_SCOREBOARD],
+            time: DEFAULT_GAME_TIME,
+            penalty: DEFAULT_PENALTY_TIME,
+            reward: DEFAULT_REWARD_TIME,
+        };
+
+        const createdGame: Game = await this.gameModel.create(newGame);
+        diffDetectionService.saveDifferences(createdGame.id);
+        return createdGame;
     }
 
     /**
@@ -77,14 +69,12 @@ export class GameService {
      *
      * @param id L'identifiant du jeu à supprimer
      */
-    delete(id: number) {
-        const game = this.findById(id);
-        if (!game) {
-            throw new HttpException('Game ID non existant.', HttpStatus.NOT_FOUND);
+    async delete(id: string) {
+        this.verifyGameId(id);
+        if (!(await this.findById(id))) {
+            throw new HttpException(`Le jeu avec le id ${id} n'existe pas`, HttpStatus.NOT_FOUND);
         }
-        const index = this.allGames.indexOf(game);
-        this.allGames.splice(index, 1);
-        this.saveState();
+        await this.gameModel.deleteOne({ _id: id });
     }
 
     /**
@@ -93,44 +83,10 @@ export class GameService {
      * @param findID L'indentifiant du jeu recherché
      * @returns Le jeu recherché
      */
-    findById(findID: number): Game {
-        let returnGame: Game = null;
-        this.allGames.forEach((game: Game) => {
-            if (game.id === findID) {
-                returnGame = game;
-            }
-        });
-        return returnGame;
-    }
-
-    addToList(game: Game): number {
-        game.id = undefined;
-
-        while (game.id === undefined || this.findById(game.id) != null) {
-            game.id = Math.floor(Math.random() * GAME_ID_CAP);
-        }
-        this.allGames.push(game);
-        return game.id;
-    }
-
-    /**
-     * Sauvegarde les jeux en persistance
-     */
-    saveState() {
-        const allGamesData = JSON.stringify(this.allGames);
-        fs.writeFileSync(GAME_DATA_FILE_PATH, allGamesData);
-    }
-
-    /**
-     * Charge les jeux de la persistance
-     */
-    populate() {
-        try {
-            const data = fs.readFileSync(GAME_DATA_FILE_PATH);
-            this.allGames = JSON.parse(data.toString());
-        } catch (err) {
-            throw new Error('Erreur en lecture de fichier');
-        }
+    async findById(findID: string): Promise<Game> {
+        this.verifyGameId(findID);
+        const gameDocument = await this.gameModel.findOne({ _id: findID });
+        return gameDocument;
     }
 
     /**
@@ -151,5 +107,11 @@ export class GameService {
         const result: ImageComparisonResult = diffDetectionService.getComparisonResult();
 
         return result;
+    }
+
+    verifyGameId(id: string): void {
+        if (!mongoose.isValidObjectId(id)) {
+            throw new Error(`Le ID "${id}" n'est pas un ID valide (format non-valide)`);
+        }
     }
 }

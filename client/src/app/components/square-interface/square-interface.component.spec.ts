@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatStepperModule } from '@angular/material/stepper';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ErrorDuringLoadingComponent } from '@app/components/error-during-loading/error-during-loading.component';
-import { NameFormDialogComponent } from '@app/components/name-form-dialog/name-form-dialog.component';
+import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
 import { SquareInterfaceComponent } from '@app/components/square-interface/square-interface.component';
 import { CommunicationService } from '@app/services/communication.service';
 import { GameService } from '@app/services/game.service';
@@ -30,13 +30,13 @@ describe('SquareInterfaceComponent', () => {
                 { provide: MatDialog, useValue: dialogSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
             ],
-            imports: [MatCardModule, MatStepperModule, MatGridListModule, BrowserAnimationsModule, MatIconModule, ],
+            imports: [MatCardModule, MatStepperModule, MatGridListModule, BrowserAnimationsModule, MatIconModule],
         }).compileComponents();
     });
 
     beforeEach(() => {
         testGame = {
-            id: 1,
+            id: '1',
             name: '',
             imageMain: 0,
             imageAlt: 0,
@@ -96,12 +96,13 @@ describe('SquareInterfaceComponent', () => {
     it('openFormDialog() should call the right function with the right parameters', () => {
         spyOn(component, 'openFormDialog').and.callThrough();
 
-        component.openFormDialog(testGame);
+        component.openFormDialog(testGame, true);
         expect(component['dialog'].closeAll).toHaveBeenCalled();
-        expect(component['dialog'].open).toHaveBeenCalledWith(NameFormDialogComponent, {
+        expect(component['dialog'].open).toHaveBeenCalledWith(MatchMakingDialogComponent, {
             closeOnNavigation: true,
+            disableClose: true,
             autoFocus: false,
-            data: testGame.id,
+            data: { id: testGame.id, isSolo: true },
         });
     });
 });

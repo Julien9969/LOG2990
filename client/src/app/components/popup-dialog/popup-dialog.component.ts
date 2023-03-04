@@ -10,14 +10,14 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./popup-dialog.component.scss'],
 })
 export class PopupDialogComponent implements OnInit {
-    witchTemplate: string;
+    templateName: string;
     audioPlayer = new Audio();
     constructor(@Inject(MAT_DIALOG_DATA) public data: string) {
-        this.witchTemplate = data;
+        this.templateName = data;
     }
 
     ngOnInit(): void {
-        if (this.witchTemplate === 'endGame') {
+        if (this.templateName === 'endGame') {
             this.playWinSound();
         }
     }

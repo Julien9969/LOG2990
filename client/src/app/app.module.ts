@@ -16,7 +16,7 @@ import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
 import { GameCreationFormComponent } from './components/game-creation-form/game-creation-form.component';
 import { ImageDifferencePopupComponent } from './components/image-difference-popup/image-difference-popup.component';
-import { NameFormDialogComponent } from './components/name-form-dialog/name-form-dialog.component';
+import { MatchMakingDialogComponent } from './components/match-making-dialog/match-making-dialog.component';
 import { PopupDialogComponent } from './components/popup-dialog/popup-dialog.component';
 import { UploadImageSquareComponent } from './components/upload-image-square/upload-image-square.component';
 import { ConfigurationGameComponent } from './pages/configuration-game-page/configuration-game-page.component';
@@ -42,7 +42,7 @@ import { SoloGamePageComponent } from './pages/solo-game-page/solo-game-page.com
         SoloGamePageComponent,
         PopupDialogComponent,
         ErrorDuringLoadingComponent,
-        NameFormDialogComponent,
+        MatchMakingDialogComponent,
         PlayImageComponent,
         GameCreationPageComponent,
         ConfigurationGameComponent,
@@ -61,7 +61,7 @@ import { SoloGamePageComponent } from './pages/solo-game-page/solo-game-page.com
         MatFormFieldModule,
     ],
     providers: [],
-    entryComponents: [PopupDialogComponent, NameFormDialogComponent],
+    entryComponents: [PopupDialogComponent, MatchMakingDialogComponent],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

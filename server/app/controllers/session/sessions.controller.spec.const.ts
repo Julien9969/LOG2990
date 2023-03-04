@@ -6,7 +6,8 @@ export const exampleCoordinate = {
     y: 13,
 };
 export const exampleSession = new Session();
-exampleSession.gameID = 12;
+// to be reviewed to see if MongoDB ObjectId must be mocked for gameID
+exampleSession.gameID = '12';
 exampleSession.id = 15;
 exampleSession.nGuesses = 0;
 exampleSession.nPenalties = 0;

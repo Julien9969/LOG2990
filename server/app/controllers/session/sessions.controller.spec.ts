@@ -48,16 +48,16 @@ describe('SessionController tests', () => {
     });
     it('deleteGame should call delete', async () => {
         const spy = jest.spyOn(controller['sessionService'], 'delete').mockImplementation(() => {});
-        controller.deleteGame('12');
+        await controller.deleteGame('12');
         expect(spy).toHaveBeenCalled();
     });
-    it('newGame should throw an error if it doesnt find an image', () => {
+    it('newGame should throw an error if it doesnt find an image', async () => {
         const spy = jest.spyOn(controller['gameService'], 'findById').mockImplementation(() => {
             return null;
         });
         let error: HttpException;
         try {
-            controller.newGame('12');
+            await controller.newGame('12');
         } catch (e) {
             error = e;
         }
@@ -65,24 +65,16 @@ describe('SessionController tests', () => {
         expect(error.getStatus()).toEqual(HttpStatus.NOT_FOUND);
         expect(error.getResponse()).toEqual('Jeu non existant.');
     });
-    it('newGame should call create if valid', () => {
-        const spy1 = jest.spyOn(controller['gameService'], 'findById').mockImplementation(() => {
-            return exampleGame;
-        });
-        const spy2 = jest.spyOn(controller['sessionService'], 'create').mockImplementation(() => {
-            return 12;
-        });
-        controller.newGame('12');
+    it('newGame should call create if valid', async () => {
+        const spy1 = jest.spyOn(controller['gameService'], 'findById').mockReturnValue(Promise.resolve(exampleGame));
+        const spy2 = jest.spyOn(controller['sessionService'], 'create').mockReturnValue(12);
+        await controller.newGame('12');
         expect(spy1).toHaveBeenCalled();
         expect(spy2).toHaveBeenCalled();
     });
     it('guess should call findById and tryGuess', () => {
-        const spy1 = jest.spyOn(controller['sessionService'], 'findById').mockImplementation(() => {
-            return exampleSession;
-        });
-        const spy2 = jest.spyOn(Session.prototype, 'tryGuess').mockImplementation(() => {
-            return null;
-        });
+        const spy1 = jest.spyOn(controller['sessionService'], 'findById').mockReturnValue(exampleSession);
+        const spy2 = jest.spyOn(Session.prototype, 'tryGuess').mockReturnValue(null);
 
         controller.guess('12', exampleCoordinate);
         expect(spy1).toHaveBeenCalled();
@@ -124,7 +116,7 @@ describe('SessionController tests', () => {
         const spy = jest.spyOn(controller['sessionService'], 'findById').mockImplementation(() => {
             return exampleSession;
         });
-        const result = controller.getSession('12');
+        const result = controller.getSession(12);
 
         expect(spy).toHaveBeenCalled();
         expect(result).toEqual(exampleSession);
@@ -136,7 +128,7 @@ describe('SessionController tests', () => {
         });
         let error: HttpException;
         try {
-            controller.getSession('12');
+            controller.getSession(12);
         } catch (e) {
             error = e;
         }

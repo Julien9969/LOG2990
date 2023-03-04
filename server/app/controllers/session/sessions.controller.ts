@@ -26,8 +26,8 @@ export class SessionController {
      * @returns La session recherchée
      */
     @Get(':id')
-    getSession(@Param('id') id: string) {
-        const sessionId = Utils.convertToInt(id);
+    getSession(@Param('id') id: number) {
+        const sessionId = id;
         const session = this.sessionService.findById(sessionId);
         if (!session) {
             throw new HttpException('Session non existante.', HttpStatus.NOT_FOUND);
@@ -42,9 +42,8 @@ export class SessionController {
      * @returns L'identifiant de la session créée
      */
     @Post('/:gameId')
-    newGame(@Param('gameId') stringId: string) {
-        const gameId = Utils.convertToInt(stringId);
-        if (!this.gameService.findById(gameId)) {
+    async newGame(@Param('gameId') gameId: string) {
+        if (!(await this.gameService.findById(gameId))) {
             throw new HttpException('Jeu non existant.', HttpStatus.NOT_FOUND);
         }
         const sessionId = this.sessionService.create(gameId);

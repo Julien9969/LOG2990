@@ -1,31 +1,41 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { CommunicationService } from '@app/services/communication.service';
 import { of } from 'rxjs';
-import { NameFormDialogComponent } from './name-form-dialog.component';
+import { MatchMakingDialogComponent } from './match-making-dialog.component';
+
+class MockRouter {
+    events = of(new NavigationEnd(0, 'http://localhost:4200/', 'http://localhost:4200/'));
+    navigateByUrl(url: string) {
+        return url;
+    }
+}
 
 describe('NameFormDialogComponent', () => {
-    let component: NameFormDialogComponent;
-    let fixture: ComponentFixture<NameFormDialogComponent>;
-    let routerSpy: jasmine.SpyObj<Router>;
+    let component: MatchMakingDialogComponent;
+    let fixture: ComponentFixture<MatchMakingDialogComponent>;
+    const routerSpy: MockRouter = new MockRouter();
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
+    let dialogRefSpy: jasmine.SpyObj<MatDialogRef<MatchMakingDialogComponent>>;
 
     beforeEach(async () => {
-        routerSpy = jasmine.createSpyObj('Router', ['navigateByUrl']);
-        communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['customPost', 'sendCoordinates']);
+        // routerSpy = jasmine.createSpyObj('RouterMock', ['navigateByUrl', 'events']);
 
+        communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['customPost', 'sendCoordinates']);
+        dialogRefSpy = jasmine.createSpyObj('MatDialogRefMock', ['close']);
         communicationServiceSpy.customPost.and.returnValue(of(0));
 
         await TestBed.configureTestingModule({
-            declarations: [NameFormDialogComponent],
+            declarations: [MatchMakingDialogComponent],
             imports: [MatDialogModule, MatFormFieldModule, FormsModule, BrowserAnimationsModule, ReactiveFormsModule, MatInputModule],
             providers: [
-                { provide: MAT_DIALOG_DATA, useValue: 10 },
+                { provide: MAT_DIALOG_DATA, useValue: { id: 10, isSolo: true } },
+                { provide: MatDialogRef, useValue: dialogRefSpy },
                 { provide: Router, useValue: routerSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
             ],
@@ -33,7 +43,7 @@ describe('NameFormDialogComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(NameFormDialogComponent);
+        fixture = TestBed.createComponent(MatchMakingDialogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -44,7 +54,7 @@ describe('NameFormDialogComponent', () => {
 
     it('component should get the id passed in the data', () => {
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        expect(component.gameId).toEqual(10);
+        expect(component.gameInfo.id).toEqual(10);
     });
 
     it('nameFormControl should valid correct name', () => {
@@ -71,8 +81,9 @@ describe('NameFormDialogComponent', () => {
         expect(component.nameFormControl.valid).toBeFalsy();
     });
 
-    it('navigateToGame should call router.navigateByUrl', () => {
-        component.navigateToGame();
+    it('navigateToSoloGame should call router.navigateByUrl', () => {
+        spyOn(routerSpy, 'navigateByUrl');
+        component.navigateToSoloGame();
         expect(routerSpy.navigateByUrl).toHaveBeenCalled();
     });
 });

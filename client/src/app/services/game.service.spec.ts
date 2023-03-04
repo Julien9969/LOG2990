@@ -13,7 +13,7 @@ describe('GameService', () => {
         });
         service = TestBed.inject(GameService);
         gameStub = {
-            id: 0,
+            id: '0',
             name: '',
             imageMain: 0,
             imageAlt: 0,
