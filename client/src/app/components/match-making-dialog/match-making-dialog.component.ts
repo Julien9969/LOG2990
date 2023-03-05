@@ -134,5 +134,11 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
             this.dialogInfos.template = 'waitingRoom';
             this.dialogInfos.message = "l'adversaire précendent a quitté la recherche";
         });
+
+        this.matchMaking.socketService.on('roomReachable', () => {
+            if (this.dialogInfos.template === 'waitingRoom') {
+                this.joinGame();
+            }
+        });
     }
 }

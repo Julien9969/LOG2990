@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any -- need to use any to spy on private method */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { Test, TestingModule } from '@nestjs/testing';
@@ -5,7 +6,7 @@ import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gatew
 import { Logger } from '@nestjs/common';
 import { SinonStubbedInstance, createStubInstance, /* , match,*/ stub } from 'sinon';
 import { Socket, Server, BroadcastOperator } from 'socket.io';
-import { MatchMakingEvents } from './match-making.gateway.events';
+import { MatchMakingEvents } from '@app/gateway/match-making/match-making.gateway.events';
 
 describe('MatchmakingGateway', () => {
     let gateway: MatchmakingGateway;
@@ -229,6 +230,9 @@ describe('MatchmakingGateway', () => {
                 expect(client).toEqual(socket);
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            jest.spyOn(MatchmakingGateway.prototype as any, 'mergeRoomsIfPossible').mockImplementation(() => {});
+
             socket.to.returns({
                 emit: (event: string, playerName: string) => {
                     expect(event).toEqual(MatchMakingEvents.RejectOtherPlayer);
@@ -238,10 +242,65 @@ describe('MatchmakingGateway', () => {
 
             expect(gateway['waitingRooms']).toHaveLength(0);
             gateway.rejectOpponent(socket, { gameId: 124, playerName: 'name' });
+            expect(gateway.mergeRoomsIfPossible).toHaveBeenCalled();
             expect(gateway['waitingRooms']).toHaveLength(1);
             expect(socket.to.calledWith(roomId)).toBeTruthy();
             expect(gateway['removeOtherPlayer']).toHaveBeenCalled();
         });
+    });
+
+    it('mergeRoomsIfPossible should merge the rooms of a same game', () => {
+        const gameId = 124;
+        const roomId = 'gameRoom-124-123456789';
+        const otherRoomId = 'gameRoom-124-987654321';
+        const otherClient = createStubInstance<Socket>(Socket);
+
+        gateway['waitingRooms'].push([gameId, roomId]);
+        gateway['waitingRooms'].push([gameId, otherRoomId]);
+
+        socket.join(roomId);
+        otherClient.join(otherRoomId);
+
+        socket.to.returns({
+            emit: (event: string) => {
+                expect(event).toEqual(MatchMakingEvents.RoomReachable);
+            },
+        } as BroadcastOperator<unknown, unknown>);
+        stub(gateway, 'connectedClients').value(
+            new Map([
+                ['1', socket],
+                ['2', otherClient],
+            ]),
+        );
+        stub(gateway, 'serverRooms').value(
+            new Map([
+                [roomId, new Set(['1'])],
+                [otherRoomId, new Set(['2'])],
+            ]),
+        );
+
+        expect(gateway['waitingRooms']).toHaveLength(2);
+        gateway['mergeRoomsIfPossible'](socket, gameId);
+        expect(gateway['waitingRooms']).toHaveLength(1);
+        expect(otherClient.leave.calledWith(otherRoomId)).toBeTruthy();
+        expect(otherClient.join.calledWith(roomId)).toBeTruthy();
+    });
+
+    it('mergeRoomsIfPossible should not merge the rooms of a different game', () => {
+        const gameId = 124;
+        const roomId = 'gameRoom-124-123456789';
+        const otherRoomId = 'gameRoom-125-987654321';
+        const otherClient = createStubInstance<Socket>(Socket);
+
+        gateway['waitingRooms'].push([gameId, roomId]);
+        gateway['waitingRooms'].push([125, otherRoomId]);
+
+        socket.join(roomId);
+        otherClient.join(otherRoomId);
+
+        expect(gateway['waitingRooms']).toHaveLength(2);
+        gateway['mergeRoomsIfPossible'](socket, gameId);
+        expect(gateway['waitingRooms']).toHaveLength(2);
     });
 
     it('afterInit should log "Matchmaking gateway initialized"', () => {

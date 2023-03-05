@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+// TODO : DELETE
 // import { ChatGateway } from '../chat/chat.gateway';
 // import { MatchmakingGateway } from './match-making/match-making.gateway';
 // import { SessionGateway } from './session/session.gateway';
@@ -9,6 +10,7 @@ import { Server, Socket } from 'socket.io';
 @Injectable()
 export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     @WebSocketServer() private server: Server;
+    // TODO : DELETE
     // chatGateway: ChatGateway;
     // matchMaking: MatchmakingGateway;
     // session: SessionGateway;

@@ -32,7 +32,7 @@ export class SessionGateway implements OnGatewayDisconnect {
             }
         });
     }
-
+    // TODO : DELETE
     // afterInit() {
     //     setInterval(() => {
     //         this.emitTime();

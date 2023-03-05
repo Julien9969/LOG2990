@@ -1,7 +1,3 @@
-<!-- <div mat-dialog-content>
-    <ng-container #container *ngTemplateOutlet="templateName === 'nameForm' ? nameForm : templateName === 'waitingRoom' ? waitingRoom : acceptPairing" ></ng-container>
-</div> -->
-
 <div *ngIf="dialogInfos.template === 'nameForm'" #nameForm>
     <h1 id="title" mat-dialog-title>Entrez votre nom.</h1>
         <form class="name-form">
