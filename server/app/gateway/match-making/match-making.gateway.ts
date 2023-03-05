@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { MatchMakingEvents } from './match-making.gateway.events';
+import { MatchMakingEvents } from '@app/gateway/match-making/match-making.gateway.events';
 
 @WebSocketGateway({ cors: true })
 export class MatchmakingGateway implements OnGatewayInit {
@@ -32,7 +32,7 @@ export class MatchmakingGateway implements OnGatewayInit {
         client.join(roomId);
         this.logger.log(`Game room created : ${roomId}`);
 
-        this.logger.log(this.waitingRooms);
+        this.logger.log('Current games rooms : ' + this.waitingRooms);
     }
 
     /**
@@ -60,15 +60,13 @@ export class MatchmakingGateway implements OnGatewayInit {
      */
     @SubscribeMessage(MatchMakingEvents.LeaveWaitingRoom)
     leaveWaitingRoom(client: Socket, gameId: number) {
-        this.logger.log(`Client ${client.id} Leave room`);
-
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 if (this.serverRooms.get(roomId).size < 2) {
                     this.waitingRooms = this.removeThisRooms(roomId);
-                    this.logger.log('was alone close Room ' + this.waitingRooms);
+                    this.logger.log(`${client.id} : leave and was alone, close this room : ` + this.waitingRooms);
                 } else {
-                    this.logger.log('was not alone close Room ' + this.waitingRooms);
+                    this.logger.log(`${client.id} : leave and was not alone, room still exist : ` + this.waitingRooms);
                     client.to(roomId).emit(MatchMakingEvents.OpponentLeft);
                     this.waitingRooms.push([gameId, roomId]);
                 }
@@ -85,13 +83,13 @@ export class MatchmakingGateway implements OnGatewayInit {
      */
     @SubscribeMessage(MatchMakingEvents.JoinRoom)
     joinRoom(client: Socket, playerInfo: { gameId: number; playerName: string }) {
-        this.logger.log(`Client ${client.id} joined room`);
         const gameRooms = this.filterRoomsByGameId(playerInfo.gameId);
         if (gameRooms.length > 0) {
             const roomId = gameRooms[0][1];
             client.join(roomId);
             client.to(roomId).emit(MatchMakingEvents.OpponentJoined, playerInfo.playerName);
             this.waitingRooms = this.removeThisRooms(roomId);
+            this.logger.log(`Client ${client.id} joined room : ${roomId}`);
         }
     }
 
@@ -106,12 +104,12 @@ export class MatchmakingGateway implements OnGatewayInit {
     @SubscribeMessage(MatchMakingEvents.AcceptOpponent)
     acceptOpponent(client: Socket, playerName: string) {
         let accepted = false;
-        this.logger.log(`Client ${client.id} accepted opponent`);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 if (this.serverRooms.get(roomId).size === 2) {
                     client.to(roomId).emit(MatchMakingEvents.AcceptOtherPlayer, playerName);
                     accepted = true;
+                    this.logger.log(`Client ${client.id} accepted opponent`);
                 }
             }
         });
@@ -126,7 +124,7 @@ export class MatchmakingGateway implements OnGatewayInit {
      */
     @SubscribeMessage(MatchMakingEvents.RejectOpponent)
     rejectOpponent(client: Socket, playerInfo: { gameId: number; playerName: string }) {
-        this.logger.log(`Client ${client.id} rejected opponent`);
+        this.logger.log(`Client : ${client.id} rejected opponent`);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 client.to(roomId).emit(MatchMakingEvents.RejectOtherPlayer, playerInfo.playerName);
@@ -134,6 +132,20 @@ export class MatchmakingGateway implements OnGatewayInit {
                 this.waitingRooms.push([playerInfo.gameId, roomId]);
             }
         });
+        this.mergeRoomsIfPossible(client, playerInfo.gameId);
+    }
+
+    mergeRoomsIfPossible(client: Socket, gameId: number) {
+        const gameRooms = this.filterRoomsByGameId(gameId);
+        if (gameRooms.length > 1) {
+            this.serverRooms.get(gameRooms[1][1]).forEach((socketId) => {
+                this.connectedClients.get(socketId).leave(gameRooms[1][1]);
+                this.connectedClients.get(socketId).join(gameRooms[0][1]);
+            });
+            this.waitingRooms = this.removeThisRooms(gameRooms[1][1]);
+            client.to(gameRooms[0][1]).emit(MatchMakingEvents.RoomReachable);
+            this.logger.log(`Rooms merged : ${gameRooms[0][1]} and ${gameRooms[1][1]}`);
+        }
     }
 
     afterInit() {

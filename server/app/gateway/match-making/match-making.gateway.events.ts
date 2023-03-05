@@ -9,4 +9,5 @@ export enum MatchMakingEvents {
     OpponentJoined = 'opponentJoined',
     AcceptOtherPlayer = 'acceptOtherPlayer',
     RejectOtherPlayer = 'rejectOtherPlayer',
+    RoomReachable = 'roomReachable',
 }
