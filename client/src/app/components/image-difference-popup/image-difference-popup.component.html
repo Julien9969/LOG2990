@@ -8,7 +8,7 @@
         </div>   
     </div>
     <div class="buttonContainer">
-        <button type="button cancel" (click)="this.cancelGamCreation.emit()">Annuler</button>
+        <button type="button cancel" (click)="this.cancelGameCreation.emit()">Annuler</button>
         <button *ngIf="!isPressed" type="button approve" (click)="this.dispatchGameCreationRequest()">Créer le jeu</button>
     </div>
 </div>

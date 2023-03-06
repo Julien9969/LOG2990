@@ -1,13 +1,28 @@
 <main>
-    <h2>{{this.title}}</h2>
     <div class="imgContainer">
-        <label *ngIf="!this.imageURL" class="abs-center" for="image-input-{{this.id}}">
-            <mat-icon class="uploadImage">photo_camera</mat-icon>
-            <p>téléverser l'image</p>
-            <div>l'image doit suivre le format<br>BMP 24-bit 640x480</div>
-        </label>
-        <img *ngIf="this.imageURL" id="image-display-{{this.id}}" [src]="getImageURL()"/>
+        <canvas #drawCanvas height="480" width="640"
+        (mousedown)="onMouseDown($event)" 
+        (mousemove)="onMouseMove($event)"
+        ></canvas>
     </div>
-    <button type="button" (click)="dispatchClearImage()">Retirer l"image</button>
-    <input #imageInput id="image-input-{{this.id}}" type="file" (input)="dispatchUploadEvent(imageInput)" accept="image/BMP" class="invisible"/>
+
+    <span class="horizontal-bar">
+        <span class="tooltip">
+            <label for="imageInput-{{title}}" ><mat-icon>upload</mat-icon></label>
+            <span class="tooltiptext">Téléverser une image</span>
+            <input #imageInput class="hidden" id="imageInput-{{title}}" type="file" (input)="loadBackground(imageInput)" accept="image/BMP"/>
+        </span>
+        <span class="tooltip">
+            <mat-icon (click)="clearBackground()">close</mat-icon>
+            <span class="tooltiptext">Retirer l'arrière-plan</span>
+        </span>
+        <span class="tooltip">
+            <mat-icon (click)="clearForeground.emit()">layers_clear</mat-icon>
+            <span class="tooltiptext">Effacer l'avant-plan</span>
+        </span>
+        <span class="tooltip">
+            <mat-icon (click)="replaceForeground.emit()">outbox</mat-icon>
+            <span class="tooltiptext">Remplacer avec l'autre avant-plan</span>
+        </span>
+    </span>
 </main>

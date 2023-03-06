@@ -169,12 +169,20 @@ export class DifferenceDetectionService {
     }
 
     private computeRawDifferences() {
-        const rawDifferences = Jimp.diff(this.mainImage, this.altImage, 0); // threshold ranges 0-1 (default: 0.1)
-
         // Calcule les pixels différents entre les 2 images, en noir sur blanc
-        rawDifferences.image.greyscale().contrast(1);
-        this.rawDiffImage = rawDifferences.image;
-        this.diffProportion = rawDifferences.percent;
+        this.rawDiffImage = new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT, WHITE_RGBA);
+        let differencePixelCount = 0;
+
+        this.rawDiffImage.scan(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT, (x: number, y: number) => {
+            // Operation bitwise ( | 0xFF ) qui permet d'ignorer la composante de transparence alpha,
+            // qui n'est pas utilisée dans les images venues du client
+            // eslint-disable-next-line @typescript-eslint/no-magic-numbers, no-bitwise
+            if ((this.mainImage.getPixelColor(x, y) | 0xff) !== (this.altImage.getPixelColor(x, y) | 0xff)) {
+                this.rawDiffImage.setPixelColor(BLACK_RGBA, x, y);
+                differencePixelCount++;
+            }
+        });
+        this.diffProportion = differencePixelCount / (IMAGE_WIDTH * IMAGE_HEIGHT);
     }
 
     private saveDifferenceLists(gameId: string) {

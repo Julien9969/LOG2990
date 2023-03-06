@@ -64,6 +64,10 @@ export const IMAGE_HEIGHT = 480;
 export const BIT_PER_BYTE = 8;
 export const PERMITTED_BITE_SIZE = 24;
 
+// for draw.service
+
+export const DEFAULT_TOOL_SIZE = 5;
+
 // for tests
 
 export const PATH_TO_VALID_IMAGE = '/assets/test-assets/image_empty.bmp';

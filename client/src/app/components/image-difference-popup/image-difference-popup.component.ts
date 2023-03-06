@@ -10,7 +10,7 @@ export class ImageDifferencePopupComponent {
     @Input() imgDifferencesUrl: string;
     @Input() nbDifferences: number | undefined;
     @Input() isHard: boolean;
-    @Output() cancelGamCreation: EventEmitter<undefined> = new EventEmitter<undefined>();
+    @Output() cancelGameCreation: EventEmitter<undefined> = new EventEmitter<undefined>();
     @Output() createGame: EventEmitter<undefined> = new EventEmitter<undefined>();
 
     isPressed: boolean = false;

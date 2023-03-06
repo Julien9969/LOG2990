@@ -13,6 +13,7 @@ import { AppRoutingModule } from '@app/modules/app-routing.module';
 import { AppMaterialModule } from '@app/modules/material.module';
 import { AppComponent } from '@app/pages/app/app.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
+import { DrawBottomBarComponent } from './components/draw-bottom-bar/draw-bottom-bar.component';
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
 import { GameCreationFormComponent } from './components/game-creation-form/game-creation-form.component';
 import { ImageDifferencePopupComponent } from './components/image-difference-popup/image-difference-popup.component';
@@ -47,6 +48,7 @@ import { SoloGamePageComponent } from './pages/solo-game-page/solo-game-page.com
         GameCreationPageComponent,
         ConfigurationGameComponent,
         ImageDifferencePopupComponent,
+        DrawBottomBarComponent,
     ],
     imports: [
         AppMaterialModule,
