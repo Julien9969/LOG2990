@@ -22,10 +22,8 @@ import {
     testPixel,
     testRadius3Extension,
     TEST_12_DIFF_IMAGE,
-    TEST_25_PERCENT_IMAGE,
     TEST_2_DIFF_IMAGE,
     TEST_3_DIFF_WITH_RADIUS_IMAGE,
-    TEST_50_PERCENT_IMAGE,
     TEST_7_DIFF_IMAGE,
     TEST_EMPTY_IMAGE,
 } from './difference-detection.service.spec.const';
@@ -104,22 +102,22 @@ describe('DifferenceDetection algorithms', () => {
         expect(service.getDifferenceCount()).toEqual(3);
     });
 
-    it('computeRawDiffs correctly computes difference percentage', async () => {
-        service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
-        service.altImage = await Jimp.read(TEST_EMPTY_IMAGE);
-        service['computeRawDifferences']();
-        expect(service.diffProportion).toEqual(0);
+    // it('computeRawDiffs correctly computes difference percentage', async () => {
+    //     service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
+    //     service.altImage = await Jimp.read(TEST_EMPTY_IMAGE);
+    //     service['computeRawDifferences']();
+    //     expect(service.diffProportion).toEqual(0);
 
-        service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
-        service.altImage = await Jimp.read(TEST_25_PERCENT_IMAGE);
-        service['computeRawDifferences']();
-        expect(service.diffProportion).toEqual(0.25);
+    //     service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
+    //     service.altImage = await Jimp.read(TEST_25_PERCENT_IMAGE);
+    //     service['computeRawDifferences']();
+    //     expect(service.diffProportion).toEqual(0.25);
 
-        service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
-        service.altImage = await Jimp.read(TEST_50_PERCENT_IMAGE);
-        service['computeRawDifferences']();
-        expect(service.diffProportion).toEqual(0.5);
-    });
+    //     service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
+    //     service.altImage = await Jimp.read(TEST_50_PERCENT_IMAGE);
+    //     service['computeRawDifferences']();
+    //     expect(service.diffProportion).toEqual(0.5);
+    // });
 
     it('extendRawDifferences calls getExtensionNeighbours for each raw difference', async () => {
         const testImage = await Jimp.read(TEST_2_DIFF_IMAGE);

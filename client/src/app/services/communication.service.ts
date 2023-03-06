@@ -113,7 +113,7 @@ export class CommunicationService {
         const formData: FormData = new FormData();
         formData.append('file', imageToSave, imageToSave.name);
         const headers = new HttpHeaders();
-        headers.append('content-type', 'image/bmp');
+        headers.append('content-type', 'image/png');
         headers.append('Accept', 'application/json');
 
         const response = await this.postRequest('images', formData, headers);

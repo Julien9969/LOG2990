@@ -219,7 +219,7 @@ describe('Image Service tests', () => {
     });
 
     it('getPATH should return the correct path', () => {
-        expect(imageService.getPath(12)).toEqual('assets/gameImages/12.bmp');
+        expect(imageService.getPath(12)).toEqual('assets/gameImages/12.png');
     });
     it('imageExists should return true if the image is in the list of all images', () => {
         jest.spyOn(imageService, 'getAllImageIds').mockImplementation(() => {

@@ -1,11 +1,9 @@
 .formContainer {
-    margin: 4vh;
-    width: 100%;
-
-    * {
-        display: block;
-        margin-left: 50%;
-    }
+    // height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    user-select: none;
 }
 
 .message {
@@ -83,10 +81,17 @@ button {
 #middleMenu {
     font-size: medium;
     min-width: 250px;
-    width: 20vw;
-    justify-content: center;
+    width: 15vw;
+    // justify-content: center;
     > * {
         display: block;
         margin: 30px auto 30px auto;
     }
+}
+
+.popup {
+    overflow: hidden;
+    position: fixed;
+    top: 25vh;
+    width: 100%;
 }

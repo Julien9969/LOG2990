@@ -1,6 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Input } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { DrawBottomBarComponent } from '@app/components/draw-bottom-bar/draw-bottom-bar.component';
+import { UploadImageSquareComponent } from '@app/components/upload-image-square/upload-image-square.component';
 import {
     ALLOWED_RADIUS,
     ASCII_END_LOWERCASE_LETTERS,
@@ -18,8 +20,11 @@ import {
     // eslint-disable-next-line prettier/prettier
     TIME_BEFORE_REDIRECT
 } from '@app/constants/utils-constants';
+import { ActiveCanvas } from '@app/interfaces/active-canvas';
 import { CommunicationService } from '@app/services/communication.service';
+import { DrawService } from '@app/services/draw.service';
 import ValidateImageService from '@app/services/validate-image.service';
+import { Coordinate } from '@common/coordinate';
 
 @Component({
     selector: 'app-game-creation-form',
@@ -27,8 +32,11 @@ import ValidateImageService from '@app/services/validate-image.service';
     styleUrls: ['./game-creation-form.component.scss'],
     providers: [CommunicationService, ValidateImageService],
 })
-export class GameCreationFormComponent {
+export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
     @Input() id: string;
+    @ViewChild('mainImageSquare') mainImageSquare: UploadImageSquareComponent;
+    @ViewChild('altImageSquare') altImageSquare: UploadImageSquareComponent;
+    @ViewChild('drawBar') drawBar: DrawBottomBarComponent;
 
     errorMessage: string;
     errorMessageTimeout: ReturnType<typeof setTimeout>;
@@ -38,12 +46,7 @@ export class GameCreationFormComponent {
     title: string;
     differenceRadius: number = DEFAULT_RADIUS;
 
-    originalImage: File | null = null;
-    originalImageURL: string | undefined;
     originalImageId: number | undefined;
-
-    altImage: File | null = null;
-    altImageURL: string | undefined;
     altImageId: number | undefined;
 
     isValid: boolean = false;
@@ -51,8 +54,18 @@ export class GameCreationFormComponent {
     nbDifferences: number | undefined;
     isHard: boolean;
 
-    constructor(readonly communication: CommunicationService, readonly validateImage: ValidateImageService, readonly router: Router) {}
+    shiftPressed: boolean = false;
 
+    constructor(readonly drawService: DrawService, readonly communication: CommunicationService, readonly router: Router) {}
+
+    ngAfterViewInit() {
+        this.drawService.mainImageComponent = this.mainImageSquare;
+        this.drawService.altImageComponent = this.altImageSquare;
+        document.addEventListener('keydown', this.keyBinds);
+        document.addEventListener('keyup', this.shiftUnBind);
+    }
+
+    // TODO: BIG BUT LATER: maybe refactor image validation + game creation to game creation service?
     async submitNewGame() {
         if (!(this.differenceRadius && this.originalImageId && this.altImageId)) {
             this.showErrorMessage('Erreur: informations manquantes pour créer un jeu');
@@ -62,6 +75,8 @@ export class GameCreationFormComponent {
             this.showErrorMessage(`Erreur: veuillez entrer un titre valide [Permit: a-z, A-Z, 0-9, espace et longueur max: ${MAX_TITLE_LENGTH}]`);
             return;
         }
+        // TODO: BIG BUT LATER: Change server flow, resend both images in create game
+
         const game = {
             name: this.title,
             radius: this.differenceRadius,
@@ -80,45 +95,44 @@ export class GameCreationFormComponent {
         }
     }
 
-    async validateImageDifferences() {
-        if (this.originalImage !== null && this.altImage !== null) {
-            let result;
-            let originalImageId;
-            let altImageId;
-            try {
-                originalImageId = await this.communication.saveImage(this.originalImage);
-                altImageId = await this.communication.saveImage(this.altImage);
-                result = await this.communication.compareImages(originalImageId, altImageId, this.differenceRadius);
-            } catch (errorResponse: unknown) {
-                if (errorResponse instanceof HttpErrorResponse) {
-                    this.showErrorMessage('Erreur: ' + errorResponse.error.message);
-                    this.clearOriginalImage();
-                    this.clearAltImage();
-                }
-                return;
-            }
-            if (!result.isValid) {
-                this.showErrorMessage('Erreur: Nombre de différences invalides');
-                this.clearOriginalImage();
-                this.clearAltImage();
-                return;
-            }
-            this.isValid = result.isValid;
-            this.originalImageId = originalImageId;
-            this.altImageId = altImageId;
-            this.isHard = result.isHard;
-            this.differencesImageUrl = this.communication.getImageURL(result.differenceImageId);
-            this.nbDifferences = result.differenceCount;
-            this.showSuccessMessage('Super, ton jeu est valide');
-        } else this.showErrorMessage("Erreur: Veuillez entrer 2 images pour commencer l'analyse");
+    async compareImages() {
+        const originalImage = await this.mainImageSquare.getImageFile();
+        const altImage = await this.altImageSquare.getImageFile();
+
+        this.validateImageDifferences(originalImage, altImage);
     }
 
-    async validateUploadedImage(imgInput: HTMLInputElement | File): Promise<boolean> {
-        if (!(await this.validateImage.validateImage(imgInput))) {
-            this.showErrorMessage('Erreur: Veuillez vous assurer que vos images respectent le format: BMP 24-bit 640x480');
-            return false;
+    async validateImageDifferences(originalImage: File, altImage: File) {
+        let result;
+        let originalImageId;
+        let altImageId;
+        try {
+            // TODO: BIG BUT LATER: Change server flow to send both images together in compareImages AND resend in create game
+            originalImageId = await this.communication.saveImage(originalImage);
+            altImageId = await this.communication.saveImage(altImage);
+            result = await this.communication.compareImages(originalImageId, altImageId, this.differenceRadius);
+        } catch (errorResponse: unknown) {
+            if (errorResponse instanceof HttpErrorResponse) {
+                const errMessage = errorResponse.error.message ? errorResponse.error.message : 'Le serveur ne répond pas.';
+                this.showErrorMessage('Erreur: ' + errMessage);
+            }
+            return;
         }
-        return true;
+        if (!result.isValid) {
+            this.showErrorMessage('Erreur: Nombre de différences invalides');
+            return;
+        }
+        this.isValid = result.isValid;
+        this.originalImageId = originalImageId;
+        this.altImageId = altImageId;
+        this.isHard = result.isHard;
+        this.differencesImageUrl = this.communication.getImageURL(result.differenceImageId);
+        this.nbDifferences = result.differenceCount;
+        this.showSuccessMessage('Super, ton jeu est valide');
+    }
+
+    showInvalidImageMessage() {
+        this.showErrorMessage('Erreur: Veuillez vous assurer que vos images respectent le format: BMP 24-bit 640x480');
     }
 
     showSuccessMessage(message: string) {
@@ -140,40 +154,9 @@ export class GameCreationFormComponent {
         }, ERROR_MESSAGE_DISPLAYED_TIME);
     }
 
-    clearOriginalImage() {
-        this.originalImage = null;
-        this.originalImageURL = undefined;
-        this.originalImageId = undefined;
-        this.isValid = false;
-    }
-    clearAltImage() {
-        this.altImage = null;
-        this.altImageURL = undefined;
-        this.altImageId = undefined;
-        this.isValid = false;
-    }
-
-    async handleOriginalImageUpload(image: File) {
-        if (await this.validateUploadedImage(image)) {
-            this.originalImage = image;
-            this.originalImageURL = URL.createObjectURL(image);
-            this.isValid = false;
-        }
-    }
-    async handleAltImageUpload(image: File) {
-        if (await this.validateUploadedImage(image)) {
-            this.altImage = image;
-            this.altImageURL = URL.createObjectURL(image);
-            this.isValid = false;
-        }
-    }
-
     async setBothImages(imgInput: HTMLInputElement) {
-        if (imgInput.files?.length) {
-            this.handleAltImageUpload(imgInput.files[0]);
-            this.handleOriginalImageUpload(imgInput.files[0]);
-        }
-        imgInput.value = '';
+        this.mainImageSquare.loadBackground(imgInput);
+        this.altImageSquare.loadBackground(imgInput);
     }
     setTitle(title: string) {
         this.title = title;
@@ -203,5 +186,66 @@ export class GameCreationFormComponent {
             this.errorMessage = `Error: invalid difference radius entered\n (please use the slider) ${Number(index)}`;
         }
         this.isValid = false;
+    }
+
+    keyBinds = (event: KeyboardEvent) => {
+        this.shiftPressed = event.shiftKey;
+        if (event.ctrlKey && event.key.toLowerCase() === 'z') {
+            if (event.shiftKey) this.redo();
+            else this.undo();
+        }
+    };
+
+    shiftUnBind = (event: KeyboardEvent) => {
+        this.shiftPressed = event.shiftKey;
+    };
+
+    undo() {
+        this.drawService.undo();
+    }
+
+    redo() {
+        this.drawService.redo();
+    }
+
+    replaceMainForeground() {
+        this.drawService.replaceForeground(ActiveCanvas.Main);
+    }
+
+    replaceAltForeground() {
+        this.drawService.replaceForeground(ActiveCanvas.Alt);
+    }
+
+    clearMainForeground() {
+        this.drawService.clearForeground(ActiveCanvas.Main);
+    }
+
+    clearAltForeground() {
+        this.drawService.clearForeground(ActiveCanvas.Alt);
+    }
+
+    ngOnDestroy() {
+        document.removeEventListener('keydown', this.keyBinds);
+        document.removeEventListener('keyup', this.shiftUnBind);
+    }
+
+    mainCanvasMouseDown(coord: Coordinate) {
+        this.drawService.startAction(coord, ActiveCanvas.Main);
+    }
+
+    altCanvasMouseDown(coord: Coordinate) {
+        this.drawService.startAction(coord, ActiveCanvas.Alt);
+    }
+
+    mainCanvasMouseMove(coord: Coordinate) {
+        this.drawService.onMouseMove(coord, ActiveCanvas.Main, this.shiftPressed);
+    }
+
+    altCanvasMouseMove(coord: Coordinate) {
+        this.drawService.onMouseMove(coord, ActiveCanvas.Alt, this.shiftPressed);
+    }
+
+    onMouseUp() {
+        this.drawService.cancelAction();
     }
 }

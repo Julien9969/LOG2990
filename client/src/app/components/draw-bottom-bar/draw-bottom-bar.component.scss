@@ -1,0 +1,50 @@
+span.horizontal-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    p {
+        background-color: rgb(50, 50, 50);
+        color: #fff;
+        padding: 8px;
+        border-radius: 10px;
+    }
+    mat-icon {
+        transform: translate(0, -25%)
+    }
+    input {
+        margin: 0 4vh;
+        transform: translate(0, -75%)
+    }
+}
+
+span.vertical-bar {
+    height: 10vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+mat-icon {
+    font-size: 44px;
+    padding: 20px;
+    cursor: pointer;
+    // box-shadow: 0px 0px 10px 2px rgb(215 25 109 / 20%);
+}
+
+mat-icon:hover {
+    color: rgb(236, 0, 0);
+}
+
+mat-icon.active {
+    color:rgb(161, 0, 0);
+}
+
+// mat-icon.color {
+//     color: ;
+// }
+
+input#colorSelect {
+    visibility: hidden;
+    margin: 0;
+    // display: none;
+}

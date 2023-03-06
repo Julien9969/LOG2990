@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { GuessResult } from '@common/guess-result';
-import { Coordinate } from '@common/coordinate';
 import { CommunicationService } from '@app/services/communication.service';
 import { ImageOperationService } from '@app/services/image-operation.service';
 import { MouseService } from '@app/services/mouse.service';
 import { Timer } from '@app/services/timer.service';
+import { Coordinate } from '@common/coordinate';
+import { GuessResult } from '@common/guess-result';
 
 @Component({
     selector: 'app-play-image',
