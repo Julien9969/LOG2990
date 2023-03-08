@@ -54,11 +54,18 @@ export class SquareInterfaceComponent {
         this.dialog.open(MatchMakingDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: gameInfo });
     }
 
-    // Utilise pour le Sprint 2
-    // deleteGame(game: Game): void {
-    //     this.gameService.deleteGame(game);
-    // }
-    // resetTimes(game: Game): void {
+    /**
+     * Demande la supression d'un jeu en persistance
+     *
+     * @param gameId
+     */
+    async deleteGame(gameId: string): Promise<void> {
+        await this.gameService.deleteGame(gameId);
+        window.location.reload();
+    }
+
+    // Sprint 3?
+    // resetTimes(gameId: string): void {
     //     this.gameService.resetTimes(game);
     // }
 }

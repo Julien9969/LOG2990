@@ -132,6 +132,23 @@ export class CommunicationService {
     }
 
     /**
+     * Sends a DELETE request to the server using the path of the server route & the payload of the request
+     *
+     * @param pathExtension Path to the correct server route
+     * @param headers (optional) headers of the request
+     * @returns the first value returned by the server
+     */
+    async deleteRequest(pathExtension: string, headers: HttpHeaders | undefined = undefined): Promise<HttpResponse<void>> {
+        let observer: Observable<HttpResponse<void>>;
+        if (headers)
+            observer = this.http
+                .delete<void>(`${this.baseUrl}/${pathExtension}`, { headers, observe: 'response' })
+                .pipe(catchError(this.handleError<HttpResponse<void>>('Erreur lors de la supression de jeu.')));
+        else observer = this.http.delete<void>(`${this.baseUrl}/${pathExtension}`, { observe: 'response' });
+        return await firstValueFrom(observer);
+    }
+
+    /**
      * create stream of the image url to get image from server
      *
      * @param id id of the image to get the url
