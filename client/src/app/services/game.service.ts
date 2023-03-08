@@ -54,4 +54,8 @@ export class GameService {
     async getData(): Promise<Game[]> {
         return await this.communicationService.getRequest('games');
     }
+
+    async deleteGame(id: string): Promise<void> {
+        await this.communicationService.deleteRequest(`games/${id}`);
+    }
 }

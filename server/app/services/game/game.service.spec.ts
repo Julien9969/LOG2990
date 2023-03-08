@@ -4,8 +4,10 @@ import { InputGame } from '@common/input-game';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
 import { DifferenceDetectionService } from '../difference-detection/difference-detection.service';
+import { ImageService } from '../images/image.service';
 import { GameService } from './game.service';
 import { stubGame, stubInputGame } from './game.service.spec.const';
 
@@ -14,6 +16,7 @@ jest.mock('mongoose');
 describe('Game Service tests', () => {
     let gameService: GameService;
     let gameModel: Model<GameDocument>;
+    let imageService: ImageService;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -28,11 +31,13 @@ describe('Game Service tests', () => {
                         deleteOne: jest.fn().mockReturnValue(stubGame),
                     },
                 },
+                ImageService,
             ],
         }).compile();
 
         gameService = module.get<GameService>(GameService);
         gameModel = module.get<Model<GameDocument>>(getModelToken('Game'));
+        imageService = module.get<ImageService>(ImageService);
     });
 
     afterEach(() => {
@@ -117,8 +122,14 @@ describe('Game Service tests', () => {
         });
         it('should call delete from gameModels with correct game id', async () => {
             jest.spyOn(gameService, 'findById').mockImplementation(async () => Promise.resolve(stubGame));
+            const imageDeleteSpy = jest.spyOn(imageService, 'deleteImage').mockImplementation(() => {});
+            const unlinkSpy = jest.spyOn(fs, 'unlinkSync').mockImplementation(() => {});
 
             await gameService.delete(stubGame.id);
+            expect(imageDeleteSpy).toHaveBeenCalledTimes(2);
+            expect(imageDeleteSpy).toHaveBeenNthCalledWith(1, stubGame.imageMain);
+            expect(imageDeleteSpy).toHaveBeenNthCalledWith(2, stubGame.imageAlt);
+            expect(unlinkSpy).toHaveBeenCalledTimes(2);
             expect(gameModel.deleteOne).toHaveBeenCalledWith({ _id: stubGame.id });
             expect(gameModel.deleteOne).toHaveBeenCalled();
         });

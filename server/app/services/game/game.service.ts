@@ -4,23 +4,29 @@ import {
     DEFAULT_PENALTY_TIME,
     DEFAULT_REWARD_TIME,
     DEFAULT_SCOREBOARD,
+    DIFFERENCE_IMAGES_FOLDER,
+    DIFFERENCE_IMAGES_PREFIX,
+    DIFFERENCE_LISTS_FOLDER,
+    DIFFERENCE_LISTS_PREFIX,
     IMAGE_FOLDER_PATH,
     // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
     // eslint-disable-next-line prettier/prettier
     IMAGE_FORMAT
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
+import { ImageService } from '@app/services/images/image.service';
 import { Game, unsavedGame } from '@common/game';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { InputGame } from '@common/input-game';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
 
 @Injectable()
 export class GameService {
     prototype: unknown;
-    constructor(@InjectModel('Game') private gameModel: Model<GameDocument>) {}
+    constructor(@InjectModel('Game') private gameModel: Model<GameDocument>, private readonly imageService: ImageService) {}
 
     /**
      * @returns La liste de tous les jeux
@@ -71,9 +77,14 @@ export class GameService {
      */
     async delete(id: string) {
         this.verifyGameId(id);
-        if (!(await this.findById(id))) {
+        const game = await this.findById(id);
+        if (!game) {
             throw new HttpException(`Le jeu avec le id ${id} n'existe pas`, HttpStatus.NOT_FOUND);
         }
+        this.imageService.deleteImage(game.imageMain);
+        this.imageService.deleteImage(game.imageAlt);
+        fs.unlinkSync(`${DIFFERENCE_IMAGES_FOLDER}/${DIFFERENCE_IMAGES_PREFIX}${game.id}.bmp`);
+        fs.unlinkSync(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${game.id}.json`);
         await this.gameModel.deleteOne({ _id: id });
     }
 
