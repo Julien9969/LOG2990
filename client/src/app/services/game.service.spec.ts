@@ -59,4 +59,11 @@ describe('GameService', () => {
         const returned: string = service.getMainImageURL(gameStub);
         expect(returned).toEqual('');
     });
+
+    it('deleteGame should call the communicationService.deleteRequest function with games/id', () => {
+        const gameId = '0';
+        spyOn(service['communicationService'], 'deleteRequest').and.stub();
+        service.deleteGame('0');
+        expect(service['communicationService'].deleteRequest).toHaveBeenCalledWith('games/' + gameId);
+    });
 });

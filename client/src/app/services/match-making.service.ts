@@ -6,15 +6,29 @@ import { SocketClientService } from '@app/services/socket-client.service';
     providedIn: 'root',
 })
 export class MatchMakingService {
-    constructor(public socketService: SocketClientService) {}
+    constructor(private socketService: SocketClientService) {}
 
-    startMatchmaking(gameId: number) {
+    connect() {
+        if (!this.socketService.isSocketAlive()) {
+            this.socketService.connect();
+        }
+    }
+
+    startMatchmaking(gameId: string) {
         this.socketService.send('startMatchmaking', gameId);
     }
 
-    async someOneWaiting(gameId: number): Promise<boolean> {
+    async someOneWaiting(gameId: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             this.socketService.sendAndCallBack('someOneWaiting', gameId, (response: boolean) => {
+                resolve(response);
+            });
+        });
+    }
+
+    async roomCreatedForThisGame(gameId: string): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            this.socketService.sendAndCallBack('roomCreatedForThisGame', gameId, (response: boolean) => {
                 resolve(response);
             });
         });
@@ -26,7 +40,13 @@ export class MatchMakingService {
         });
     }
 
-    joinRoom(gameId: number, playerName: string) {
+    opponentLeft(callback: () => void) {
+        this.socketService.on('opponentLeft', () => {
+            callback();
+        });
+    }
+
+    joinRoom(gameId: string, playerName: string) {
         this.socketService.send('joinRoom', { gameId, playerName });
     }
 
@@ -39,6 +59,12 @@ export class MatchMakingService {
     iVeBeenRejected(callback: (player: string) => void) {
         this.socketService.on('rejectOtherPlayer', (playerName: string) => {
             callback(playerName);
+        });
+    }
+
+    roomReachable(callback: () => void) {
+        this.socketService.on('roomReachable', () => {
+            callback();
         });
     }
 
@@ -56,28 +82,21 @@ export class MatchMakingService {
         });
     }
 
-    rejectOpponent(gameId: number, playerName: string) {
+    rejectOpponent(gameId: string, playerName: string) {
         this.socketService.send('rejectOpponent', { gameId, playerName });
     }
 
-    leaveWaiting(gameId: number) {
+    leaveWaiting(gameId: string) {
         this.socketService.send('leaveWaitingRoom', gameId);
     }
 
-    askForSessionId(gameId: number) {
+    askForSessionId(gameId: string) {
         this.socketService.send('askForSessionId', gameId);
     }
 
-    connect() {
-        if (!this.socketService.isSocketAlive()) {
-            this.socketService.connect();
-            this.configureBaseFeatures();
-        }
-    }
-
-    configureBaseFeatures() {
-        this.socketService.on('opponentLeftGame', () => {
-            alert('Votre adversaire a quitté la partie');
+    updateRoomView(callback: () => void) {
+        this.socketService.on('updateRoomView', async () => {
+            callback();
         });
     }
 }

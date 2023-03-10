@@ -32,6 +32,7 @@
 
 <div *ngIf="dialogInfos.template === 'acceptPairing'" #acceptPairing>
     <h1 id="title" mat-dialog-title>Vous avez été associé à {{opponentName}}.</h1>
+    <h2 id="message" *ngIf="dialogInfos.message" mat-dialog-title>{{dialogInfos.message}}</h2>
     <mat-dialog-actions class="button-row">
         <button mat-button (click)="acceptOpponent()" aria-label="OUI">OUI</button>
         <button mat-button (click)="rejectOpponent()" aria-label="NON">NON</button>
@@ -41,7 +42,6 @@
 <div *ngIf="dialogInfos.template === 'rejected'" #rejected>
     <h1 id="title" mat-dialog-title>Vous avez été rejeté par {{opponentName}}.</h1>
     <mat-dialog-actions class="button-row">
-        <button mat-button (click)="createGameAndWait()" aria-label="OUI">Créer un Jeu</button>
-        <button mat-button matDialogClose routerLink="/selection-view" (click)="leaveWaiting()" aria-label="OUI">Quitter</button>
+        <button mat-button matDialogClose routerLink="/selection-view" (click)="leaveWaiting()" aria-label="RETOUR">Retour à la selection</button>
     </mat-dialog-actions>
 </div>

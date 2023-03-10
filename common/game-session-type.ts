@@ -1,4 +1,4 @@
 export interface GameSessionType {
-    id: number;
+    id: string;
     isSolo: boolean;
 }

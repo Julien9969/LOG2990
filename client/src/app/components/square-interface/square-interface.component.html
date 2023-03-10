@@ -1,7 +1,7 @@
 <mat-stepper headerPosition="bottom" class="wraper">
     <mat-step *ngFor="let page of groupedGames; index as i" id="step">
         <mat-grid-list id="square-list" cols="2" rowHeight="10:4" gutterSize="1%">
-            <mat-grid-tile id="square" *ngFor="let gameData of page">
+            <mat-grid-tile id="square" *ngFor="let gameData of page; index as j">
                 <mat-card class="card mat-elevation-z4">
                     <mat-card-header id="header">
                         <mat-card-title id="title">
@@ -39,7 +39,7 @@
                         </mat-card-content>
                         <mat-card-actions *ngIf="!configPage" class="buttons">
                             <button mat-raised-button color="primary" (click)="openFormDialog(gameData, true)">Partie Solo</button>
-                            <button mat-raised-button color="primary" (click)="openFormDialog(gameData, false)">Créer</button>
+                            <button mat-raised-button color="primary" (click)="openFormDialog(gameData, false)">{{ someoneWaiting[i*4 + j]  ? "Rejoindre" : "Créer" }}</button>
                         </mat-card-actions>
 
                         <mat-card-actions *ngIf="configPage" class="buttons">

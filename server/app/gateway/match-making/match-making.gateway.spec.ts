@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any -- need to use any to spy on private method */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { Test, TestingModule } from '@nestjs/testing';
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
-import { Logger } from '@nestjs/common';
-import { SinonStubbedInstance, createStubInstance, /* , match,*/ stub } from 'sinon';
-import { Socket, Server, BroadcastOperator } from 'socket.io';
 import { MatchMakingEvents } from '@app/gateway/match-making/match-making.gateway.events';
+import { Logger } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { createStubInstance, SinonStubbedInstance, /* , match,*/ stub } from 'sinon';
+import { BroadcastOperator, Server, Socket } from 'socket.io';
 
 describe('MatchmakingGateway', () => {
     let gateway: MatchmakingGateway;
@@ -60,60 +61,109 @@ describe('MatchmakingGateway', () => {
             jest.spyOn(Date, 'now').mockImplementation(() => {
                 return 123456789;
             });
-            const expectedRoomId = `gameRoom-${1}-${123456789}`;
-            gateway.startMatchmaking(socket, 1);
+            const expectedRoomId = `gameRoom-${'1'}-${123456789}`;
+            gateway.startMatchmaking(socket, '1');
             expect(socket.join.calledWith(expectedRoomId)).toBeTruthy();
         });
 
-        it('startMatchmaking should add the room to waitingRooms', () => {
+        it('startMatchmaking should add the room to waitingRooms and send updateRoomView', () => {
             const pushSpy = jest.spyOn(gateway['waitingRooms'], 'push');
-            expect(gateway['waitingRooms']).toHaveLength(0);
-            gateway.startMatchmaking(socket, 1);
+            expect(gateway['waitingRooms'].length).toEqual(0);
+            jest.spyOn(gateway['server'], 'emit');
+
+            gateway.startMatchmaking(socket, '1');
             expect(pushSpy).toHaveBeenCalled();
-            expect(gateway['waitingRooms']).toHaveLength(1);
+            expect(gateway['waitingRooms'].length).toEqual(1);
+            expect(gateway['server'].emit).toHaveBeenCalledWith(MatchMakingEvents.UpdateRoomView);
         });
     });
 
     describe('isSomeOneWaiting', () => {
         it('isSomeOneWaiting should call filterRoomsByGameId and return true if there is a room for a gameId in waitingRooms', () => {
-            const roomId = 123;
-            jest.spyOn(MatchmakingGateway.prototype as any, 'filterRoomsByGameId').mockReturnValue([[roomId, 'roomName']]);
-
-            gateway['waitingRooms'].push([roomId, 'roomName']);
-            expect(gateway.isSomeOneWaiting(socket, roomId)).toBeTruthy();
-            expect(gateway['filterRoomsByGameId']).toHaveBeenCalled();
+            const gameId = '123';
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([{ gameId, roomId: 'roomName' }]);
+            expect(gateway.isSomeOneWaiting(socket, gameId)).toBeTruthy();
+            expect(gateway['waitingRooms'].filterRoomsByGameId).toHaveBeenCalled();
         });
 
         it('isSomeOneWaiting should call filterRoomsByGameId and return false if there is no room for a gameId in waitingRooms', () => {
-            const roomId = 123;
-            jest.spyOn(MatchmakingGateway.prototype as any, 'filterRoomsByGameId').mockReturnValue([]);
+            const roomId = '123';
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([]);
 
-            gateway['waitingRooms'].push([124, 'roomName']);
+            gateway['waitingRooms'].push({ gameId: '124', roomId: 'roomName' });
             expect(gateway.isSomeOneWaiting(socket, roomId)).toBeFalsy();
-            expect(gateway['filterRoomsByGameId']).toHaveBeenCalled();
+            expect(gateway['waitingRooms'].filterRoomsByGameId).toHaveBeenCalled();
+        });
+    });
+
+    describe('RoomCreatedForThisGame', () => {
+        it('should call filterRoomsByGameId on waitingRooms and acceptingRooms', () => {
+            const gameId = '123';
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([{ gameId, roomId: 'roomName' }]);
+            jest.spyOn(gateway['acceptingRooms'], 'filterRoomsByGameId').mockReturnValue([{ gameId, roomId: 'roomName' }]);
+
+            gateway.roomCreatedForThisGame(socket, gameId);
+            expect(gateway['acceptingRooms'].filterRoomsByGameId).toHaveBeenCalled();
+            expect(gateway['waitingRooms'].filterRoomsByGameId).toHaveBeenCalled();
+        });
+
+        it('should return false if no room match in waitingRooms or acceptingRooms', () => {
+            const roomId = '123';
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([]);
+            jest.spyOn(gateway['acceptingRooms'], 'filterRoomsByGameId').mockReturnValue([]);
+
+            expect(gateway.roomCreatedForThisGame(socket, roomId)).toBeFalsy();
+        });
+
+        it('should return true if a room match in waitingRooms', () => {
+            const gameId = '123';
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([{ gameId, roomId: 'roomName' }]);
+            jest.spyOn(gateway['acceptingRooms'], 'filterRoomsByGameId').mockReturnValue([]);
+
+            expect(gateway.roomCreatedForThisGame(socket, gameId)).toBeTruthy();
+        });
+
+        it('should return true if a room match in acceptingRooms', () => {
+            const gameId = '123';
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([]);
+            jest.spyOn(gateway['acceptingRooms'], 'filterRoomsByGameId').mockReturnValue([{ gameId, roomId: 'roomName' }]);
+
+            expect(gateway.roomCreatedForThisGame(socket, gameId)).toBeTruthy();
+        });
+
+        it('should return true if a room match in acceptingRooms and waitingRooms', () => {
+            const gameId = '123';
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([{ gameId, roomId: 'roomName' }]);
+            jest.spyOn(gateway['acceptingRooms'], 'filterRoomsByGameId').mockReturnValue([{ gameId, roomId: 'roomName' }]);
+
+            expect(gateway.roomCreatedForThisGame(socket, gameId)).toBeTruthy();
         });
     });
 
     describe('leaveWaitingRoom', () => {
-        it('leaveWaitingRoom should call removeThisRooms if the client was alone', () => {
-            const roomId = 'gameRoom-124-123456789';
-            gateway['waitingRooms'].push([124, roomId]);
-            jest.spyOn(MatchmakingGateway.prototype as any, 'removeThisRooms').mockReturnValue([]);
+        it('leaveWaitingRoom should call removeThisRooms on waitingRooms if the client was alone', () => {
+            const roomID = 'gameRoom-124-123456789';
+            gateway['waitingRooms'].push({ gameId: '124', roomId: roomID });
+            jest.spyOn(gateway['waitingRooms'], 'removeThisRoom');
 
-            stub(socket, 'rooms').value(new Set([roomId]));
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set([''])]]));
+            stub(socket, 'rooms').value(new Set([roomID]));
+            stub(gateway, 'serverRooms').value(new Map([[roomID, new Set([''])]]));
 
-            expect(gateway['waitingRooms']).toHaveLength(1);
-            gateway.leaveWaitingRoom(socket, 124);
-            expect(gateway['waitingRooms']).toHaveLength(0);
-            expect(socket.leave.calledWith(roomId)).toBeTruthy();
+            expect(gateway['waitingRooms'].length).toEqual(1);
+            gateway.leaveWaitingRoom(socket, '124');
+            expect(gateway['waitingRooms'].length).toEqual(0);
+            expect(socket.leave.calledWith(roomID)).toBeTruthy();
         });
 
-        it('should add the room to waitingRooms if was not alone and send opponentLeft to the other client', () => {
+        it('should remove the room form acceptingRooms and add it to waitingRooms and send opponentLeft to the room if was not alone', () => {
             const roomId = 'gameRoom-124-123456789';
             socket.join(roomId);
+            gateway['acceptingRooms'].push({ gameId: '124', roomId });
+
             stub(socket, 'rooms').value(new Set([roomId]));
             stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
+            jest.spyOn(gateway['acceptingRooms'], 'removeThisRoom');
+            jest.spyOn(gateway['waitingRooms'], 'insertSortByDate');
 
             socket.to.returns({
                 emit: (event: string) => {
@@ -121,52 +171,80 @@ describe('MatchmakingGateway', () => {
                 },
             } as BroadcastOperator<unknown, unknown>);
 
-            expect(gateway['waitingRooms']).toHaveLength(0);
-            gateway.leaveWaitingRoom(socket, 124);
-            expect(gateway['waitingRooms']).toHaveLength(1);
-            expect(socket.leave.calledWith(roomId)).toBeTruthy();
+            expect(gateway['waitingRooms'].length).toEqual(0);
+            expect(gateway['acceptingRooms'].length).toEqual(1);
+            gateway.leaveWaitingRoom(socket, '124');
+            expect(gateway['waitingRooms'].length).toEqual(1);
+            expect(gateway['acceptingRooms'].length).toEqual(0);
+
+            expect(gateway['acceptingRooms'].removeThisRoom).toHaveBeenCalled();
+            expect(gateway['waitingRooms'].insertSortByDate).toHaveBeenCalled();
             expect(socket.to.calledWith(roomId)).toBeTruthy();
+            expect(socket.leave.calledWith(roomId)).toBeTruthy();
         });
 
-        it('should do nothing if the room don`t start with gameRoom', () => {
-            const roomId = 'gameRoom-124-123456789';
-            gateway['waitingRooms'].push([124, roomId]);
+        it('should do nothing if client room don`t start with gameRoom', () => {
+            gateway['waitingRooms'].push({ gameId: '124', roomId: 'gameRoom-3232-23232' });
             stub(socket, 'rooms').value(new Set(['roomName']));
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
             const startWithSpy = jest.spyOn(String.prototype, 'startsWith');
 
             expect(gateway['waitingRooms']).toHaveLength(1);
-            gateway.leaveWaitingRoom(socket, 124);
+            gateway.leaveWaitingRoom(socket, '124');
             expect(gateway['waitingRooms']).toHaveLength(1);
-            expect(socket.leave.calledWith(roomId)).toBeFalsy();
+            expect(socket.leave.called).toBeFalsy();
             expect(startWithSpy).toHaveBeenCalled();
+        });
+
+        it('should emit updateRoomView', () => {
+            stub(socket, 'rooms').value(new Set());
+            jest.spyOn(gateway['server'], 'emit').mockImplementation();
+            gateway.leaveWaitingRoom(socket, '124');
+            expect(gateway['server'].emit).toHaveBeenCalledWith(MatchMakingEvents.UpdateRoomView);
         });
     });
 
     describe('joinRoom', () => {
         it('should call filterRoomsByGameId and do nothing if returned array is empty', () => {
-            jest.spyOn(MatchmakingGateway.prototype as any, 'filterRoomsByGameId').mockReturnValue([]);
-            gateway.joinRoom(socket, { gameId: 0, playerName: '' });
-            expect(gateway['filterRoomsByGameId']).toHaveBeenCalled();
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([]);
+            gateway.joinRoom(socket, { gameId: '0', playerName: '' });
+            expect(gateway['waitingRooms'].filterRoomsByGameId).toHaveBeenCalled();
             expect(socket.join.called).toBeFalsy();
         });
 
-        it('should call socket.join and send "opponentJoined" and removeThisRooms if the returned array is not empty', () => {
-            jest.spyOn(MatchmakingGateway.prototype as any, 'filterRoomsByGameId').mockReturnValue([['gameRoom-124-123456789', 124]]);
+        it('should call socket.join, send "opponentJoined", removeThisRooms on waitingRooms if the returned array is not empty', () => {
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([{ roomId: 'gameRoom-124-123456789', gameId: '124' }]);
             socket.to.returns({
                 emit: (event: string, playerName: string) => {
                     expect(event).toEqual(MatchMakingEvents.OpponentJoined);
                     expect(playerName).toEqual('test');
                 },
             } as BroadcastOperator<unknown, unknown>);
-            jest.spyOn(MatchmakingGateway.prototype as any, 'removeThisRooms').mockReturnValue([]);
+            jest.spyOn(gateway['waitingRooms'], 'removeThisRoom');
 
-            gateway.joinRoom(socket, { gameId: 0, playerName: 'test' });
-            expect(gateway['filterRoomsByGameId']).toHaveBeenCalled();
+            gateway.joinRoom(socket, { gameId: '0', playerName: 'test' });
+            expect(gateway['waitingRooms'].filterRoomsByGameId).toHaveBeenCalled();
             expect(socket.join.called).toBeTruthy();
             expect(socket.to.called).toBeTruthy();
-            expect(gateway['removeThisRooms']).toHaveBeenCalled();
-            expect(gateway['waitingRooms']).toHaveLength(0);
+            expect(gateway['waitingRooms'].removeThisRoom).toHaveBeenCalled();
+            expect(gateway['waitingRooms'].length).toEqual(0);
+        });
+
+        it('should call push on acceptingRooms and send UpdateRoomView if the returned array is not empty', () => {
+            jest.spyOn(gateway['waitingRooms'], 'filterRoomsByGameId').mockReturnValue([{ roomId: 'gameRoom-124-123456789', gameId: '124' }]);
+            jest.spyOn(gateway['acceptingRooms'], 'push');
+
+            socket.to.returns({
+                emit: (event: string, playerName: string) => {
+                    expect(event).toEqual(MatchMakingEvents.OpponentJoined);
+                    expect(playerName).toEqual('test');
+                },
+            } as BroadcastOperator<unknown, unknown>);
+            jest.spyOn(gateway['waitingRooms'], 'removeThisRoom');
+            jest.spyOn(gateway['server'], 'emit').mockImplementation();
+
+            gateway.joinRoom(socket, { gameId: '0', playerName: 'test' });
+            expect(gateway['acceptingRooms'].push).toHaveBeenCalled();
+            expect(gateway['server'].emit).toHaveBeenCalledWith(MatchMakingEvents.UpdateRoomView);
         });
     });
 
@@ -180,10 +258,11 @@ describe('MatchmakingGateway', () => {
             expect(result).toBeFalsy();
         });
 
-        it('should send "acceptOtherPlayer" and return true if the AcceptedPlayer is still in the room', () => {
+        it('should send "acceptOtherPlayer" call removeThisRoom on acceptingRooms and return true if the AcceptedPlayer is still in the room', () => {
             const roomId = 'gameRoom-124-123456789';
             stub(socket, 'rooms').value(new Set([roomId]));
             stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
+            jest.spyOn(gateway['acceptingRooms'], 'removeThisRoom');
 
             socket.to.returns({
                 emit: (event: string, playerName: string) => {
@@ -195,6 +274,7 @@ describe('MatchmakingGateway', () => {
             const result = gateway.acceptOpponent(socket, 'name');
             expect(socket.to.calledWith(roomId)).toBeTruthy();
             expect(result).toBeTruthy();
+            expect(gateway['acceptingRooms'].removeThisRoom).toHaveBeenCalled();
         });
 
         it('should not send "acceptOtherPlayer" and return false if the AcceptedPlayer left the room', () => {
@@ -206,6 +286,13 @@ describe('MatchmakingGateway', () => {
             expect(socket.to.calledWith(roomId)).toBeFalsy();
             expect(result).toBeFalsy();
         });
+
+        it('should emit updateRoomView ', () => {
+            stub(socket, 'rooms').value(new Set());
+            jest.spyOn(gateway['server'], 'emit').mockImplementation();
+            gateway.acceptOpponent(socket, 'name');
+            expect(gateway['server'].emit).toHaveBeenCalledWith(MatchMakingEvents.UpdateRoomView);
+        });
     });
 
     describe('rejectOpponent', () => {
@@ -214,23 +301,24 @@ describe('MatchmakingGateway', () => {
             const startWithSpy = jest.spyOn(String.prototype, 'startsWith');
             const removeOtherPlayerSpy = jest.spyOn(MatchmakingGateway.prototype as any, 'removeOtherPlayer');
 
-            gateway.rejectOpponent(socket, { gameId: 124, playerName: 'name' });
+            gateway.rejectOpponent(socket, { gameId: '124', playerName: 'name' });
             expect(startWithSpy).toHaveBeenCalled();
             expect(socket.to.called).toBeFalsy();
             expect(removeOtherPlayerSpy).not.toHaveBeenCalled();
         });
 
-        it('should send "rejectOtherPlayer" and put back the room in the waitingRoom array if room is valid', () => {
+        it('should send "rejectOtherPlayer" and put back the room in the waitingRooms and remove it from acceptingRooms', () => {
             const roomId = 'gameRoom-124-123456789';
             stub(socket, 'rooms').value(new Set([roomId]));
             stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
+
+            gateway['acceptingRooms'].push({ roomId, gameId: '124' });
 
             jest.spyOn(MatchmakingGateway.prototype as any, 'removeOtherPlayer').mockImplementation((client: Socket, clientRoomId: string) => {
                 expect(clientRoomId).toEqual(roomId);
                 expect(client).toEqual(socket);
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
             jest.spyOn(MatchmakingGateway.prototype as any, 'mergeRoomsIfPossible').mockImplementation(() => {});
 
             socket.to.returns({
@@ -240,32 +328,36 @@ describe('MatchmakingGateway', () => {
                 },
             } as BroadcastOperator<unknown, unknown>);
 
-            expect(gateway['waitingRooms']).toHaveLength(0);
-            gateway.rejectOpponent(socket, { gameId: 124, playerName: 'name' });
+            expect(gateway['waitingRooms'].length).toEqual(0);
+            expect(gateway['acceptingRooms'].length).toEqual(1);
+
+            gateway.rejectOpponent(socket, { gameId: '124', playerName: 'name' });
+            expect(gateway['waitingRooms'].length).toEqual(1);
+            expect(gateway['acceptingRooms'].length).toEqual(0);
+
             expect(gateway.mergeRoomsIfPossible).toHaveBeenCalled();
-            expect(gateway['waitingRooms']).toHaveLength(1);
             expect(socket.to.calledWith(roomId)).toBeTruthy();
-            expect(gateway['removeOtherPlayer']).toHaveBeenCalled();
         });
     });
 
     it('mergeRoomsIfPossible should merge the rooms of a same game', () => {
-        const gameId = 124;
+        const gameId = '124';
         const roomId = 'gameRoom-124-123456789';
         const otherRoomId = 'gameRoom-124-987654321';
         const otherClient = createStubInstance<Socket>(Socket);
 
-        gateway['waitingRooms'].push([gameId, roomId]);
-        gateway['waitingRooms'].push([gameId, otherRoomId]);
+        gateway['waitingRooms'].push({ gameId, roomId });
+        gateway['waitingRooms'].push({ gameId, roomId: otherRoomId });
 
         socket.join(roomId);
         otherClient.join(otherRoomId);
 
-        socket.to.returns({
+        jest.spyOn(gateway['server'], 'to').mockReturnValue({
             emit: (event: string) => {
                 expect(event).toEqual(MatchMakingEvents.RoomReachable);
             },
         } as BroadcastOperator<unknown, unknown>);
+
         stub(gateway, 'connectedClients').value(
             new Map([
                 ['1', socket],
@@ -280,32 +372,26 @@ describe('MatchmakingGateway', () => {
         );
 
         expect(gateway['waitingRooms']).toHaveLength(2);
-        gateway['mergeRoomsIfPossible'](socket, gameId);
+        gateway['mergeRoomsIfPossible'](gameId);
         expect(gateway['waitingRooms']).toHaveLength(1);
         expect(otherClient.leave.calledWith(otherRoomId)).toBeTruthy();
-        expect(otherClient.join.calledWith(roomId)).toBeTruthy();
     });
 
     it('mergeRoomsIfPossible should not merge the rooms of a different game', () => {
-        const gameId = 124;
+        const gameId = '124';
         const roomId = 'gameRoom-124-123456789';
         const otherRoomId = 'gameRoom-125-987654321';
         const otherClient = createStubInstance<Socket>(Socket);
 
-        gateway['waitingRooms'].push([gameId, roomId]);
-        gateway['waitingRooms'].push([125, otherRoomId]);
+        gateway['waitingRooms'].push({ gameId, roomId });
+        gateway['waitingRooms'].push({ gameId: '125', roomId: otherRoomId });
 
         socket.join(roomId);
         otherClient.join(otherRoomId);
 
         expect(gateway['waitingRooms']).toHaveLength(2);
-        gateway['mergeRoomsIfPossible'](socket, gameId);
+        gateway['mergeRoomsIfPossible'](gameId);
         expect(gateway['waitingRooms']).toHaveLength(2);
-    });
-
-    it('afterInit should log "Matchmaking gateway initialized"', () => {
-        gateway.afterInit();
-        expect(logger.log.calledWith('Matchmaking gateway initialized')).toBeTruthy();
     });
 
     describe('removeOtherPlayer', () => {
@@ -330,35 +416,50 @@ describe('MatchmakingGateway', () => {
         });
     });
 
-    describe('notWaitingRoom', () => {
-        it('should return true if the room is not in the waitingRoom array', () => {
+    describe('handleDisconnect', () => {
+        it('should remove the room that are not in the server', () => {
+            stub(gateway, 'serverRooms').value(new Map([]));
             const roomId = 'gameRoom-124-123456789';
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
-            expect(gateway['notWaitingRoom'](roomId)).toBeTruthy();
+            gateway['waitingRooms'].push({ gameId: '124', roomId });
+            gateway.handleDisconnect(socket);
+            expect(gateway['waitingRooms']).toHaveLength(0);
         });
 
-        it('should return false if the room is in the waitingRoom array', () => {
+        it('should remove the acceptingRoom if not in server', () => {
+            stub(gateway, 'serverRooms').value(new Map([]));
             const roomId = 'gameRoom-124-123456789';
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
-            gateway['waitingRooms'].push([124, roomId]);
-            expect(gateway['notWaitingRoom'](roomId)).toBeFalsy();
+            gateway['acceptingRooms'].push({ gameId: '124', roomId });
+            expect(gateway['acceptingRooms']).toHaveLength(1);
+            gateway.handleDisconnect(socket);
+            expect(gateway['acceptingRooms']).toHaveLength(0);
         });
-    });
 
-    it('removeThisRooms should return an array of room without the room that match roomId', () => {
-        const roomId = 'gameRoom-124-123456789';
-        gateway['waitingRooms'].push([124, roomId]);
-        expect(gateway['waitingRooms']).toHaveLength(1);
-        const resultArray = gateway['removeThisRooms'](roomId);
-        expect(resultArray).toHaveLength(0);
-    });
+        it('should emit opponentLeft if the accepting room exist', () => {
+            const roomId = 'gameRoom-124-123456789';
+            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]])); // 2 clients in the room
+            jest.spyOn(gateway['server'], 'to').mockReturnValue({
+                emit: (event: string) => {
+                    expect(event).toEqual(MatchMakingEvents.OpponentLeft);
+                },
+            } as BroadcastOperator<unknown, unknown>);
 
-    it('filterRoomsByGameId should return an array of room that match gameId', () => {
-        const roomId = 'gameRoom-124-123456789';
-        gateway['waitingRooms'].push([124, roomId]);
-        gateway['waitingRooms'].push([125, roomId]);
-        const resultArray = gateway['filterRoomsByGameId'](124);
-        expect(resultArray).toHaveLength(1);
-        expect(resultArray).toEqual([[124, roomId]]);
+            jest.spyOn(gateway['waitingRooms'], 'insertSortByDate').mockImplementation(() => {});
+            jest.spyOn(MatchmakingGateway.prototype as any, 'mergeRoomsIfPossible').mockImplementation(() => {});
+
+            jest.spyOn(gateway['server'], 'emit');
+
+            gateway['acceptingRooms'].push({ gameId: '124', roomId });
+            expect(gateway['acceptingRooms']).toHaveLength(1);
+            gateway.handleDisconnect(socket);
+            expect(gateway['acceptingRooms']).toHaveLength(0);
+            expect(gateway['server'].emit).toHaveBeenCalledWith('updateRoomView');
+        });
+
+        it('should emit UpdateRoomView', () => {
+            stub(gateway, 'serverRooms').value(new Map([]));
+            jest.spyOn(gateway['server'], 'emit');
+            gateway.handleDisconnect(socket);
+            expect(gateway['server'].emit).toHaveBeenCalledWith('updateRoomView');
+        });
     });
 });

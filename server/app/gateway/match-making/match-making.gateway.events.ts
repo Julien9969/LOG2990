@@ -10,4 +10,6 @@ export enum MatchMakingEvents {
     AcceptOtherPlayer = 'acceptOtherPlayer',
     RejectOtherPlayer = 'rejectOtherPlayer',
     RoomReachable = 'roomReachable',
+    UpdateRoomView = 'updateRoomView',
+    RoomCreatedForThisGame = 'roomCreatedForThisGame',
 }

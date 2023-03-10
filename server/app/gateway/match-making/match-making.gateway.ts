@@ -1,13 +1,16 @@
-import { Logger } from '@nestjs/common';
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayInit } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
 import { MatchMakingEvents } from '@app/gateway/match-making/match-making.gateway.events';
+import { Rooms } from '@app/gateway/match-making/rooms';
+import { Logger } from '@nestjs/common';
+import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({ cors: true })
-export class MatchmakingGateway implements OnGatewayInit {
+export class MatchmakingGateway implements OnGatewayDisconnect {
     @WebSocketServer() protected server: Server;
     // the room where the client is waiting for an opponent
-    private waitingRooms: [number, string][] = [];
+    private waitingRooms: Rooms = new Rooms();
+    // room where one client wait for the other to accept him
+    private acceptingRooms: Rooms = new Rooms();
 
     constructor(private readonly logger: Logger) {}
 
@@ -26,13 +29,13 @@ export class MatchmakingGateway implements OnGatewayInit {
      * @param gameId the id of the game the client wants to play
      */
     @SubscribeMessage(MatchMakingEvents.StartMatchmaking)
-    startMatchmaking(client: Socket, gameId: number) {
+    startMatchmaking(client: Socket, gameId: string) {
         const roomId = `gameRoom-${gameId}-${Date.now()}`;
-        this.waitingRooms.push([gameId, roomId]);
+        this.waitingRooms.push({ gameId, roomId });
         client.join(roomId);
-        this.logger.log(`Game room created : ${roomId}`);
 
-        this.logger.log('Current games rooms : ' + this.waitingRooms);
+        this.logger.log('Current games rooms : ' + JSON.stringify(this.waitingRooms));
+        this.server.emit(MatchMakingEvents.UpdateRoomView);
     }
 
     /**
@@ -43,36 +46,49 @@ export class MatchmakingGateway implements OnGatewayInit {
      * @returns if there is someone waiting for a specific game
      */
     @SubscribeMessage(MatchMakingEvents.SomeOneWaiting)
-    isSomeOneWaiting(_: Socket, gameId: number) {
-        const waitingRooms = this.filterRoomsByGameId(gameId);
-        if (waitingRooms.length > 0) {
-            return true;
-        }
-        return false;
+    isSomeOneWaiting(_: Socket, gameId: string) {
+        const waitingRooms = this.waitingRooms.filterRoomsByGameId(gameId);
+        return waitingRooms.length > 0;
+    }
+
+    /**
+     * ask if this game have a room created for it even if two player are in acceptation
+     *
+     * @param _ client that ask for the waiting list
+     * @param gameId the id of the game the client wants to play
+     */
+    @SubscribeMessage(MatchMakingEvents.RoomCreatedForThisGame)
+    roomCreatedForThisGame(_: Socket, gameId: string) {
+        const waitingRooms = this.waitingRooms.filterRoomsByGameId(gameId);
+        const acceptingRooms = this.acceptingRooms.filterRoomsByGameId(gameId);
+        return waitingRooms.length > 0 || acceptingRooms.length > 0;
     }
 
     /**
      * Remove the room from the waiting list if the client is the last one in the room
-     * else notify the other client that the opponent left
+     * else notify the other client that the opponent opponent Left the room
      *
      * @param client client that left the room
      * @param gameId the id of the game the client wants to leave the waiting room
      */
     @SubscribeMessage(MatchMakingEvents.LeaveWaitingRoom)
-    leaveWaitingRoom(client: Socket, gameId: number) {
+    leaveWaitingRoom(client: Socket, gameId: string) {
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 if (this.serverRooms.get(roomId).size < 2) {
-                    this.waitingRooms = this.removeThisRooms(roomId);
+                    this.waitingRooms.removeThisRoom(roomId);
                     this.logger.log(`${client.id} : leave and was alone, close this room : ` + this.waitingRooms);
                 } else {
                     this.logger.log(`${client.id} : leave and was not alone, room still exist : ` + this.waitingRooms);
                     client.to(roomId).emit(MatchMakingEvents.OpponentLeft);
-                    this.waitingRooms.push([gameId, roomId]);
+                    this.acceptingRooms.removeThisRoom(roomId);
+                    this.waitingRooms.insertSortByDate(gameId, roomId);
                 }
                 client.leave(roomId);
+                this.mergeRoomsIfPossible(gameId);
             }
         });
+        this.server.emit(MatchMakingEvents.UpdateRoomView);
     }
 
     /**
@@ -82,14 +98,18 @@ export class MatchmakingGateway implements OnGatewayInit {
      * @param playerInfo game id and player name
      */
     @SubscribeMessage(MatchMakingEvents.JoinRoom)
-    joinRoom(client: Socket, playerInfo: { gameId: number; playerName: string }) {
-        const gameRooms = this.filterRoomsByGameId(playerInfo.gameId);
+    joinRoom(client: Socket, playerInfo: { gameId: string; playerName: string }) {
+        const gameRooms = this.waitingRooms.filterRoomsByGameId(playerInfo.gameId);
         if (gameRooms.length > 0) {
-            const roomId = gameRooms[0][1];
+            const roomId = gameRooms[0].roomId;
             client.join(roomId);
             client.to(roomId).emit(MatchMakingEvents.OpponentJoined, playerInfo.playerName);
-            this.waitingRooms = this.removeThisRooms(roomId);
+
+            this.acceptingRooms.push(gameRooms[0]);
+            this.waitingRooms.removeThisRoom(roomId);
+
             this.logger.log(`Client ${client.id} joined room : ${roomId}`);
+            this.server.emit(MatchMakingEvents.UpdateRoomView);
         }
     }
 
@@ -108,11 +128,12 @@ export class MatchmakingGateway implements OnGatewayInit {
             if (roomId.startsWith('gameRoom')) {
                 if (this.serverRooms.get(roomId).size === 2) {
                     client.to(roomId).emit(MatchMakingEvents.AcceptOtherPlayer, playerName);
+                    this.acceptingRooms.removeThisRoom(roomId);
                     accepted = true;
-                    this.logger.log(`Client ${client.id} accepted opponent`);
                 }
             }
         });
+        this.server.emit(MatchMakingEvents.UpdateRoomView);
         return accepted;
     }
 
@@ -123,33 +144,52 @@ export class MatchmakingGateway implements OnGatewayInit {
      * @param playerInfo the name of the player and the game id
      */
     @SubscribeMessage(MatchMakingEvents.RejectOpponent)
-    rejectOpponent(client: Socket, playerInfo: { gameId: number; playerName: string }) {
-        this.logger.log(`Client : ${client.id} rejected opponent`);
+    rejectOpponent(client: Socket, playerInfo: { gameId: string; playerName: string }) {
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 client.to(roomId).emit(MatchMakingEvents.RejectOtherPlayer, playerInfo.playerName);
                 this.removeOtherPlayer(client, roomId);
-                this.waitingRooms.push([playerInfo.gameId, roomId]);
+                this.acceptingRooms.removeThisRoom(roomId);
+                this.waitingRooms.insertSortByDate(playerInfo.gameId, roomId);
             }
         });
-        this.mergeRoomsIfPossible(client, playerInfo.gameId);
+        this.mergeRoomsIfPossible(playerInfo.gameId);
     }
 
-    mergeRoomsIfPossible(client: Socket, gameId: number) {
-        const gameRooms = this.filterRoomsByGameId(gameId);
+    mergeRoomsIfPossible(gameId: string) {
+        const gameRooms = this.waitingRooms.filterRoomsByGameId(gameId);
         if (gameRooms.length > 1) {
-            this.serverRooms.get(gameRooms[1][1]).forEach((socketId) => {
-                this.connectedClients.get(socketId).leave(gameRooms[1][1]);
-                this.connectedClients.get(socketId).join(gameRooms[0][1]);
+            this.serverRooms.get(gameRooms[1].roomId).forEach((socketId) => {
+                this.connectedClients.get(socketId).leave(gameRooms[1].roomId);
+                this.server.to(socketId).emit(MatchMakingEvents.RoomReachable);
             });
-            this.waitingRooms = this.removeThisRooms(gameRooms[1][1]);
-            client.to(gameRooms[0][1]).emit(MatchMakingEvents.RoomReachable);
-            this.logger.log(`Rooms merged : ${gameRooms[0][1]} and ${gameRooms[1][1]}`);
+            this.waitingRooms.removeThisRoom(gameRooms[1].roomId);
+            this.logger.log(`Rooms merged : ${gameRooms[0][1]} and ${gameRooms[1].roomId}`);
         }
     }
 
-    afterInit() {
-        this.logger.log('Matchmaking gateway initialized');
+    handleDisconnect(client: Socket) {
+        this.logger.log(`Client disconnected from Match-making : ${client.id}`);
+        this.waitingRooms.forEach((room) => {
+            if (!this.serverRooms.get(room.roomId)) {
+                this.waitingRooms.removeThisRoom(room.roomId);
+            }
+        });
+
+        this.acceptingRooms.forEach((acceptingRoom) => {
+            if (!this.serverRooms.get(acceptingRoom.roomId)) {
+                this.acceptingRooms.removeThisRoom(acceptingRoom.roomId);
+            } else {
+                if (this.serverRooms.get(acceptingRoom.roomId).size < 2) {
+                    this.server.to(acceptingRoom.roomId).emit(MatchMakingEvents.OpponentLeft);
+
+                    this.waitingRooms.insertSortByDate(acceptingRoom.gameId, acceptingRoom.roomId);
+                    this.mergeRoomsIfPossible(acceptingRoom.gameId);
+                    this.acceptingRooms.removeThisRoom(acceptingRoom.roomId);
+                }
+            }
+        });
+        this.server.emit(MatchMakingEvents.UpdateRoomView);
     }
 
     removeOtherPlayer(client: Socket, roomId: string) {
@@ -158,17 +198,5 @@ export class MatchmakingGateway implements OnGatewayInit {
                 this.connectedClients.get(socketId).leave(roomId);
             }
         });
-    }
-
-    notWaitingRoom(roomId: string) {
-        return this.waitingRooms.filter((room) => room[1] === roomId).length === 0;
-    }
-
-    private removeThisRooms(roomId: string) {
-        return this.waitingRooms.filter((room) => room[1] !== roomId);
-    }
-
-    private filterRoomsByGameId(gameId: number) {
-        return this.waitingRooms.filter((room) => room[0] === gameId);
     }
 }

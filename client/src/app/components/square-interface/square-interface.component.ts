@@ -1,8 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDuringLoadingComponent } from '@app/components/error-during-loading/error-during-loading.component';
 import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
+import { GAMES_PER_PAGE, DELAY_BEFORE_BUTTONS_UPDATE } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game.service';
+import { MatchMakingService } from '@app/services/match-making.service';
 import { Game } from '@common/game';
 
 @Component({
@@ -11,12 +13,25 @@ import { Game } from '@common/game';
     styleUrls: ['./square-interface.component.scss'],
     providers: [GameService],
 })
-export class SquareInterfaceComponent {
+export class SquareInterfaceComponent implements OnInit, AfterViewInit {
     @Input() configPage: boolean;
     groupedGames: Game[][] = [[]];
-    constructor(private gameService: GameService, private readonly dialog: MatDialog) {
+    someoneWaiting: boolean[] = [];
+    constructor(private gameService: GameService, private readonly dialog: MatDialog, public matchMaking: MatchMakingService) {
         this.getGroups();
     }
+
+    ngOnInit(): void {
+        this.matchMaking.connect();
+        this.baseMatchMakingFeatures();
+    }
+
+    async ngAfterViewInit(): Promise<void> {
+        setTimeout(async () => {
+            await this.reachableGames();
+        }, DELAY_BEFORE_BUTTONS_UPDATE);
+    }
+
     /**
      * initializes the list of 4 games by games, that will used to create the pages
      */
@@ -54,6 +69,16 @@ export class SquareInterfaceComponent {
         this.dialog.open(MatchMakingDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: gameInfo });
     }
 
+    async reachableGames(): Promise<void> {
+        this.groupedGames.forEach((group, j) => {
+            group.forEach((game, i) => {
+                this.matchMaking.roomCreatedForThisGame(game.id).then((isRoomOpen) => {
+                    this.someoneWaiting[j * GAMES_PER_PAGE + i] = isRoomOpen;
+                });
+            });
+        });
+    }
+
     /**
      * Demande la supression d'un jeu en persistance
      *
@@ -62,6 +87,12 @@ export class SquareInterfaceComponent {
     async deleteGame(gameId: string): Promise<void> {
         await this.gameService.deleteGame(gameId);
         window.location.reload();
+    }
+
+    baseMatchMakingFeatures(): void {
+        this.matchMaking.updateRoomView(async () => {
+            await this.reachableGames();
+        });
     }
 
     // Sprint 3?
