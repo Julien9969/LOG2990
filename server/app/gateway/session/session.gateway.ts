@@ -32,6 +32,15 @@ export class SessionGateway implements OnGatewayDisconnect {
             }
         });
     }
+
+    @SubscribeMessage('leaveRoom')
+    leaveRoom(client: Socket) {
+        client.rooms.forEach((roomId) => {
+            if (roomId.startsWith('gameRoom')) {
+                client.leave(roomId);
+            }
+        });
+    }
     // TODO : DELETE
     // afterInit() {
     //     setInterval(() => {

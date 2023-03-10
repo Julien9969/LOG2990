@@ -17,14 +17,14 @@ class MockRouter {
     }
 }
 
-describe('NameFormDialogComponent', () => {
+describe('MatchMakingDialogComponent', () => {
     let component: MatchMakingDialogComponent;
     let fixture: ComponentFixture<MatchMakingDialogComponent>;
     const routerSpy: MockRouter = new MockRouter();
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let dialogRefSpy: jasmine.SpyObj<MatDialogRef<MatchMakingDialogComponent>>;
     let matchMakingSpy: jasmine.SpyObj<MatchMakingService>;
-    const gameId = 10;
+    const gameId = '10';
 
     beforeEach(async () => {
         // routerSpy = jasmine.createSpyObj('RouterMock', ['navigateByUrl', 'events']);
@@ -41,9 +41,12 @@ describe('NameFormDialogComponent', () => {
             'rejectOpponent',
             'sessionIdReceived',
             'opponentJoined',
+            'opponentLeft',
+            'roomReachable',
+            'updateRoomView',
         ]);
 
-        matchMakingSpy.socketService = jasmine.createSpyObj('SocketServiceMock', ['on']);
+        matchMakingSpy['socketService'] = jasmine.createSpyObj('SocketServiceMock', ['on']);
 
         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['customPost', 'sendCoordinates']);
         dialogRefSpy = jasmine.createSpyObj('MatDialogRefMock', ['close']);
@@ -74,29 +77,16 @@ describe('NameFormDialogComponent', () => {
 
     it('component should get the id passed in the data', () => {
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        expect(component.gameInfo.id).toEqual(10);
+        expect(component.gameInfo.id).toEqual('10');
     });
 
     it('ngOnInit should subscribe to router events', () => {
         expect(routerSpy.events).toBeTruthy();
     });
 
-    it('ngOnInit should add event beforeunload on window', () => {
-        expect(window.onbeforeunload).toBeTruthy();
-    });
-
-    it('leaveWaiting should be call on beforeunload event', () => {
-        window.onbeforeunload = () => {
-            return;
-        };
-        dispatchEvent(new Event('beforeunload'));
-        expect(component.matchMaking.leaveWaiting).toHaveBeenCalled();
-    });
-
     it('ngAfterViewInit should call matchMaking.connect and commonMatchMakingFeatures', () => {
         spyOn(component, 'commonMatchMakingFeatures');
         component.ngAfterViewInit();
-        expect(component.matchMaking.connect).toHaveBeenCalled();
         expect(component.commonMatchMakingFeatures).toHaveBeenCalled();
     });
 
@@ -216,14 +206,73 @@ describe('NameFormDialogComponent', () => {
         expect(routerSpy.navigateByUrl).toHaveBeenCalled();
     });
 
-    it('commonMatchMakingFeatures should call matchMaking.sessionIdReceived and matchMaking.opponentJoined with a callback', () => {
-        component.commonMatchMakingFeatures();
-        expect(component.matchMaking.sessionIdReceived).toHaveBeenCalledWith(jasmine.any(Function));
-        expect(component.matchMaking.opponentJoined).toHaveBeenCalledWith(jasmine.any(Function));
-    });
+    describe('commonMatchMakingFeatures', () => {
+        it('test', () => {
+            const playerName = 'Player 1';
+            matchMakingSpy.iVeBeenRejected.calls.mostRecent().args[0](playerName);
+            expect(component.opponentName).toEqual(playerName);
+        });
 
-    it('commonMatchMakingFeatures should call socketService.on with "opponentLeft" and a callback', () => {
-        component.commonMatchMakingFeatures();
-        expect(component.matchMaking.socketService.on).toHaveBeenCalledWith('opponentLeft', jasmine.any(Function));
+        it('should call matchMaking.sessionIdReceived with a callback that call navigateToMultiGame', () => {
+            const sessionId = 0;
+            spyOn(component, 'navigateToMultiGame');
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.sessionIdReceived).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.sessionIdReceived.calls.mostRecent().args[0](sessionId);
+            expect(component.navigateToMultiGame).toHaveBeenCalledWith(sessionId);
+        });
+
+        it('should call matchMaking.opponentJoined with a callback that set opponentName', () => {
+            const playerName = 'Player 1';
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.opponentJoined).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.opponentJoined.calls.mostRecent().args[0](playerName);
+            expect(component.opponentName).toEqual(playerName);
+            expect(component.dialogInfos.template).toEqual('acceptPairing');
+        });
+
+        it('should call matchMaking.opponentLeft with a callback that dialogInfo to waitingRoom', () => {
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.opponentLeft).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.opponentLeft.calls.mostRecent().args[0]();
+            expect(component.dialogInfos.template).toEqual('waitingRoom');
+            expect(component.dialogInfos.message).toEqual("l'adversaire précendent a quitté la recherche");
+        });
+
+        it('should call matchMaking.roomReachable with a callback that call joinGame if template is waitingRoom', () => {
+            spyOn(component, 'joinGame');
+            component.dialogInfos.template = 'waitingRoom';
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.roomReachable).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.roomReachable.calls.mostRecent().args[0]();
+            expect(component.joinGame).toHaveBeenCalled();
+        });
+
+        it('should call matchMaking.roomReachable with a callback that not call joinGame if template is not waitingRoom', () => {
+            spyOn(component, 'joinGame');
+            component.dialogInfos.template = 'notWaitingRoom';
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.roomReachable).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.roomReachable.calls.mostRecent().args[0]();
+            expect(component.joinGame).not.toHaveBeenCalled();
+        });
+
+        it('should call matchMaking.iVeBeenAccepted with a callback that set the opponentName', () => {
+            const playerName = 'Player 1';
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.iVeBeenAccepted).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.iVeBeenAccepted.calls.mostRecent().args[0](playerName);
+            expect(component.opponentName).toEqual(playerName);
+        });
+
+        it('should call matchMaking.iVeBeenRejected with a callback that set the opponentName and template to rejected', () => {
+            const playerName = 'Player 1';
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.iVeBeenRejected).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.iVeBeenRejected.calls.mostRecent().args[0](playerName);
+            expect(component.opponentName).toEqual(playerName);
+            expect(component.dialogInfos.template).toEqual('rejected');
+            expect(component.dialogInfos.message).toEqual('');
+        });
     });
 });

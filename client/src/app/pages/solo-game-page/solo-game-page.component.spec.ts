@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable no-unused-vars */
 /* eslint-disable max-classes-per-file */
 import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -8,6 +10,7 @@ import { By } from '@angular/platform-browser';
 import { PlayImageComponent } from '@app/components/play-image/play-image.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication.service';
+import { SocketClientService } from '@app/services/socket-client.service';
 import { Timer } from '@app/services/timer.service';
 import { of } from 'rxjs';
 import { SoloGamePageComponent } from './solo-game-page.component';
@@ -36,6 +39,7 @@ describe('SoloGamePageComponent', () => {
     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let timerSpy: jasmine.SpyObj<Timer>;
+    let socketServiceSpy: jasmine.SpyObj<SocketClientService>;
 
     beforeEach(async () => {
         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['gameInfoGet', 'customGet']);
@@ -55,6 +59,7 @@ describe('SoloGamePageComponent', () => {
                 reward: 0,
             }),
         );
+        socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['send', 'on', 'sendAndCallBack', 'connect', 'isSocketAlive']);
 
         playImageComponentSpy = jasmine.createSpyObj('PlayImageComponentMock', ['playAudio']);
         timerSpy = jasmine.createSpyObj('TimerMock', ['stopGameTimer', 'startGameTimer']);
@@ -68,6 +73,7 @@ describe('SoloGamePageComponent', () => {
                 { provide: PlayImageComponent, useValue: playImageComponentSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: Timer, useValue: timerSpy },
+                { provide: SocketClientService, useValue: socketServiceSpy },
             ],
         }).compileComponents();
     });
@@ -190,5 +196,11 @@ describe('SoloGamePageComponent', () => {
             autoFocus: false,
             data: 'endGame',
         });
+    });
+
+    it('ngOnDestroy should call socketClientService with leaveRoom', () => {
+        socketServiceSpy.send.and.callFake(<T>() => {});
+        component.ngOnDestroy();
+        expect(socketServiceSpy.send).toHaveBeenCalledWith('leaveRoom');
     });
 });

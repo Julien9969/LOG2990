@@ -1,7 +1,8 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication.service';
+import { SocketClientService } from '@app/services/socket-client.service';
 import { Timer } from '@app/services/timer.service';
 import { Game } from '@common/game';
 
@@ -10,7 +11,7 @@ import { Game } from '@common/game';
     templateUrl: './solo-game-page.component.html',
     styleUrls: ['./solo-game-page.component.scss'],
 })
-export class SoloGamePageComponent implements OnInit {
+export class SoloGamePageComponent implements OnInit, OnDestroy {
     playerName: string;
     opponentName: string;
     isLoaded: boolean = false;
@@ -21,7 +22,11 @@ export class SoloGamePageComponent implements OnInit {
     nDiffFound: number = 0;
     timer = new Timer();
 
-    constructor(private readonly dialog: MatDialog, private readonly communicationService: CommunicationService) {
+    constructor(
+        private readonly dialog: MatDialog,
+        private readonly communicationService: CommunicationService,
+        private readonly socketClient: SocketClientService,
+    ) {
         this.isSolo = window.history.state.isSolo;
         if (!this.isSolo) {
             this.opponentName = window.history.state.opponentName;
@@ -82,5 +87,9 @@ export class SoloGamePageComponent implements OnInit {
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: 'endGame' });
                 break;
         }
+    }
+
+    ngOnDestroy(): void {
+        this.socketClient.send('leaveRoom');
     }
 }

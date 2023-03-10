@@ -12,6 +12,7 @@ import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/
 import { SquareInterfaceComponent } from '@app/components/square-interface/square-interface.component';
 import { CommunicationService } from '@app/services/communication.service';
 import { GameService } from '@app/services/game.service';
+import { GAMES_PER_PAGE, DELAY_BEFORE_BUTTONS_UPDATE } from '@app/constants/utils-constants';
 import { Game } from '@common/game';
 
 describe('SquareInterfaceComponent', () => {
@@ -59,6 +60,15 @@ describe('SquareInterfaceComponent', () => {
         expect(component).toBeTruthy();
     });
 
+    it('ngAfterViewInit should call reachableGames after 100ms', () => {
+        spyOn(component, 'reachableGames').and.stub();
+        jasmine.clock().install();
+        component.ngAfterViewInit();
+        jasmine.clock().tick(DELAY_BEFORE_BUTTONS_UPDATE);
+        expect(component.reachableGames).toHaveBeenCalled();
+        jasmine.clock().uninstall();
+    });
+
     it('this.getImage should call the GameService function', () => {
         spyOn(component['gameService'], 'getMainImageURL').and.stub();
         component.getImage(testGame);
@@ -104,5 +114,25 @@ describe('SquareInterfaceComponent', () => {
             autoFocus: false,
             data: { id: testGame.id, isSolo: true },
         });
+    });
+
+    it('baseMatchMakingFeatures should call matchMaking.updateRoomView with a callback that call reachableGames', () => {
+        const updateRoomSpy = spyOn(component['matchMaking'], 'updateRoomView');
+        spyOn(component, 'reachableGames').and.stub();
+        component.baseMatchMakingFeatures();
+        updateRoomSpy.calls.mostRecent().args[0]();
+        expect(component['matchMaking'].updateRoomView).toHaveBeenCalled();
+        expect(component.reachableGames).toHaveBeenCalled();
+    });
+
+    it('reachableGames should call matchMaking.roomCreatedForThisGame and update someoneWaiting List', () => {
+        for (let i = 0; i < GAMES_PER_PAGE; i++) {
+            component.groupedGames[0].push(testGame);
+        }
+        
+        spyOn(component['matchMaking'], 'roomCreatedForThisGame').and.returnValue(Promise.resolve(true));
+        component.reachableGames();
+        expect(component['matchMaking'].roomCreatedForThisGame).toHaveBeenCalled();
+        expect(component.someoneWaiting).toBeTruthy();
     });
 });

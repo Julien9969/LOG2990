@@ -44,14 +44,9 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         this.router.events.subscribe(() => {
             this.dialogRef.close();
         });
-
-        window.addEventListener('beforeunload', () => {
-            this.matchMaking.leaveWaiting(this.gameInfo.id);
-        });
     }
 
     ngAfterViewInit(): void {
-        this.matchMaking.connect();
         this.commonMatchMakingFeatures();
     }
 
@@ -73,16 +68,6 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         this.dialogInfos.template = 'waitingRoom';
         this.dialogInfos.message = "Attente d'acceptation par l'adversaire";
         this.matchMaking.joinRoom(this.gameInfo.id, this.playerName);
-
-        this.matchMaking.iVeBeenAccepted((opponentName: string) => {
-            this.opponentName = opponentName;
-        });
-
-        this.matchMaking.iVeBeenRejected((player: string) => {
-            this.dialogInfos.template = 'rejected';
-            this.opponentName = player;
-            this.dialogInfos.message = '';
-        });
     }
 
     async acceptOpponent(): Promise<void> {
@@ -97,6 +82,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     rejectOpponent(): void {
         this.matchMaking.rejectOpponent(this.gameInfo.id, this.playerName);
         this.dialogInfos.template = 'waitingRoom';
+        this.dialogInfos.message = '';
     }
 
     leaveWaiting(): void {
@@ -120,8 +106,6 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     commonMatchMakingFeatures(): void {
         this.matchMaking.sessionIdReceived((sessionId: number) => {
-            // eslint-disable-next-line no-console
-            console.log('Session id received ' + sessionId);
             this.navigateToMultiGame(sessionId);
         });
 
@@ -130,15 +114,25 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
             this.dialogInfos.template = 'acceptPairing';
         });
 
-        this.matchMaking.socketService.on('opponentLeft', () => {
+        this.matchMaking.opponentLeft(() => {
             this.dialogInfos.template = 'waitingRoom';
             this.dialogInfos.message = "l'adversaire précendent a quitté la recherche";
         });
 
-        this.matchMaking.socketService.on('roomReachable', () => {
+        this.matchMaking.roomReachable(() => {
             if (this.dialogInfos.template === 'waitingRoom') {
                 this.joinGame();
             }
+        });
+
+        this.matchMaking.iVeBeenAccepted((opponentName: string) => {
+            this.opponentName = opponentName;
+        });
+
+        this.matchMaking.iVeBeenRejected((player: string) => {
+            this.dialogInfos.template = 'rejected';
+            this.opponentName = player;
+            this.dialogInfos.message = '';
         });
     }
 }

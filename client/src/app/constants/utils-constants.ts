@@ -23,7 +23,11 @@ export const INPUT_VALIDATION = {
     max: 12,
 };
 
+export const DELAY_BEFORE_BUTTONS_UPDATE = 100;
+
 export const BIT_PER_PIXEL = 4;
+
+export const GAMES_PER_PAGE = 4;
 
 export const BLINK_COUNT = 6;
 
