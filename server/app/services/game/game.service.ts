@@ -15,7 +15,8 @@ import {
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageService } from '@app/services/images/image.service';
-import { Game, unsavedGame } from '@common/game';
+import { FinishedGame } from '@common/finishedGame';
+import { Game, UnsavedGame } from '@common/game';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { InputGame } from '@common/input-game';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
@@ -53,7 +54,7 @@ export class GameService {
             throw new HttpException('Images choisies ne respectent pas les contraintes de jeu.', HttpStatus.BAD_REQUEST);
         }
 
-        const newGame: unsavedGame = {
+        const newGame: UnsavedGame = {
             ...inputGame,
             isHard: result.isHard,
             isValid: result.isValid,
@@ -118,6 +119,28 @@ export class GameService {
         const result: ImageComparisonResult = diffDetectionService.getComparisonResult();
 
         return result;
+    }
+
+    async getSoloScoreboard(id: string) {
+        const game: Game = await this.findById(id);
+        return game.scoreBoardSolo;
+    }
+
+    async getMultiScoreboard(id: string) {
+        const game: Game = await this.findById(id);
+        return game.scoreBoardMulti;
+    }
+
+    async addToScoreboard(gameId: string, finishedGame: FinishedGame) {
+        let scoreBoard;
+        if (finishedGame.solo) scoreBoard = await this.getSoloScoreboard(gameId);
+        else scoreBoard = await this.getMultiScoreboard(gameId);
+        if (finishedGame.time < scoreBoard[2][1]) {
+            scoreBoard[2] = [finishedGame.winner, finishedGame.time];
+        }
+        scoreBoard.sort((a, b) => {
+            return a[1] - b[1];
+        });
     }
 
     verifyGameId(id: string): void {

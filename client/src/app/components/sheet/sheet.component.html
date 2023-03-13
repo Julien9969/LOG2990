@@ -1,0 +1,12 @@
+<div class="sheet">
+    <img [src]="imageInfo" alt="TextImage"/>
+    <div class="info">
+        difficulty: {{ sheetInfo.difficulty }} <br />
+        best-times:
+        <div *ngFor="let time of sheetInfo.bestTimes.solo; let indexOfElement = index">{{ indexOfElement }}.{{ time }}</div>
+        <button routerLink="{{ sheetInfo.buttonRoute1 }}">{{ sheetInfo.buttonText1 }}</button>
+    
+        <div *ngFor="let time of sheetInfo.bestTimes.oneAgainstOne; let indexOfElement = index">{{ indexOfElement }}.{{ time }}</div>
+        <button routerLink="{{ sheetInfo.buttonRoute2 }}">{{ sheetInfo.buttonText2 }}</button>
+    </div>
+</div>

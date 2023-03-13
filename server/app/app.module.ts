@@ -1,6 +1,5 @@
 import { GamesController } from '@app/controllers/games/games.controller';
 import { ImageController } from '@app/controllers/images/images.controller';
-import { SessionController } from '@app/controllers/session/sessions.controller';
 import { gameSchema } from '@app/Schemas/game/game.schema';
 import { GameService } from '@app/services/game/game.service';
 import { ImageService } from '@app/services/images/image.service';
@@ -18,7 +17,7 @@ import { SessionGateway } from '@app/gateway/session/session.gateway';
         MongooseModule.forFeature([{ name: 'Game', schema: gameSchema }]),
         MongooseModule.forRoot(process.env.DATABASE_CONNECTION_STRING),
     ],
-    controllers: [GamesController, ImageController, SessionController],
+    controllers: [GamesController, ImageController],
     providers: [GameService, ImageService, SessionService, Logger, MatchmakingGateway, MainGateway, SessionGateway],
 })
 export class AppModule {}
