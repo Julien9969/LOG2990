@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AudioService } from '@app/services/audio.service';
 import { CommunicationService } from '@app/services/communication.service';
 import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
@@ -22,7 +23,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
 
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
-    audioPlayer = new Audio();
     errorMsgPosition: Coordinate;
     errorCounter: number = 0;
     lastDifferenceFound: GuessResult = {
@@ -37,6 +37,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
     constructor(
         private readonly mouseService: MouseService,
         private readonly communicationService: CommunicationService,
+        private readonly audioService: AudioService,
         private readonly socket: InGameService,
     ) {}
 
@@ -70,14 +71,9 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
     }
 
     ngAfterViewInit(): void {
-        this.setCanvasToImageOperationService();
+        this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
         this.loadImage(this.canvasContext1, this.imageMainId);
         this.loadImage(this.canvasContext2, this.imageAltId);
-    }
-
-    setCanvasToImageOperationService(): void {
-        this.imageOperationService.originalImgContext = this.canvasContext1;
-        this.imageOperationService.modifiedImgContext = this.canvasContext2;
     }
 
     sendPosition(event: MouseEvent): void {
@@ -103,7 +99,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
     updateDiffFound(guessResult: GuessResult): void {
         if (guessResult.isCorrect && this.hasNbDifferencesChanged(guessResult.differencesByPlayer)) {
             this.lastDifferenceFound = guessResult;
-            this.playAudio('success');
+            this.audioService.playAudio('success');
             this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
             this.errorCounter = 0;
             this.imageOperationService.pixelBlink(guessResult.differencePixelList);
@@ -118,31 +114,11 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
         this.errorCounter++;
 
         if (this.errorCounter % 3 === 0) {
-            this.playAudio('manyErrors');
+            this.audioService.playAudio('manyErrors');
             this.errorCounter = 0;
         } else {
-            this.playAudio('error');
+            this.audioService.playAudio('error');
         }
-    }
-
-    playAudio(soundId: string): void {
-        this.audioPlayer.pause();
-        switch (soundId) {
-            case 'success':
-                this.audioPlayer.src = 'assets/sounds/Success sound.mp3';
-                break;
-            case 'error':
-                this.audioPlayer.src = 'assets/sounds/Windows XP Error Sound.mp3';
-                break;
-            case 'manyErrors':
-                this.audioPlayer.src = 'assets/sounds/Come on man Joe Biden.mp3';
-                break;
-            default:
-                this.audioPlayer.src = '';
-                break;
-        }
-        this.audioPlayer.load();
-        this.audioPlayer.play();
     }
 
     async loadImage(canvasContext: CanvasRenderingContext2D, imageId: number): Promise<void> {

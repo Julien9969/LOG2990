@@ -22,8 +22,8 @@ describe('ImageOperationService', () => {
         canvasModified = CanvasTestHelper.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT).getContext('2d') as CanvasRenderingContext2D;
         canvasOriginal.drawImage(img, 0, 0);
         canvasModified.drawImage(img, 0, 0);
-        service.originalImgContext = canvasOriginal;
-        service.modifiedImgContext = canvasModified;
+        service['originalImgContext'] = canvasOriginal;
+        service['modifiedImgContext'] = canvasModified;
     });
 
     beforeEach(() => {
@@ -53,21 +53,29 @@ describe('ImageOperationService', () => {
         expect(service.contextModified).toEqual(canvasModified);
     });
 
+    it('setCanvasToImageOperationService set canvas to imageOperationService', () => {
+        service['originalImgContext'] = undefined as unknown as CanvasRenderingContext2D;
+        service['modifiedImgContext'] = undefined as unknown as CanvasRenderingContext2D;
+        service.setCanvasContext(canvasOriginal, canvasModified);
+        expect(service['originalImgContext']).toEqual(canvasOriginal);
+        expect(service['modifiedImgContext']).toEqual(canvasModified);
+    });
+
     it('saveOriginalImageData should save the original image data', () => {
         service.saveOriginalImageData();
-        expect(service.originalImageSave).toEqual(canvasOriginal.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT));
+        expect(service['originalImageSave']).toEqual(canvasOriginal.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT));
     });
 
     it('pixelBlink should save the original image data if it is the first blink', () => {
         spyOn(service, 'saveOriginalImageData');
-        service.isFirstBlink = true;
+        service['isFirstBlink'] = true;
         service.pixelBlink(differences);
         expect(service.saveOriginalImageData).toHaveBeenCalled();
     });
 
     it('pixelBlink should not save the original image data if it is not the first blink', () => {
         spyOn(service, 'saveOriginalImageData');
-        service.isFirstBlink = false;
+        service['isFirstBlink'] = false;
         service.pixelBlink(differences);
         expect(service.saveOriginalImageData).not.toHaveBeenCalled();
     });
@@ -83,7 +91,7 @@ describe('ImageOperationService', () => {
     it('createBlinkInterval should call highlightPixels and originalPixel', fakeAsync(async () => {
         const originalPixelSpy = spyOn(service, 'setOriginalPixel').and.callThrough();
         const highlightPixelsSpy = spyOn(service, 'highlightPixels').and.callThrough();
-        service.originalImageSave = canvasOriginal.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        service['originalImageSave'] = canvasOriginal.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
         service.createBlinkInterval(differences).then(() => {
             expect(originalPixelSpy.calls.count()).toEqual(4);
@@ -107,7 +115,7 @@ describe('ImageOperationService', () => {
     });
 
     it('setOriginalPixel should call putImageData and getImageData', () => {
-        service.originalImageSave = canvasOriginal.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        service['originalImageSave'] = canvasOriginal.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         const putImageDataSpy = spyOn(canvasModified, 'putImageData').and.stub();
         service.setOriginalPixel(differences);
         expect(putImageDataSpy).toHaveBeenCalledTimes(differences.length);

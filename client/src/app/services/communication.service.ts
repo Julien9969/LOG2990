@@ -18,62 +18,62 @@ export class CommunicationService {
     constructor(readonly http: HttpClient) {}
 
     /**
-     * get a message from the server
+     * Réquête GET pour récupérer un message du serveur
      *
-     * @returns a message from the server
+     * @returns message du serveur
      */
     basicGet(): Observable<Message> {
         return this.http.get<Message>(`${this.baseUrl}/example`).pipe(catchError(this.handleError<Message>('basicGet')));
     }
 
     /**
-     * send a post to the server and get a number as response
+     * envoie une requête POST au serveur et récupère un nombre en réponse
      *
-     * @param path the path of a server route
-     * @returns a number
+     * @param path chemin de la route du serveur
+     * @returns nombre reçu du serveur
      */
     customPost(path: string): Observable<number> {
         return this.http.post<number>(`${this.baseUrl}/${path}`, {}).pipe(catchError(this.handleError<number>('customGet')));
     }
 
     /**
-     * send a post request to the server.
+     * envoie une requête POST au serveur.
      *
-     * @param message send a message to the server
-     * @returns HttpResponse<string> the response of the server
+     * @param message envoie un message au serveur
+     * @returns HttpResponse<string> la réponse du serveur
      */
     basicPost(message: Message): Observable<HttpResponse<string>> {
         return this.http.post(`${this.baseUrl}/example/send`, message, { observe: 'response', responseType: 'text' });
     }
 
     /**
-     * Send the coordinates of a guess to the server
+     * Envoie les coordonnées de la tentative de différenciation au serveur
      *
-     * @param gameSession the id of the game session
-     * @param coordinates the coordinates of the guess
-     * @returns result of the guess
+     * @param gameSession l'id de la session de jeu
+     * @param coordinates Les coordonnées de la tentative
+     * @returns le resultat de la tentative
      */
     sendCoordinates(gameSession: number, coordinates: Coordinate): Observable<HttpResponse<object>> {
         return this.http.post(`${this.baseUrl}/session/${gameSession}/guess`, coordinates, { observe: 'response', responseType: 'json' });
     }
 
     /**
-     * Get the game information from the server using his id
+     * Récupère les informations du jeu depuis le serveur à partir de son id
      *
-     * @param gameId the id of the game
-     * @returns the game infos
+     * @param gameId id du jeu
+     * @returns les informations du jeu
      */
     gameInfoGet(gameId: string): Observable<Game> {
         return this.http.get<Game>(`${this.baseUrl}/games/${gameId}`).pipe(catchError(this.handleError<Game>('error getting game info')));
     }
 
     /**
-     * Sends a POST request to the server using the path of the server route & the payload of the request
+     * Envoie une requête POST au serveur en utilisant le chemin de la route du serveur et le payload de la requête
      *
-     * @param pathExtension Path to the correct server route
-     * @param body Payload to send to the server
-     * @param headers (optional) headers of the request
-     * @returns the first value returned by the server
+     * @param pathExtension chemin vers la bonne route du serveur
+     * @param body Payload a envoyer au serveur
+     * @param headers (optional) entêtes de la requête
+     * @returns la première valeur retournée par le serveur
      */
     async postRequest(pathExtension: string, body: object, headers: HttpHeaders | undefined = undefined): Promise<HttpResponse<object | number>> {
         let observer: Observable<HttpResponse<object>>;
@@ -85,11 +85,11 @@ export class CommunicationService {
     // Images route methods
 
     /**
-     * sends a request to the server to compare the differences in 2 images already saved on the server
+     * envoie une requête au serveur pour comparer les différences entre 2 images déjà sauvegardées sur le serveur
      *
-     * @param originalImageId id of the original image saved on the server
-     * @param altImageId id of the modified image saved on the server
-     * @param radius radius of the circles used to analyse the differences between the 2 images
+     * @param originalImageId l'id de l'image originale sauvegardée sur le serveur
+     * @param altImageId l'id de l'image alternative sauvegardée sur le serveur
+     * @param radius le rayon des cercles à utiliser pour la comparaison
      * @returns response if the server returns the right information or throws error if not
      */
     async compareImages(originalImageId: number, altImageId: number, radius: number): Promise<ImgCompareRes> {
@@ -104,10 +104,10 @@ export class CommunicationService {
     }
 
     /**
-     * Send & save an image to the server
+     * Envoyer une requête POST au serveur pour sauvegarder une image sur le serveur
      *
-     * @param imageToSave File to send & save to the server
-     * @returns id of the saved image from the server or error message
+     * @param imageToSave Le fichier image à sauvegarder
+     * @returns l'id de l'image sauvegardée ou une erreur si la sauvegarde a échoué
      */
     async saveImage(imageToSave: File): Promise<number> {
         const formData: FormData = new FormData();
@@ -120,11 +120,12 @@ export class CommunicationService {
         if (response.ok && typeof response.body === 'number') return response.body;
         throw new Error("l'image n'a pas pu être enregistrer");
     }
-    /* Sends a GET request to the server using the path of the server route & the payload of the request
+    /**
+     * Envoie une requête GET au serveur en utilisant le chemin de la route du serveur et le payload de la requête
      *
-     * @param pathExtension Path to the correct server route
-     * @param headers (optional) headers of the request
-     * @returns the first value returned by the server
+     * @param pathExtension Chemin vers la bonne route du serveur
+     * @param headers (optional) entêtes de la requête
+     * @returns Première valeur retournée par le serveur
      */
     async getRequest(pathExtension: string): Promise<Game[]> {
         const observer = this.http.get<Game[]>(`${this.baseUrl}/${pathExtension}`).pipe(catchError(this.handleError<Game[]>('error getting games')));
@@ -132,11 +133,11 @@ export class CommunicationService {
     }
 
     /**
-     * Sends a DELETE request to the server using the path of the server route & the payload of the request
+     * Envoie une requête DELETE au serveur en utilisant le chemin de la route du serveur et le payload de la requête
      *
-     * @param pathExtension Path to the correct server route
-     * @param headers (optional) headers of the request
-     * @returns the first value returned by the server
+     * @param pathExtension chemin vers la bonne route du serveur
+     * @param headers (optional) entêtes de la requête
+     * @returns la première valeur retournée par le serveur
      */
     async deleteRequest(pathExtension: string, headers: HttpHeaders | undefined = undefined): Promise<HttpResponse<void>> {
         let observer: Observable<HttpResponse<void>>;
@@ -149,17 +150,17 @@ export class CommunicationService {
     }
 
     /**
-     * create stream of the image url to get image from server
+     * Crée un stream d'une image à partir de son id
      *
-     * @param id id of the image to get the url
-     * @returns the url of the image
+     * @param id l'id de l'image à récupérer l'url
+     * @returns l'url de l'image
      */
     getImageURL(id: number) {
         return `${this.baseUrl}/images/${id}`;
     }
 
     /**
-     * Handle Http operation that failed.
+     * Support d'une erreur HTTP
      *
      * @param request request that failed
      * @param result error message

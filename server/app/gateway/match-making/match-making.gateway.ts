@@ -7,9 +7,9 @@ import { Server, Socket } from 'socket.io';
 @WebSocketGateway({ cors: true })
 export class MatchmakingGateway implements OnGatewayDisconnect {
     @WebSocketServer() protected server: Server;
-    // the room where the client is waiting for an opponent
+    // Salle dans lesquelles les clients attendent un adversaire
     private waitingRooms: Rooms = new Rooms();
-    // room where one client wait for the other to accept him
+    // Salle dans lesquelles on attend que les clients s'accepetent
     private acceptingRooms: Rooms = new Rooms();
 
     constructor(private readonly logger: Logger) {}
@@ -23,10 +23,10 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     }
 
     /**
-     * Create a room for the client and add it to the waiting list
+     * Cree une salle d'attente pour le jeu
      *
-     * @param client client that created the room
-     * @param gameId the id of the game the client wants to play
+     * @param client client qui demande la création d'une salle
+     * @param gameId l'id du jeux
      */
     @SubscribeMessage(MatchMakingEvents.StartMatchmaking)
     startMatchmaking(client: Socket, gameId: string) {
@@ -39,11 +39,11 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     }
 
     /**
-     * ask if there is someone waiting for a specific game
+     * demande si la salle est joinable
      *
-     * @param _ client that ask for the waiting list
-     * @param gameId the id of the game the client wants to play
-     * @returns if there is someone waiting for a specific game
+     * @param _ client qui demande la liste des jeux en attente
+     * @param gameId l'id du jeux
+     * @returns si quelqu'un est en attente
      */
     @SubscribeMessage(MatchMakingEvents.SomeOneWaiting)
     isSomeOneWaiting(_: Socket, gameId: string) {
@@ -52,10 +52,10 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     }
 
     /**
-     * ask if this game have a room created for it even if two player are in acceptation
+     * demande si une salle est crée pour ce jeu
      *
-     * @param _ client that ask for the waiting list
-     * @param gameId the id of the game the client wants to play
+     * @param _ client qui demande la liste des jeux en attente
+     * @param gameId l'id du jeux
      */
     @SubscribeMessage(MatchMakingEvents.RoomCreatedForThisGame)
     roomCreatedForThisGame(_: Socket, gameId: string) {
@@ -65,11 +65,11 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     }
 
     /**
-     * Remove the room from the waiting list if the client is the last one in the room
-     * else notify the other client that the opponent opponent Left the room
+     * Supprime la salle de la liste des salles d'attente si le client est le seul
+     * Sinon envoie un message à l'autre joueur pour lui dire que l'autre joueur à quitté
      *
-     * @param client client that left the room
-     * @param gameId the id of the game the client wants to leave the waiting room
+     * @param client le client qui a quitté la salle
+     * @param gameId l'id du jeux que l'on quitte
      */
     @SubscribeMessage(MatchMakingEvents.LeaveWaitingRoom)
     leaveWaitingRoom(client: Socket, gameId: string) {
@@ -92,10 +92,10 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     }
 
     /**
-     * join the room if there is one available for the game
+     * Rejoint la room de l'adversaire et le notifie
      *
-     * @param client client that joined the room
-     * @param playerInfo game id and player name
+     * @param client Le client qui veut rejoindre la room
+     * @param playerInfo l'id du jeu et le nom du joueur
      */
     @SubscribeMessage(MatchMakingEvents.JoinRoom)
     joinRoom(client: Socket, playerInfo: { gameId: string; playerName: string }) {
@@ -114,12 +114,12 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     }
 
     /**
-     * Accept the opponent and notify the other client
-     * if the other client left the room, notify the owner that the opponent left the room
+     * Accepte l'aderversaire et le notifie
+     * Si l'adversaire à quitté on averti le propriétaire de la salle
      *
-     * @param client owner of the room
-     * @param playerName name of the owner
-     * @returns if can be accepted
+     * @param client socket du pr
+     * @param playerName nom du propriétaire de la salle
+     * @returns si il peur être accepté
      */
     @SubscribeMessage(MatchMakingEvents.AcceptOpponent)
     acceptOpponent(client: Socket, playerName: string) {
@@ -138,10 +138,10 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     }
 
     /**
-     * remove the other player from the room and put back the room in the waiting list
+     * Enleve l'autre joueur de la salle et remet la room dans la WaitingRooms
      *
-     * @param client owner of the room
-     * @param playerInfo the name of the player and the game id
+     * @param client Propriétaire de la salle
+     * @param playerInfo Nom du joueur et id du jeu
      */
     @SubscribeMessage(MatchMakingEvents.RejectOpponent)
     rejectOpponent(client: Socket, playerInfo: { gameId: string; playerName: string }) {

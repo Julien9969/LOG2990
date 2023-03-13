@@ -75,6 +75,32 @@
 //         expect(component).toBeTruthy();
 //     });
 
+// it('on press enter if isSolo is true and nameForm is valid, navigateToSolo shoul be call', () => {
+//     const event = new KeyboardEvent('keydown', {
+//         key: 'enter',
+//     });
+//     spyOn(component, 'navigateToSoloGame');
+//     component.nameFormControl.setValue('test');
+//     component.handleKeyDown(event);
+//     component.gameInfo.isSolo = true;
+//     expect(component.navigateToSoloGame).toHaveBeenCalled();
+// });
+
+// it('on press enter if isSolo is false and nameForm is valid, joinGame shoul be call', () => {
+//     const event = new KeyboardEvent('keydown', {
+//         key: 'enter',
+//     });
+//     spyOn(component, 'joinGame');
+//     component.nameFormControl.setValue('test');
+//     component.gameInfo.isSolo = false;
+//     component.handleKeyDown(event);
+//     expect(component.joinGame).toHaveBeenCalled();
+// });
+
+// it('component should get the id passed in the data', () => {
+//     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+//     expect(component.gameInfo.id).toEqual('10');
+// });
 //     it('component should get the id passed in the data', () => {
 //         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 //         expect(component.gameInfo.id).toEqual('10');
