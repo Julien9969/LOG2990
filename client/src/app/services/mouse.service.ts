@@ -9,9 +9,9 @@ export class MouseService {
     mousePosition: Coordinate = { x: 0, y: 0 };
 
     /**
-     * Process the click event and save the correct position of the mouse depending on the devicePixelRatio
+     * Traite le click de la souris et sauvegarde la position du click
      *
-     * @param event mouse event
+     * @param event evenement de souris
      */
     clickProcessing(event: MouseEvent) {
         if (event.button === MouseButton.Left) {

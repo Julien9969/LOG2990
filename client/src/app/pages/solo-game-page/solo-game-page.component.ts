@@ -17,8 +17,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
 
     playerName: string;
     opponentName: string;
-
-    isLoaded: boolean = false;
+    isLoaded: boolean;
     isSolo: boolean;
 
     sessionId: number;
@@ -28,7 +27,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     nDiffFoundMainPlayer: number = 0;
     nDiffFoundOpponent: number = 0;
 
-    timer = new Timer();
+    private timer = new Timer();
 
     constructor(
         private readonly dialog: MatDialog,
@@ -36,6 +35,9 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         private readonly socket: InGameService,
         private readonly socketClient: SocketClientService,
     ) {
+        this.isLoaded = false;
+        this.timer = new Timer();
+
         this.isSolo = window.history.state.isSolo;
         if (!this.isSolo) {
             this.opponentName = window.history.state.opponentName;
@@ -52,11 +54,11 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     @HostListener('window:beforeunload', ['$event'])
     unloadNotification($event: Event) {
         // eslint-disable-next-line deprecation/deprecation
-        $event.returnValue = true; // The not deprecated equivalent attribute don't do the right thing
+        $event.returnValue = true; // L'équivalent non déprécié ne produit pas le même résultat
     }
 
     async ngOnInit(): Promise<void> {
-        if (this.playerName === undefined || this.sessionId === undefined || this.gameID === undefined) {
+        if (this.sessionId === undefined || this.gameID === undefined) {
             window.location.replace('/home');
         }
         this.getGameInfos();
@@ -124,6 +126,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.playerExited();
         this.socketClient.send('leaveRoom');
         this.socket.disconnect();
     }

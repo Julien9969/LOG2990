@@ -4,7 +4,6 @@ export class Timer {
     intervalId: number;
     counter: number;
     errorGuess: boolean = false;
-    pixelBlinkIntervalId: number[];
 
     get formatTime(): string {
         return this.timeFormat(this.counter);
@@ -14,7 +13,7 @@ export class Timer {
         this.errorGuess = true;
         window.setTimeout(() => {
             this.errorGuess = false;
-        }, TIME_CONST.secInMs);
+        }, TIME_CONST.oneSecond);
     }
 
     startGameTimer(seconds: number) {
@@ -22,7 +21,7 @@ export class Timer {
 
         this.intervalId = window.setInterval(() => {
             this.counter++;
-        }, TIME_CONST.secInMs);
+        }, TIME_CONST.oneSecond);
     }
 
     stopGameTimer() {
@@ -36,8 +35,8 @@ export class Timer {
      * @returns string of the format 'mm:ss'
      */
     private timeFormat(seconds: number): string {
-        const minutes = Math.floor(seconds / TIME_CONST.minInSec);
-        const secondsLeft = seconds - TIME_CONST.minInSec * minutes;
+        const minutes = Math.floor(seconds / TIME_CONST.oneMinute);
+        const secondsLeft = seconds - TIME_CONST.oneMinute * minutes;
         return minutes + ':' + secondsLeft.toString().padStart(2, '0');
     }
 }

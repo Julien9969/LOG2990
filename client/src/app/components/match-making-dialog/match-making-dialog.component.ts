@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, HostListener, Inject, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
@@ -18,7 +18,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     playerName: string;
     opponentName: string;
     gameInfo: GameSessionType;
-    dialogInfos: { template: string; message: string } = { template: 'nameForm', message: '' };
+    dialogInfos: { template: string; message: string };
 
     nameFormControl = new FormControl('', [
         Validators.required,
@@ -35,7 +35,20 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         private readonly router: Router,
         public matchMaking: MatchMakingService,
     ) {
+        this.dialogInfos = { template: 'nameForm', message: '' };
         this.gameInfo = data;
+    }
+
+    @HostListener('window:keydown.enter', ['$event'])
+    handleKeyDown(event: KeyboardEvent) {
+        event.preventDefault();
+        if (this.nameFormControl.valid) {
+            if (this.gameInfo.isSolo) {
+                this.navigateToSoloGame();
+            } else {
+                this.joinGame();
+            }
+        }
     }
 
     ngOnInit(): void {

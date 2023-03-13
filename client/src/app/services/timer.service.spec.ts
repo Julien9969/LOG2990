@@ -36,7 +36,7 @@ describe('Timer', () => {
 
         for (let time = 0; time < 10; time++) {
             expect(service.counter).toBe(time);
-            jasmine.clock().tick(TIME_CONST.secInMs);
+            jasmine.clock().tick(TIME_CONST.oneSecond);
         }
         clearInterval(service.intervalId);
     }));
@@ -48,10 +48,10 @@ describe('Timer', () => {
 
     it('should clearTimer stop the counting', () => {
         service.startGameTimer(1000);
-        jasmine.clock().tick(TIME_CONST.secInMs);
+        jasmine.clock().tick(TIME_CONST.oneSecond);
         expect(service.counter).toBe(1001);
         service.stopGameTimer();
-        jasmine.clock().tick(TIME_CONST.secInMs);
+        jasmine.clock().tick(TIME_CONST.oneSecond);
         expect(service.counter).toBe(1001);
     });
 
@@ -59,7 +59,7 @@ describe('Timer', () => {
         expect(service.errorGuess).toBeFalse();
         service.errorTimer();
         expect(service.errorGuess).toBeTrue();
-        jasmine.clock().tick(TIME_CONST.secInMs);
+        jasmine.clock().tick(TIME_CONST.oneSecond);
         expect(service.errorGuess).toBeFalse();
     }));
 });

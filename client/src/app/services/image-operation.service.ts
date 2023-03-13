@@ -2,17 +2,17 @@ import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, RGB_RED } from '@a
 import { Coordinate } from '@common/coordinate';
 
 export class ImageOperationService {
-    originalImgContext: CanvasRenderingContext2D;
-    modifiedImgContext: CanvasRenderingContext2D;
-
-    // attribute to save the interval ids and handle multiple intervals
+    // attributs pour sauvegarder les ids des intervalles et en supporter plusieurs en même temps
     intervalIds: number[] = [];
     newestTimerId: number = 0;
     oldestTimerId: number = 0;
 
-    // attribute to save the original image data
-    originalImageSave: ImageData;
-    isFirstBlink: boolean = true;
+    private originalImgContext: CanvasRenderingContext2D;
+    private modifiedImgContext: CanvasRenderingContext2D;
+
+    // attribut pour sauvegarder l'image originale
+    private originalImageSave: ImageData;
+    private isFirstBlink = true;
 
     get contextOriginal(): CanvasRenderingContext2D {
         return this.originalImgContext;
@@ -22,15 +22,20 @@ export class ImageOperationService {
         return this.modifiedImgContext;
     }
 
+    setCanvasContext(original: CanvasRenderingContext2D, modified: CanvasRenderingContext2D): void {
+        this.originalImgContext = original;
+        this.modifiedImgContext = modified;
+    }
+
     saveOriginalImageData(): void {
         const image = this.originalImgContext.getImageData(0, 0, CANVAS.width, CANVAS.height);
         this.originalImageSave = structuredClone(image);
     }
 
     /**
-     * Initialize the blink of the pixels that are different between the original and the modified image
+     * Initalise le clignotement des différences
      *
-     * @param differences list of coordinates of the pixels to highlight
+     * @param differences Liste des pixels a faire clignoter
      */
     pixelBlink(differences: Coordinate[]): void {
         if (this.isFirstBlink) {
@@ -46,10 +51,10 @@ export class ImageOperationService {
     }
 
     /**
-     * Create the blink interval
+     * Crée l'intervalle de clignotement
      *
-     * @param differences list of coordinates of the pixels to highlight
-     * @returns promise that resolves when the blink is done
+     * @param differences liste des pixels a faire clignoter
+     * @returns Promese resolved quand l'intervalle est terminé
      */
     async createBlinkInterval(differences: Coordinate[]): Promise<void> {
         let count = 0;
@@ -70,9 +75,9 @@ export class ImageOperationService {
     }
 
     /**
-     * Highlight the pixels that are different between the original and the modified image
+     * Fait clignoter les pixels differents entre les deux images
      *
-     * @param differences list of coordinates of the pixels to highlight
+     * @param differences Liste des pixels a faire clignoter
      */
     highlightPixels(differences: Coordinate[]): void {
         differences.forEach((difference) => {
@@ -88,9 +93,9 @@ export class ImageOperationService {
     }
 
     /**
-     * set the original pixel in the modified image and the original image
+     * Met les pixels de l'image originale dans les deux canvas
      *
-     * @param differences list of coordinates of the pixels to highlight
+     * @param differences liste des pixels a modifier
      */
     setOriginalPixel(differences: Coordinate[]): void {
         differences.forEach((difference) => {

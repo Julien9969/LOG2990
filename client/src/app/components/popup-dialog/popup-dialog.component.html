@@ -31,7 +31,8 @@
     <div *ngSwitchCase="'quit'">
         <h1 mat-dialog-title>Voulez-vous vraiment quitter ?</h1>
         <div class="button-row">
-            <button mat-button (click)="playerQuit()" routerLink="/home" aria-label="OUI">OUI</button>
+            <!-- <button mat-button (click)="playerQuit()" routerLink="/home" aria-label="OUI">OUI</button> -->
+            <button mat-button matDialogClose routerLink="/home" aria-label="OUI">OUI</button>
             <button mat-button matDialogClose aria-label="NON">NON</button>
         </div>
     </div>
