@@ -3,7 +3,6 @@ import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { INPUT_VALIDATION } from '@app/constants/utils-constants';
-import { CommunicationService } from '@app/services/communication.service';
 import { MatchMakingService } from '@app/services/match-making.service';
 import { GameSessionType } from '@common/game-session-type';
 
@@ -34,7 +33,6 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         @Inject(MAT_DIALOG_DATA) public data: GameSessionType,
         private dialogRef: MatDialogRef<MatchMakingDialogComponent>,
         private readonly router: Router,
-        private readonly communicationService: CommunicationService,
         public matchMaking: MatchMakingService,
     ) {
         this.gameInfo = data;
@@ -72,7 +70,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     async acceptOpponent(): Promise<void> {
         if (await this.matchMaking.acceptOpponent(this.playerName)) {
-            this.matchMaking.askForSessionId(this.gameInfo.id);
+            this.matchMaking.askForMultiSessionId(this.gameInfo.id);
         } else {
             this.dialogInfos.template = 'waitingRoom';
             this.dialogInfos.message = "l'adversaire précendent a quitté la recherche";
@@ -96,10 +94,9 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     navigateToSoloGame(): void {
-        this.communicationService.customPost(`session/${this.gameInfo.id}`).subscribe((response) => {
-            const sessionID = response as number;
+        this.matchMaking.askForSoloSessionId(this.gameInfo.id, (newSessionId: number) => {
             this.router.navigateByUrl(this.routerLink, {
-                state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: sessionID },
+                state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
             });
         });
     }

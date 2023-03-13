@@ -12,11 +12,15 @@ export class SessionService {
      * @param id L'identifiant du jeu voulu
      * @returns L'identifiant de la session créée
      */
-    create(id: string): number {
-        const newSession = new Session();
-        newSession.gameID = id;
-        this.addToList(newSession);
-        return newSession.id;
+    createNewSession(id: string, firstSocketId: string, secondSocketId: string = undefined): number {
+        let newSession: Session;
+        if (secondSocketId) {
+            newSession = new Session(id, firstSocketId, secondSocketId);
+        } else {
+            newSession = new Session(id, firstSocketId);
+        }
+        const sessionId = this.addToList(newSession);
+        return sessionId;
     }
 
     /**
@@ -24,17 +28,18 @@ export class SessionService {
      *
      * @param session La session à rajouter à la liste des sessions
      */
-    addToList(session: Session) {
-        while (session.id === undefined || this.findById(session.id) != null) {
-            session.id = Math.floor(Math.random() * SESSION_ID_CAP);
-        }
+    addToList(session: Session): number {
+        session.id = this.generateUniqueId();
         this.activeSessions.push(session);
+        return session.id;
     }
 
     /**
+     * Retourne toute le sessions présentement actives
+     *
      * @returns La liste des sessions en cours
      */
-    getAll() {
+    getAll(): Session[] {
         return this.activeSessions;
     }
 
@@ -58,7 +63,20 @@ export class SessionService {
      * @param id L'identifiant de la session
      * @returns La session
      */
-    findById(id: number): Session {
+    findById(id: number): Session | undefined {
         return this.activeSessions.find((session: Session) => session.id === id);
+    }
+
+    /**
+     * Génère un nouvel identifiant unique (pour une session)
+     *
+     * @returns nouvel identifiant unique
+     */
+    private generateUniqueId(): number {
+        let id = Math.floor(Math.random() * SESSION_ID_CAP);
+        while (this.findById(id)) {
+            id = Math.floor(Math.random() * SESSION_ID_CAP);
+        }
+        return id;
     }
 }

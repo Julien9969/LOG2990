@@ -1,28 +1,33 @@
 <main *ngIf="isLoaded" ngClass="game-theme">
     <div id="page-container">
         <div id="top-bar">
-            <mat-toolbar  color="primary">
-                <span id="player-counter" class="diff-counter" color="player">{{playerName}} : <mat-icon>search</mat-icon>
-                    {{ nDiffFound }}/{{ gameInfos.differenceCount }}
+            <mat-toolbar color="primary">
+                <span id="player-counter" class="diff-counter" color="player"
+                    >{{ playerName }} : <mat-icon>search</mat-icon> {{ nDiffFoundMainPlayer }}/{{ gameInfos.differenceCount }}
                 </span>
                 <span id="timer">{{ getTimer.formatTime }}</span>
-                <span *ngIf="!isSolo" id="opponent-counter" class="diff-counter" color="opponent">{{opponentName}} : <mat-icon>search</mat-icon>
-                    {{ nDiffFound }}/{{ gameInfos.differenceCount }}
+                <span *ngIf="!isSolo" id="opponent-counter" class="diff-counter" color="opponent"
+                    >{{ opponentName }} : <mat-icon>search</mat-icon> {{ nDiffFoundOpponent }}/{{ gameInfos.differenceCount }}
                 </span>
             </mat-toolbar>
         </div>
         <div id="game-container">
-            <app-play-image (diffFound)="incrementDiff()" [sessionID]="sessionId" [imageMainId]="gameInfos.imageMain" [imageAltId]="gameInfos.imageAlt" >
+            <app-play-image
+                (diffFoundUpdate)="handleDiffFoundUpdate($event)"
+                [sessionID]="sessionId"
+                [imageMainId]="gameInfos.imageMain"
+                [imageAltId]="gameInfos.imageAlt"
+            >
             </app-play-image>
             <app-sidebar *ngIf="isSolo"></app-sidebar>
         </div>
         <div id="bottom-bar">
-            <mat-toolbar  color="primary">
+            <mat-toolbar color="primary">
                 <button mat-button (click)="openDialog('quit')" id="quit-button" aria-label="Quitter">
                     <mat-icon>home</mat-icon>
                     Quitter
                 </button>
-                <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? "[Difficile]" : "[Facile]" }}</span>
+                <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span>
                 <button mat-button (click)="openDialog('clue')" id="clue-button" aria-label="Indice">
                     <mat-icon>highlight</mat-icon>
                     Indices : 10 (-5s)

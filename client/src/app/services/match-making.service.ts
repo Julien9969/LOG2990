@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { Injectable } from '@angular/core';
 import { SocketClientService } from '@app/services/socket-client.service';
+import { AskSessionIdData } from '@common/askSessionIdData';
 
 @Injectable({
     providedIn: 'root',
@@ -90,8 +91,14 @@ export class MatchMakingService {
         this.socketService.send('leaveWaitingRoom', gameId);
     }
 
-    askForSessionId(gameId: string) {
-        this.socketService.send('askForSessionId', gameId);
+    askForMultiSessionId(gameId: string) {
+        const askSessionIdData: AskSessionIdData = { gameId, isSolo: false };
+        this.socketService.send('askForSessionId', askSessionIdData);
+    }
+
+    askForSoloSessionId(gameId: string, callback: (sessionId: number) => void) {
+        const askSessionIdData: AskSessionIdData = { gameId, isSolo: true };
+        this.socketService.sendAndCallBack('askForSessionId', askSessionIdData, callback);
     }
 
     updateRoomView(callback: () => void) {

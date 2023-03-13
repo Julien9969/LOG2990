@@ -26,10 +26,10 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
 
     handleConnection(client: Socket) {
         this.logger.log('New client connected : ' + client.id);
-        this.server.emit('newClientConnected Main', client.id);
     }
 
     handleDisconnect(client: Socket) {
         this.logger.log('Client disconnected : ' + client.id);
+        client.disconnect();
     }
 }

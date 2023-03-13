@@ -1,8 +1,7 @@
 import { Coordinate } from './coordinate';
 
 export interface GuessResult {
-    correct: boolean;
-    alreadyFound: boolean;
-    differenceNum: number;
+    isCorrect: boolean;
+    differencesByPlayer: [ userSocketId: string, nDifferences: number ][];
     differencePixelList: Coordinate[];
 }

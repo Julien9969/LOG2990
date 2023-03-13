@@ -1,4 +1,4 @@
-import { Game, unsavedGame } from '@common/game';
+import { Game, UnsavedGame } from '@common/game';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
@@ -17,7 +17,7 @@ const transform = (doc, ret) => {
     toJSON: { transform },
     toObject: { transform },
 })
-export class GameClass extends Document implements unsavedGame {
+export class GameClass extends Document implements UnsavedGame {
     @Prop({ required: true })
     name: string;
     @Prop({ required: true })
