@@ -88,10 +88,8 @@ export class UploadImageSquareComponent implements AfterViewInit {
             return;
         }
 
-        if (imgInput.files?.length) {
-            const obj = URL.createObjectURL(imgInput.files[0]);
-            this.bgImage.src = obj;
-        }
+        const obj = URL.createObjectURL((imgInput.files as FileList)[0]);
+        this.bgImage.src = obj;
         this.bgImage.onload = () => {
             this.updateCanvas();
         };

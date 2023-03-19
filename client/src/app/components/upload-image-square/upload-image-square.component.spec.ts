@@ -8,10 +8,7 @@ describe('UploadImageSquareComponent', () => {
     let component: UploadImageSquareComponent;
     let fixture: ComponentFixture<UploadImageSquareComponent>;
     let validInput: HTMLInputElement;
-    // let validURL: string;
     let emptyInput: HTMLInputElement;
-
-    // let uploadImageEventSpy: jasmine.Spy;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -34,57 +31,175 @@ describe('UploadImageSquareComponent', () => {
 
         dataTransfer.items.add(validFile);
         validInput.files = dataTransfer.files;
-        // validURL = URL.createObjectURL(validFile);
 
         emptyInput = document.createElement('input');
         emptyInput.type = 'file';
-    });
-
-    beforeEach(() => {
-        // uploadImageEventSpy = spyOn(component.uploadImage, 'emit').and.callThrough();
     });
 
     it('should create the component', () => {
         expect(component).toBeTruthy();
     });
 
-    // describe('dispatchUploadEvent', () => {
-    //     it('should emit uploadImage event when there is an image', () => {
-    //         component.dispatchUploadEvent(validInput);
-    //         expect(uploadImageEventSpy).toHaveBeenCalled();
-    //     });
+    describe('getImageFile', () => {
+        it('converts canvas to blob with correct parameters', async () => {
+            const file = new Blob();
+            const toBlobSpy = spyOn(component.canvas, 'toBlob').and.callFake((clbck) => {
+                clbck(file);
+            });
+            const receivedFile = await component.getImageFile();
 
-    //     it('should not emit uploadImage event when there is no image', () => {
-    //         component.dispatchUploadEvent(emptyInput);
-    //         expect(emptyInput.files?.length).toBeFalsy();
-    //         expect(uploadImageEventSpy).not.toHaveBeenCalled();
-    //     });
+            expect(receivedFile).toEqual(new File([await receivedFile], 'image.png'));
+            expect(toBlobSpy).toHaveBeenCalled();
+        });
 
-    //     it('should not emit uploadImage event when input is not of type file', () => {
-    //         validInput.type = 'text';
-    //         component.dispatchUploadEvent(validInput);
-    //         expect(uploadImageEventSpy).not.toHaveBeenCalled();
-    //     });
-    // });
+        it('rejects promise when blob is null', async () => {
+            const toBlobSpy = spyOn(component.canvas, 'toBlob').and.callFake((clbck) => {
+                clbck(null);
+            });
 
-    // describe('getImageURL', () => {
-    //     it('should return an usable URL of an image', () => {
-    //         component.imageURL = validURL;
-    //         expect(component.getImageURL().toString().includes(validURL)).toBeTrue();
-    //     });
-    // });
+            expect(toBlobSpy).toThrow();
+            await expectAsync(component.getImageFile()).toBeRejected();
+        });
+    });
 
-    // describe('dispatchClearImage', () => {
-    //     it('should emit clearImage event', () => {
-    //         const clearImageEventSpy = spyOn(component.clearImage, 'emit').and.callFake(() => {});
-    //         component.dispatchClearImage();
-    //         expect(clearImageEventSpy).toHaveBeenCalled();
-    //     });
+    describe('clearBackground', () => {
+        it('sets background image to empty and redraws foreground', () => {
+            const dataUrlSpy = spyOn(component.emptyBackground, 'toDataURL').and.callFake(() => '');
+            const clearRectSpy = spyOn(component.canvasContext, 'clearRect').and.callFake(() => {});
+            const drawForegroundSpy = spyOn(component, 'drawForeground').and.callFake(() => {});
 
-    //     it('should clear the input value', () => {
-    //         component.imageInput.value = 'test';
-    //         component.dispatchClearImage();
-    //         expect(component.imageInput.value).toBe('');
-    //     });
-    // });
+            component.clearBackground();
+            expect(dataUrlSpy).toHaveBeenCalled();
+            expect(clearRectSpy).toHaveBeenCalled();
+            expect(drawForegroundSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('loadBackground', () => {
+        it('should create url and update canvas when image valid', async () => {
+            const createObjectURLSpy = spyOn(URL, 'createObjectURL');
+            const validateImageSpy = spyOn(component.validateImageService, 'validateImage').and.callFake(
+                async () => new Promise((resolve) => resolve(true)),
+            );
+            const updateCanvas = spyOn(component, 'updateCanvas').and.callFake(() => {});
+
+            await component.loadBackground(validInput);
+            (component.bgImage.onload as () => void)();
+
+            expect(validateImageSpy).toHaveBeenCalled();
+            expect(createObjectURLSpy).toHaveBeenCalledOnceWith((validInput.files as FileList)[0]);
+            expect(updateCanvas).toHaveBeenCalled();
+        });
+
+        it('should emit invalidImageType event when image invalid', async () => {
+            const createObjectURLSpy = spyOn(URL, 'createObjectURL');
+            const validateImageSpy = spyOn(component.validateImageService, 'validateImage').and.callFake(
+                async () => new Promise((resolve) => resolve(false)),
+            );
+            const invalidImageTypeSpy = spyOn(component.invalidImageType, 'emit').and.callFake(() => {});
+
+            await component.loadBackground(emptyInput);
+            expect(validateImageSpy).toHaveBeenCalled();
+            expect(createObjectURLSpy).not.toHaveBeenCalled();
+            expect(invalidImageTypeSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('updateCanvas', () => {
+        it('draws background then foreground', () => {
+            const canvasDrawImageSpy = spyOn(component.canvasContext, 'drawImage').and.callFake(() => {});
+            const drawForegroundSpy = spyOn(component, 'drawForeground').and.callFake(() => {});
+
+            component.updateCanvas();
+
+            expect(canvasDrawImageSpy).toHaveBeenCalled();
+            expect(drawForegroundSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('drawForeground', () => {
+        it('draws background then foreground', async () => {
+            const toDataURLSpy = spyOn(component.foregroundCanvas, 'toDataURL').and.callFake(() =>
+                URL.createObjectURL((validInput.files as FileList)[0]),
+            );
+            let canvasDrawImageSpy;
+
+            await new Promise<void>((resolve) => {
+                component.drawForeground();
+                canvasDrawImageSpy = spyOn(component.canvasContext, 'drawImage').and.callFake(() => {
+                    resolve();
+                });
+            });
+
+            expect(toDataURLSpy).toHaveBeenCalled();
+            expect(canvasDrawImageSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('mouse movements', () => {
+        it('onMouseDown emits mouseDown event with image coordinates', () => {
+            const stubCoords = { x: 1, y: 1 };
+            const mouseDownEmitSpy = spyOn(component.mouseDown, 'emit').and.callFake(() => {});
+            const eventToImageCoordinateSpy = spyOn(component, 'eventToImageCoordinate').and.callFake(() => stubCoords);
+
+            component.onMouseDown(new MouseEvent('mousedown'));
+
+            expect(eventToImageCoordinateSpy).toHaveBeenCalled();
+            expect(mouseDownEmitSpy).toHaveBeenCalledWith(stubCoords);
+        });
+
+        it('onMouseMove emits mouseMove event with image coordinates', () => {
+            const stubCoords = { x: 1, y: 1 };
+            const mouseMoveEmitSpy = spyOn(component.mouseMove, 'emit').and.callFake(() => {});
+            const eventToImageCoordinateSpy = spyOn(component, 'eventToImageCoordinate').and.callFake(() => stubCoords);
+
+            component.onMouseMove(new MouseEvent('mousemove'));
+
+            expect(eventToImageCoordinateSpy).toHaveBeenCalled();
+            expect(mouseMoveEmitSpy).toHaveBeenCalledWith(stubCoords);
+        });
+    });
+
+    describe('eventToImageCoordinate', () => {
+        it('clamps x and y', () => {
+            const clampSpy = spyOn(component, 'clamp').and.callFake(() => 0);
+            const result = component.eventToImageCoordinate(new MouseEvent(''));
+
+            expect(clampSpy).toHaveBeenCalledTimes(2);
+            expect(result).toEqual({ x: 0, y: 0 });
+        });
+    });
+
+    describe('canvas context getters', () => {
+        it('fgContext gets 2d context of foregroundCanvas', () => {
+            const getContextSpy = spyOn(component.foregroundCanvas, 'getContext').and.callFake(() => null);
+
+            const result = component.fgContext;
+            expect(result).toBeFalsy();
+            expect(getContextSpy).toHaveBeenCalledWith('2d', { willReadFrequently: true });
+        });
+    });
+
+    describe('clamp', () => {
+        it('returns value when in range', () => {
+            const input = 5;
+            const min = 0;
+            const max = 10;
+            expect(component.clamp(input, min, max)).toEqual(input);
+        });
+
+        it('returns min when value smaller', () => {
+            const input = -8;
+            const min = 0;
+            const max = 10;
+            expect(component.clamp(input, min, max)).toEqual(min);
+        });
+
+        it('returns max wgen value larger', () => {
+            const input = 18;
+            const min = 0;
+            const max = 10;
+            expect(component.clamp(input, min, max)).toEqual(max);
+        });
+    });
 });

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
-/* eslint-disable @typescript-eslint/no-throw-literal */
+/* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-throw-literal, max-lines */
 import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -99,6 +98,33 @@ describe('CommunicationService', () => {
             const req = httpMock.expectOne(`${baseUrl}/${pathExtension}`);
             expect(req.request.method).toBe('POST');
             expect(req.request.body).toEqual(body);
+            expect(req.request.headers).toEqual(headers);
+            req.flush(null, { status: 200, statusText: 'Ok' });
+        });
+    });
+
+    describe('deleteRequest', () => {
+        let pathExtension: string;
+        let headers: HttpHeaders;
+
+        beforeEach(() => {
+            pathExtension = 'test';
+            headers = new HttpHeaders();
+        });
+
+        it('should send a DELETE request to the given server route with the given payload', async () => {
+            service.deleteRequest(pathExtension);
+            const req = httpMock.expectOne(`${baseUrl}/${pathExtension}`);
+            expect(req.request.method).toBe('DELETE');
+            expect(req.request.body).toBeFalsy();
+            req.flush(null, { status: 200, statusText: 'Ok' });
+        });
+
+        it('should send a DELETE request to the given server route with the given payload and headers', async () => {
+            service.deleteRequest(pathExtension, headers);
+            const req = httpMock.expectOne(`${baseUrl}/${pathExtension}`);
+            expect(req.request.method).toBe('DELETE');
+            expect(req.request.body).toBeFalsy();
             expect(req.request.headers).toEqual(headers);
             req.flush(null, { status: 200, statusText: 'Ok' });
         });
