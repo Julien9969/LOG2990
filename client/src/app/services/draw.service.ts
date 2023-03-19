@@ -200,28 +200,44 @@ export class DrawService {
     }
 
     private getPixelsInPath(start: Coordinate, end: Coordinate): Coordinate[] {
-        const path: Coordinate[] = [{ ...start }];
-
         if (start.x === end.x && start.y === end.y) {
-            return path;
+            return [{ ...start }];
         }
 
         const xDirection = Math.sign(end.x - start.x);
-        if (xDirection === 0) {
-            for (let y = start.y; y !== end.y; y += Math.sign(end.y - start.y)) {
+        const yDirection = Math.sign(end.y - start.y);
+        if (xDirection === 0 || yDirection === 0) {
+            return this.computeStraightPath(start, end);
+        }
+
+        return this.computeSlopedPath(start, end);
+    }
+
+    private computeStraightPath(start: Coordinate, end: Coordinate): Coordinate[] {
+        const path: Coordinate[] = [];
+
+        if (end.x === start.x) {
+            const yDirection = Math.sign(end.y - start.y);
+            for (let y = start.y; y !== end.y; y += Math.sign(yDirection)) {
                 path.push({ x: start.x, y });
             }
-            return path;
-        }
-
-        const yDirection = Math.sign(end.y - start.y);
-        if (yDirection === 0) {
-            for (let x = start.x; x !== end.x; x += xDirection) {
+        } else if (end.y === start.y) {
+            const xDirection = Math.sign(end.x - start.x);
+            for (let x = start.x; x !== end.x; x += Math.sign(xDirection)) {
                 path.push({ x, y: start.y });
             }
-            return path;
+        } else {
+            return [];
         }
 
+        path.push({ ...end });
+        return path;
+    }
+
+    private computeSlopedPath(start: Coordinate, end: Coordinate): Coordinate[] {
+        const path: Coordinate[] = [];
+        const xDirection = Math.sign(end.x - start.x);
+        const yDirection = Math.sign(end.y - start.y);
         const deltaX: number = Math.abs(end.x - start.x);
         const deltaY: number = Math.abs(end.y - start.y);
 
@@ -229,18 +245,19 @@ export class DrawService {
             const slopeY = (yDirection * deltaY) / deltaX;
             let y = start.y;
             for (let x = start.x; x !== end.x; x += xDirection) {
-                y += slopeY;
                 path.push({ x: Math.floor(x), y: Math.floor(y) });
+                y += slopeY;
             }
         } else {
             const slopeX = (xDirection * deltaX) / deltaY;
             let x = start.x;
             for (let y = start.y; y !== end.y; y += yDirection) {
-                x += slopeX;
                 path.push({ x: Math.floor(x), y: Math.floor(y) });
+                x += slopeX;
             }
         }
 
+        path.push({ ...end });
         return path;
     }
 }

@@ -14,6 +14,14 @@ export class DrawBottomBarComponent {
         this.drawService.mode = DrawMode.PENCIL;
     }
 
+    setRectangleMode() {
+        this.drawService.mode = DrawMode.RECTANGLE;
+    }
+
+    setEraseMode() {
+        this.drawService.mode = DrawMode.ERASER;
+    }
+
     setColor(color: string) {
         this.drawService.color = color;
     }
@@ -26,16 +34,8 @@ export class DrawBottomBarComponent {
         return this.drawService.mode === DrawMode.PENCIL;
     }
 
-    setRectangleMode() {
-        this.drawService.mode = DrawMode.RECTANGLE;
-    }
-
     rectangleModeActive() {
         return this.drawService.mode === DrawMode.RECTANGLE;
-    }
-
-    setEraseMode() {
-        this.drawService.mode = DrawMode.ERASER;
     }
 
     eraseModeActive() {

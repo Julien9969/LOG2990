@@ -224,11 +224,6 @@ export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
         this.drawService.clearForeground(ActiveCanvas.Alt);
     }
 
-    ngOnDestroy() {
-        document.removeEventListener('keydown', this.keyBinds);
-        document.removeEventListener('keyup', this.shiftUnBind);
-    }
-
     mainCanvasMouseDown(coord: Coordinate) {
         this.drawService.startAction(coord, ActiveCanvas.Main);
     }
@@ -247,5 +242,10 @@ export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
 
     onMouseUp() {
         this.drawService.cancelAction();
+    }
+
+    ngOnDestroy() {
+        document.removeEventListener('keydown', this.keyBinds);
+        document.removeEventListener('keyup', this.shiftUnBind);
     }
 }
