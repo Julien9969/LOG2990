@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MainGateway } from '@app/gateway/main.gateway';
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { SessionGateway } from '@app/gateway/session/session.gateway';
+import { ChatGateway } from './gateway/chat/chat.gateway';
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
@@ -18,6 +19,6 @@ import { SessionGateway } from '@app/gateway/session/session.gateway';
         MongooseModule.forRoot(process.env.DATABASE_CONNECTION_STRING),
     ],
     controllers: [GamesController, ImageController],
-    providers: [GameService, ImageService, SessionService, Logger, MatchmakingGateway, MainGateway, SessionGateway],
+    providers: [GameService, ImageService, SessionService, Logger, MatchmakingGateway, MainGateway, SessionGateway, ChatGateway],
 })
 export class AppModule {}

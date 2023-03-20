@@ -4,9 +4,9 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 import { PATH_TO_VALID_IMAGE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication.service';
+import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
 import { ImageComparisonResult } from '@common/image-comparison-result';
-import { Message } from '@common/message';
 
 describe('CommunicationService', () => {
     let httpMock: HttpTestingController;
@@ -31,11 +31,11 @@ describe('CommunicationService', () => {
     });
 
     it('should return expected message (HttpClient called once)', () => {
-        const expectedMessage: Message = { body: 'Hello', title: 'World' };
+        const expectedMessage: communicationMessage = { body: 'Hello', title: 'World' };
 
         // check the content of the mocked call
         service.basicGet().subscribe({
-            next: (response: Message) => {
+            next: (response: communicationMessage) => {
                 expect(response.title).toEqual(expectedMessage.title);
                 expect(response.body).toEqual(expectedMessage.body);
             },
@@ -49,7 +49,7 @@ describe('CommunicationService', () => {
     });
 
     it('should not return any message when sending a POST request (HttpClient called once)', () => {
-        const sentMessage: Message = { body: 'Hello', title: 'World' };
+        const sentMessage: communicationMessage = { body: 'Hello', title: 'World' };
         // subscribe to the mocked call
         service.basicPost(sentMessage).subscribe({
             // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -64,7 +64,7 @@ describe('CommunicationService', () => {
 
     it('should handle http error safely', () => {
         service.basicGet().subscribe({
-            next: (response: Message) => {
+            next: (response: communicationMessage) => {
                 expect(response).toBeUndefined();
             },
             error: fail,
