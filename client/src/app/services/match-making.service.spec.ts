@@ -10,7 +10,7 @@ class SocketClientServiceMock extends SocketClientService {
     override connect() {}
 }
 
-fdescribe('MatchMakingService', () => {
+describe('MatchMakingService', () => {
     let service: MatchMakingService;
     let socketServiceMock: SocketClientServiceMock;
     let socketHelper: SocketTestHelper;

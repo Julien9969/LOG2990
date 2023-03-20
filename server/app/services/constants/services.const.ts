@@ -41,7 +41,7 @@ export const HARD_GAME_MAX_DIFF_PROPORTION = 0.15;
 /**
  * Constantes de gestion d'image
  */
-export const IMAGE_FOLDER_PATH = 'assets/gameImages';
+export const IMAGE_FOLDER_PATH = 'assets/game-images';
 export const IMAGE_ID_CAP = 10000;
 export const IMAGE_FORMAT = 'bmp';
 
