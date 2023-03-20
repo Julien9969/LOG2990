@@ -46,9 +46,6 @@ export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
     title: string;
     differenceRadius: number = DEFAULT_RADIUS;
 
-    originalImageId: number | undefined;
-    altImageId: number | undefined;
-
     isValid: boolean = false;
     differencesImageUrl: string | undefined;
     nbDifferences: number | undefined;
@@ -65,26 +62,15 @@ export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
         document.addEventListener('keyup', this.shiftUnBind);
     }
 
-    // TODO: BIG BUT LATER: maybe refactor image validation + game creation to game creation service?
     async submitNewGame() {
-        if (!(this.differenceRadius && this.originalImageId && this.altImageId)) {
-            this.showErrorMessage('Erreur: informations manquantes pour créer un jeu');
-            return;
-        }
         if (!this.validateTitle()) {
             this.showErrorMessage(`Erreur: veuillez entrer un titre valide [Permit: a-z, A-Z, 0-9, espace et longueur max: ${MAX_TITLE_LENGTH}]`);
             return;
         }
-        // TODO: BIG BUT LATER: Change server flow, resend both images in create game
 
-        const game = {
-            name: this.title,
-            radius: this.differenceRadius,
-            imageMain: this.originalImageId,
-            imageAlt: this.altImageId,
-        };
+        const formData = await this.buildGameCreationForm();
         try {
-            await this.communication.postRequest('games', game);
+            await this.communication.postRequest('games', formData);
             this.showSuccessMessage('Bravo! Ton jeu a été ajouté');
             setTimeout(() => {
                 this.router.navigate(['/config']);
@@ -95,22 +81,26 @@ export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    async compareImages() {
+    async buildGameCreationForm() {
         const originalImage = await this.mainImageSquare.getImageFile();
         const altImage = await this.altImageSquare.getImageFile();
 
-        this.validateImageDifferences(originalImage, altImage);
+        const formData: FormData = new FormData();
+        formData.append('mainFile', originalImage, originalImage.name);
+        formData.append('altFile', altImage, altImage.name);
+        formData.append('name', this.title);
+        formData.append('radius', this.differenceRadius.toString());
+
+        return formData;
     }
 
-    async validateImageDifferences(originalImage: File, altImage: File) {
+    async compareImages() {
+        const originalImage = await this.mainImageSquare.getImageFile();
+        const altImage = await this.altImageSquare.getImageFile();
         let result;
-        let originalImageId;
-        let altImageId;
+
         try {
-            // TODO: BIG BUT LATER: Change server flow to send both images together in compareImages AND resend in create game
-            originalImageId = await this.communication.saveImage(originalImage);
-            altImageId = await this.communication.saveImage(altImage);
-            result = await this.communication.compareImages(originalImageId, altImageId, this.differenceRadius);
+            result = await this.communication.compareImages(originalImage, altImage, this.differenceRadius);
         } catch (errorResponse: unknown) {
             if (errorResponse instanceof HttpErrorResponse) {
                 const errMessage = errorResponse.error.message ? errorResponse.error.message : 'Le serveur ne répond pas.';
@@ -118,15 +108,14 @@ export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
             }
             return;
         }
+
         if (!result.isValid) {
             this.showErrorMessage('Erreur: Nombre de différences invalides');
             return;
         }
         this.isValid = result.isValid;
-        this.originalImageId = originalImageId;
-        this.altImageId = altImageId;
         this.isHard = result.isHard;
-        this.differencesImageUrl = this.communication.getImageURL(result.differenceImageId);
+        this.differencesImageUrl = result.differenceImageBase64;
         this.nbDifferences = result.differenceCount;
         this.showSuccessMessage('Super, ton jeu est valide');
     }
@@ -158,9 +147,11 @@ export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
         this.mainImageSquare.loadBackground(imgInput);
         this.altImageSquare.loadBackground(imgInput);
     }
+
     setTitle(title: string) {
         this.title = title;
     }
+
     validateTitle() {
         if (!this.title) return false;
         if (this.title.length > MAX_TITLE_LENGTH) return false;
@@ -179,6 +170,7 @@ export class GameCreationFormComponent implements AfterViewInit, OnDestroy {
         }
         return true;
     }
+
     setRadius(index: string) {
         if (ALLOWED_RADIUS.length > Number(index)) {
             this.differenceRadius = ALLOWED_RADIUS[Number(index)];

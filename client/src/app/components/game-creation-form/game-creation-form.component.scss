@@ -91,7 +91,10 @@ button {
 
 .popup {
     overflow: hidden;
-    position: fixed;
     top: 25vh;
     width: 100%;
+}
+
+.hidden {
+    display: none;
 }

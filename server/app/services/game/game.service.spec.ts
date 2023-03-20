@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, no-restricted-imports, max-lines, max-len  */
 import { GameDocument } from '@app/Schemas/game/game.schema';
-import { InputGame } from '@common/input-game';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
+import { DIFFERENCE_LISTS_FOLDER, DIFFERENCE_LISTS_PREFIX } from '../constants/services.const';
 import { DifferenceDetectionService } from '../difference-detection/difference-detection.service';
 import { ImageService } from '../images/image.service';
 import { GameService } from './game.service';
@@ -56,8 +56,9 @@ describe('Game Service tests', () => {
 
     describe('create', () => {
         beforeEach(() => {
-            jest.spyOn(DifferenceDetectionService.prototype as any, 'saveDifferences').mockImplementation(() => {});
-            jest.spyOn(gameService, 'verifyGameId').mockImplementation(async () => {});
+            jest.spyOn(DifferenceDetectionService.prototype as any, 'saveDifferenceLists').mockImplementation(() => {});
+            jest.spyOn(gameService, 'verifyGameId' as any).mockImplementation(async () => {});
+            jest.spyOn(imageService, 'saveImage').mockImplementation(() => 0);
         });
 
         it('create returns valid game when valid input', async () => {
@@ -71,7 +72,7 @@ describe('Game Service tests', () => {
                 });
             });
 
-            const result = await gameService.create(stubInputGame);
+            const result = await gameService.create(stubInputGame, Buffer.from([]), Buffer.from([]));
             expect(result).toBeDefined();
             expect(result.isValid).toEqual(true);
         });
@@ -88,7 +89,7 @@ describe('Game Service tests', () => {
             });
             let status: number;
             try {
-                await gameService.create(stubInputGame);
+                await gameService.create(stubInputGame, Buffer.from([]), Buffer.from([]));
             } catch (err) {
                 status = err.status;
                 expect(err).toBeInstanceOf(HttpException);
@@ -102,12 +103,7 @@ describe('Game Service tests', () => {
             });
             let status: number;
             try {
-                await gameService.create({
-                    name: 'gamename',
-                    imageMain: 0,
-                    imageAlt: 0,
-                    radius: undefined,
-                });
+                await gameService.create({ name: 'gamename', radius: undefined }, Buffer.from([]), Buffer.from([]));
             } catch (err) {
                 status = err.status;
                 expect(err).toBeInstanceOf(HttpException);
@@ -118,7 +114,7 @@ describe('Game Service tests', () => {
 
     describe('delete', () => {
         beforeEach(() => {
-            jest.spyOn(gameService, 'verifyGameId').mockImplementation(async () => {});
+            jest.spyOn(gameService, 'verifyGameId' as any).mockImplementation(async () => {});
         });
         it('should call delete from gameModels with correct game id', async () => {
             jest.spyOn(gameService, 'findById').mockImplementation(async () => Promise.resolve(stubGame));
@@ -129,7 +125,8 @@ describe('Game Service tests', () => {
             expect(imageDeleteSpy).toHaveBeenCalledTimes(2);
             expect(imageDeleteSpy).toHaveBeenNthCalledWith(1, stubGame.imageMain);
             expect(imageDeleteSpy).toHaveBeenNthCalledWith(2, stubGame.imageAlt);
-            expect(unlinkSpy).toHaveBeenCalledTimes(2);
+            expect(unlinkSpy).toHaveBeenCalledTimes(1);
+            expect(unlinkSpy).toHaveBeenCalledWith(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${stubGame.id}.json`);
             expect(gameModel.deleteOne).toHaveBeenCalledWith({ _id: stubGame.id });
             expect(gameModel.deleteOne).toHaveBeenCalled();
         });
@@ -152,7 +149,7 @@ describe('Game Service tests', () => {
 
     describe('findById', () => {
         beforeEach(() => {
-            jest.spyOn(gameService, 'verifyGameId').mockImplementation(async () => {});
+            jest.spyOn(gameService, 'verifyGameId' as any).mockImplementation(async () => {});
         });
         it('should call gameModels findOne method with correct id', async () => {
             await gameService.findById(stubGame.id);
@@ -168,30 +165,25 @@ describe('Game Service tests', () => {
 
     describe('compareImages method', () => {
         beforeEach(() => {
-            jest.spyOn(gameService, 'verifyGameId').mockImplementation(async () => {});
+            jest.spyOn(gameService, 'verifyGameId' as any).mockImplementation(async () => {});
         });
         it('Throws an error when a parameter is missing', () => {
-            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImagePaths').mockResolvedValue(undefined);
+            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImages').mockResolvedValue(undefined);
             jest.spyOn(DifferenceDetectionService.prototype as any, 'getComparisonResult').mockResolvedValue(undefined);
 
-            const invalidGame: InputGame = {
-                name: 'test',
-                imageMain: 0,
-                imageAlt: undefined,
-                radius: 0,
-            };
+            const invalidGame = { name: 'test', radius: 0 };
 
             expect(async () => {
-                await gameService.compareImages(invalidGame, new DifferenceDetectionService());
+                await gameService.compareImages(invalidGame, Buffer.from([]), undefined, new DifferenceDetectionService());
             }).rejects.toThrow(new Error('Le jeu nécessite une image ou rayon.'));
         });
 
         it('Throws an error when image comparison fails', () => {
-            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImagePaths').mockRejectedValue(new Error());
+            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImages').mockRejectedValue(new Error());
             jest.spyOn(DifferenceDetectionService.prototype as any, 'getComparisonResult').mockReturnValue(undefined);
 
             expect(async () => {
-                await gameService.compareImages(stubInputGame, new DifferenceDetectionService());
+                await gameService.compareImages(stubInputGame, Buffer.from([]), Buffer.from([]), new DifferenceDetectionService());
             }).rejects.toThrow(new Error());
         });
 
@@ -203,10 +195,10 @@ describe('Game Service tests', () => {
                 differenceImageId: 0,
             };
 
-            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImagePaths').mockResolvedValue(new Error());
+            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImages').mockResolvedValue(new Error());
             jest.spyOn(DifferenceDetectionService.prototype as any, 'getComparisonResult').mockReturnValue(mockResult);
 
-            const result = await gameService.compareImages(stubInputGame, new DifferenceDetectionService());
+            const result = await gameService.compareImages(stubInputGame, Buffer.from([]), Buffer.from([]), new DifferenceDetectionService());
 
             expect(result).toEqual(mockResult);
         });
@@ -219,17 +211,17 @@ describe('Game Service tests', () => {
         });
 
         it('should call mongoose.isValidObjectId method', () => {
-            gameService.verifyGameId('0');
+            gameService['verifyGameId']('0');
             expect(isValidIdSpy).toBeCalledTimes(1);
         });
 
         it('should not throw an error when id is valid', () => {
-            expect(() => gameService.verifyGameId('0')).not.toThrow();
+            expect(() => gameService['verifyGameId']('0')).not.toThrow();
         });
 
         it('should throw an error when id is not valid', () => {
             isValidIdSpy.mockReturnValue(false);
-            expect(() => gameService.verifyGameId('0')).toThrow();
+            expect(() => gameService['verifyGameId']('0')).toThrow();
         });
     });
 });

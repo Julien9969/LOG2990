@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { IMAGE_HEIGHT, IMAGE_WIDTH } from '@app/constants/utils-constants';
+import { CANVAS_BIT_DEPTH, IMAGE_HEIGHT, IMAGE_WIDTH, UPLOADED_IMAGE_BIT_DEPTH } from '@app/constants/utils-constants';
 import { DrawService } from '@app/services/draw.service';
 import ValidateImageService from '@app/services/validate-image.service';
 import { Coordinate } from '@common/coordinate';
@@ -61,18 +61,26 @@ export class UploadImageSquareComponent implements AfterViewInit {
         (this.emptyBackground.getContext('2d') as CanvasRenderingContext2D).fillRect(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
     }
 
-    async getImageFile() {
-        const imageToBlob = new Promise<Blob>((resolve, reject) => {
-            this.canvas.toBlob(
-                (blob) => {
-                    if (blob !== null) resolve(blob);
-                    else reject('Original canvas returned null.');
-                },
-                'image/png',
-                1,
-            );
-        });
-        return new File([await imageToBlob], 'image.png');
+    getImageFile(): File {
+        const imageData = this.canvasContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT).data;
+        const bitmap: Uint8Array = new Uint8Array(IMAGE_WIDTH * IMAGE_HEIGHT * 3);
+
+        /**
+         * Ceci permet le réarrangement des pixels de RGBA (format 32bits des canvasElement), jusqu'en RGB (24 bits),
+         * pour la compatibilité avec les buffer de Jimp du côté serveur.
+         * On enlève donc la composante A, qui est le 4e octet de chaque pixel.
+         */
+        for (let y = 0; y < IMAGE_HEIGHT; y++) {
+            for (let x = 0; x < IMAGE_WIDTH; x++) {
+                const canvasPos = y * IMAGE_WIDTH * CANVAS_BIT_DEPTH + x * CANVAS_BIT_DEPTH;
+                const bitmapPos = y * IMAGE_WIDTH * UPLOADED_IMAGE_BIT_DEPTH + x * UPLOADED_IMAGE_BIT_DEPTH;
+                bitmap[bitmapPos] = imageData[canvasPos];
+                bitmap[bitmapPos + 1] = imageData[canvasPos + 1];
+                bitmap[bitmapPos + 2] = imageData[canvasPos + 2];
+            }
+        }
+
+        return new File([bitmap], 'image.bmp');
     }
 
     clearBackground() {

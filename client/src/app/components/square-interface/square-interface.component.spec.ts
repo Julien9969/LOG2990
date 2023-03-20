@@ -1,5 +1,4 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-unused-vars */
+/* eslint-disable prettier/prettier, no-unused-vars, @typescript-eslint/no-empty-function */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -10,9 +9,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ErrorDuringLoadingComponent } from '@app/components/error-during-loading/error-during-loading.component';
 import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
 import { SquareInterfaceComponent } from '@app/components/square-interface/square-interface.component';
+import { DELAY_BEFORE_BUTTONS_UPDATE, GAMES_PER_PAGE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication.service';
 import { GameService } from '@app/services/game.service';
-import { GAMES_PER_PAGE, DELAY_BEFORE_BUTTONS_UPDATE } from '@app/constants/utils-constants';
 import { Game } from '@common/game';
 
 describe('SquareInterfaceComponent', () => {
@@ -134,5 +133,15 @@ describe('SquareInterfaceComponent', () => {
         component.reachableGames();
         expect(component['matchMaking'].roomCreatedForThisGame).toHaveBeenCalled();
         expect(component.someoneWaiting).toBeTruthy();
+    });
+
+    it('deleteGame calls game service delete and reloads page', async () => {
+        const deleteSpy = spyOn(component['gameService'], 'deleteGame').and.callFake(async () => {});
+        // eslint-disable-next-line -- Le any sert à mock une fonction privée
+        const reloadSpy = spyOn(component, 'reloadWindow' as any).and.callFake(() => {});
+        await component.deleteGame('');
+
+        expect(deleteSpy).toHaveBeenCalled();
+        expect(reloadSpy).toHaveBeenCalled();
     });
 });

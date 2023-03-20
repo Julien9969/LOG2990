@@ -19,10 +19,10 @@ import {
 import { ActiveCanvas } from '@app/interfaces/active-canvas';
 import { CommunicationService } from '@app/services/communication.service';
 import ValidateImageService from '@app/services/validate-image.service';
+import { ImageComparisonResult } from '@common/image-comparison-result';
 import { GameCreationFormComponent } from './game-creation-form.component';
 
 const PATH_TO_VALID_IMAGE = '/assets/test-assets/image_empty.bmp';
-const VALID_IMAGE_ID = 1999;
 
 describe('GameCreationFormComponent', () => {
     let component: GameCreationFormComponent;
@@ -32,7 +32,6 @@ describe('GameCreationFormComponent', () => {
     let validImgFile: File;
 
     let httpError: HttpErrorResponse;
-    let httpErrorNoMessage: HttpErrorResponse;
     let routerSpy: jasmine.Spy;
 
     beforeEach(async () => {
@@ -62,7 +61,6 @@ describe('GameCreationFormComponent', () => {
         validImgInput.files = dataTransfer.files;
 
         httpError = new HttpErrorResponse({ error: { message: 'test' }, status: 400, statusText: 'Bad Request' });
-        httpErrorNoMessage = new HttpErrorResponse({ error: {}, status: 400, statusText: 'Bad Request' });
     });
 
     it('should create the component', () => {
@@ -95,32 +93,26 @@ describe('GameCreationFormComponent', () => {
     });
 
     describe('submitNewGame', () => {
-        it('should create new game with correct parameters', async () => {
-            const createGameSpy = spyOn(component.communication, 'postRequest').and.returnValue(Promise.resolve(new HttpResponse({ body: {} })));
-            component.title = 'test';
-            component.differenceRadius = 3;
-            component.originalImageId = VALID_IMAGE_ID;
-            component.altImageId = VALID_IMAGE_ID;
-            await component.submitNewGame();
-            expect(createGameSpy).toHaveBeenCalledWith('games', {
-                name: component.title,
-                radius: component.differenceRadius,
-                imageMain: component.originalImageId,
-                imageAlt: component.altImageId,
-            });
+        let stubForm: FormData;
+        let buildGameCreationFormSpy: jasmine.Spy;
+        beforeEach(() => {
+            stubForm = new FormData();
+            buildGameCreationFormSpy = spyOn(component, 'buildGameCreationForm').and.callFake(
+                async () => new Promise((resolve) => resolve(stubForm)),
+            );
         });
 
-        it("should call showErrorMessage when component doesn't have all the required information", async () => {
-            const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
+        it('should create new game with correct parameters', async () => {
+            const createGameSpy = spyOn(component.communication, 'postRequest').and.returnValue(Promise.resolve(new HttpResponse({ body: {} })));
+            const validateTitleSpy = spyOn(component, 'validateTitle').and.callFake(() => true);
             await component.submitNewGame();
-            expect(showErrorMessageSpy).toHaveBeenCalled();
+            expect(validateTitleSpy).toHaveBeenCalled();
+            expect(buildGameCreationFormSpy).toHaveBeenCalled();
+            expect(createGameSpy).toHaveBeenCalledWith('games', stubForm);
         });
 
         it('should call showErrorMessage when server returns error', async () => {
-            component.title = 'test';
-            component.differenceRadius = 3;
-            component.originalImageId = VALID_IMAGE_ID;
-            component.altImageId = VALID_IMAGE_ID;
+            spyOn(component, 'validateTitle').and.callFake(() => true);
             const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
             spyOn(component.communication, 'postRequest').and.callFake(() => {
                 throw httpError;
@@ -130,10 +122,7 @@ describe('GameCreationFormComponent', () => {
         });
 
         it('should call showErrorMessages when client throws an error', async () => {
-            component.title = 'test';
-            component.differenceRadius = 3;
-            component.originalImageId = VALID_IMAGE_ID;
-            component.altImageId = VALID_IMAGE_ID;
+            spyOn(component, 'validateTitle').and.callFake(() => true);
             const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
             spyOn(component.communication, 'postRequest').and.callFake(() => {
                 throw new Error();
@@ -144,10 +133,7 @@ describe('GameCreationFormComponent', () => {
 
         it('should navigate back to config page after successful game creation', fakeAsync(() => {
             spyOn(component.communication, 'postRequest').and.returnValue(Promise.resolve(new HttpResponse({ body: {} })));
-            component.title = 'test';
-            component.differenceRadius = 3;
-            component.originalImageId = VALID_IMAGE_ID;
-            component.altImageId = VALID_IMAGE_ID;
+            spyOn(component, 'validateTitle').and.callFake(() => true);
             component.submitNewGame();
             tick(3000);
             expect(routerSpy).toHaveBeenCalledWith(['/config']);
@@ -156,99 +142,78 @@ describe('GameCreationFormComponent', () => {
 
         it('should call showErrorMessages when the title is not valid', async () => {
             const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
-            const validateTitleSpy = spyOn(component, 'validateTitle').and.returnValue(false);
-            component.title = 'test';
-            component.differenceRadius = 3;
-            component.originalImageId = VALID_IMAGE_ID;
-            component.altImageId = VALID_IMAGE_ID;
+            const validateTitleSpy = spyOn(component, 'validateTitle').and.callFake(() => false);
             await component.submitNewGame();
             expect(validateTitleSpy).toHaveBeenCalled();
             expect(showErrorMessageSpy).toHaveBeenCalled();
         });
     });
 
-    describe('compareImages', () => {
-        it('gets both images and validates differences', async () => {
-            const mainImageSpy = spyOn(component.mainImageSquare, 'getImageFile').and.callFake(async () => {
-                return new Promise((resolve) => {
-                    resolve(validImgFile);
-                });
-            });
-            const altImageSpy = spyOn(component.altImageSquare, 'getImageFile').and.callFake(async () => {
-                return new Promise((resolve) => {
-                    resolve(validImgFile);
-                });
-            });
-            const validateImageDifferencesSpy = spyOn(component, 'validateImageDifferences').and.callFake(
-                async () =>
-                    new Promise<void>((resolve) => {
-                        resolve();
-                    }),
-            );
-
-            await component.compareImages();
+    describe('buildGameCreationForm', () => {
+        it('gets both images', async () => {
+            const mainImageSpy = spyOn(component.mainImageSquare, 'getImageFile').and.callFake(() => validImgFile);
+            const altImageSpy = spyOn(component.altImageSquare, 'getImageFile').and.callFake(() => validImgFile);
+            await component.buildGameCreationForm();
 
             expect(mainImageSpy).toHaveBeenCalled();
             expect(altImageSpy).toHaveBeenCalled();
-            expect(validateImageDifferencesSpy).toHaveBeenCalledWith(validImgFile, validImgFile);
+        });
+
+        it('creates form data with correct body', async () => {
+            spyOn(component.mainImageSquare, 'getImageFile').and.callFake(() => validImgFile);
+            spyOn(component.altImageSquare, 'getImageFile').and.callFake(() => validImgFile);
+
+            const result = await component.buildGameCreationForm();
+            expect(result.has('name')).toBeTruthy();
+            expect(result.has('mainFile')).toBeTruthy();
+            expect(result.has('altFile')).toBeTruthy();
+            expect(result.has('radius')).toBeTruthy();
         });
     });
 
-    describe('validateImageDifferences', () => {
-        let compareImageResult;
-        let saveImageSpy: jasmine.Spy;
-        let compareImagesSpy: jasmine.Spy;
+    describe('compareImages', () => {
+        let compareImageResult: ImageComparisonResult;
+        let mainImageSpy: jasmine.Spy;
+        let altImageSpy: jasmine.Spy;
 
         beforeEach(() => {
             compareImageResult = {
                 isValid: true,
-                originalImageId: VALID_IMAGE_ID,
-                altImageId: VALID_IMAGE_ID,
                 isHard: false,
                 differenceCount: 9,
-                differenceImageId: VALID_IMAGE_ID,
+                differenceImageBase64: '',
             };
-            saveImageSpy = spyOn(component.communication, 'saveImage');
-            saveImageSpy.and.returnValue(Promise.resolve(VALID_IMAGE_ID));
-            compareImagesSpy = spyOn(component.communication, 'compareImages');
-            compareImagesSpy.and.returnValue(Promise.resolve(compareImageResult));
+            mainImageSpy = spyOn(component.mainImageSquare, 'getImageFile').and.callFake(() => validImgFile);
+            altImageSpy = spyOn(component.altImageSquare, 'getImageFile').and.callFake(() => validImgFile);
         });
 
-        it('should call saveImage', async () => {
-            await component.validateImageDifferences(validImgFile, validImgFile);
-            expect(saveImageSpy).toHaveBeenCalledWith(validImgFile);
-            expect(saveImageSpy).toHaveBeenCalledWith(validImgFile);
-        });
-
-        it('should call compareImages', async () => {
-            saveImageSpy.and.returnValue(VALID_IMAGE_ID);
-            await component.validateImageDifferences(validImgFile, validImgFile);
-            expect(compareImagesSpy).toHaveBeenCalledWith(component.originalImageId, component.altImageId, component.differenceRadius);
-        });
-
-        it('should call showSuccessMessage', async () => {
+        it('should get image files and call showSuccessMessage when successful', async () => {
+            const compareImagesSpy = spyOn(component.communication, 'compareImages').and.callFake(async () => Promise.resolve(compareImageResult));
             const showSuccessMessageSpy = spyOn(component, 'showSuccessMessage').and.callFake(() => {});
-            await component.validateImageDifferences(validImgFile, validImgFile);
+            await component.compareImages();
+            expect(compareImagesSpy).toHaveBeenCalled();
+            expect(mainImageSpy).toHaveBeenCalled();
+            expect(altImageSpy).toHaveBeenCalled();
             expect(showSuccessMessageSpy).toHaveBeenCalled();
         });
 
-        it('should call showErrorMessage when server returns an error', () => {
+        it('should call showErrorMessage, when server returns an error', async () => {
             const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
-            saveImageSpy.and.callFake(() => {
+            spyOn(component.communication, 'compareImages').and.callFake(() => {
                 throw httpError;
             });
 
-            component.validateImageDifferences(validImgFile, validImgFile);
+            await component.compareImages();
             expect(showErrorMessageSpy).toHaveBeenCalled();
         });
 
-        it('should call showErrorMessage when server returns an error without a message', () => {
+        it('should call showErrorMessage, even when no error message', async () => {
             const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
-            saveImageSpy.and.callFake(() => {
-                throw httpErrorNoMessage;
+            spyOn(component.communication, 'compareImages').and.callFake(() => {
+                throw new HttpErrorResponse({ error: { message: undefined } });
             });
 
-            component.validateImageDifferences(validImgFile, validImgFile);
+            await component.compareImages();
             expect(showErrorMessageSpy).toHaveBeenCalled();
         });
 
@@ -257,14 +222,13 @@ describe('GameCreationFormComponent', () => {
 
             compareImageResult = {
                 isValid: false,
-                originalImageId: VALID_IMAGE_ID,
-                altImageId: VALID_IMAGE_ID,
                 isHard: false,
                 differenceCount: 9,
-                differenceImageId: VALID_IMAGE_ID,
+                differenceImageBase64: '',
             };
-            compareImagesSpy.and.returnValue(Promise.resolve(compareImageResult));
-            await component.validateImageDifferences(validImgFile, validImgFile);
+            spyOn(component.communication, 'compareImages').and.callFake(async () => Promise.resolve(compareImageResult));
+            await component.compareImages();
+
             expect(showErrorMessageSpy).toHaveBeenCalled();
         });
     });

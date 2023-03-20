@@ -1,11 +1,11 @@
+import { GameImageInput } from '@app/interfaces/game-image-input';
 import { ImageService } from '@app/services/images/image.service';
 import { Utils } from '@app/services/utils/utils.service';
-import { ImageComparisonInput } from '@common/image-comparison-input';
 import { ImageComparisonResult } from '@common/image-comparison-result';
-import { Body, Controller, Delete, Get, Header, HttpCode, Param, Post, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, Param, Post, StreamableFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { HttpException } from '@nestjs/common/exceptions';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('images')
 export class ImageController {
@@ -39,53 +39,33 @@ export class ImageController {
     }
 
     /**
-     * Télécharge une nouvelle image
-     *
-     * @param file Le fichier binaire envoyé directement à travers l'attribut 'file' d'un form html
-     * @returns l'id de l'image crée
-     */
-    @Post()
-    @Header('content-type', 'image/bmp')
-    @UseInterceptors(FileInterceptor('file'))
-    addNewImage(@UploadedFile() file: Express.Multer.File) {
-        const newImageId = this.imageService.saveImage(file.buffer);
-        return newImageId;
-    }
-
-    /**
-     * Détruit une image spécifique dans la mémoire serveur et dans la permanence
-     *
-     * @param params id de l'image
-     * @returns Un message d'erreur si il y en a une, NO CONTENT en cas de succès
-     */
-    @Delete('/:id')
-    @HttpCode(HttpStatus.NO_CONTENT)
-    deleteImage(@Param('id') stringId: string) {
-        const id = Utils.convertToInt(stringId);
-        try {
-            this.imageService.deleteImage(id);
-        } catch (error) {
-            throw new HttpException(error.message, HttpStatus.NOT_FOUND);
-        }
-    }
-
-    /**
      * Compare 2 images selon un rayon d'elargissement, en fonction des règles du jeu
      *  comme le nombre minimal et maximal de différences
      *
-     * @param body Contient les id des images principale et alternative, ainsi que le rayon
+     * @param input Contient le rayon d'elargissement
+     * @param files Contient les données bitmap des images principale et alternative
      * @returns Un résultat de type ImageComparisonResult, avec les infos comme la validité et la difficulté
      */
     @Post('/compare')
     @HttpCode(HttpStatus.OK)
-    async compareImages(@Body() body: ImageComparisonInput): Promise<ImageComparisonResult> {
-        if (!body.imageMain || !body.imageAlt || body.radius === undefined) {
+    @Header('content-type', 'application/json')
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: 'mainFile', maxCount: 1 },
+            { name: 'altFile', maxCount: 1 },
+        ]),
+    )
+    async compareImages(@UploadedFiles() files: GameImageInput, @Body() input: { radius: string }): Promise<ImageComparisonResult> {
+        if (!files || !files.mainFile || !files.altFile || !input || input.radius === undefined) {
             throw new HttpException('Il manque des parametres dans le body.', HttpStatus.BAD_REQUEST);
         }
+        const mainImageBitmap = files.mainFile[0].buffer;
+        const altImageBitmap = files.altFile[0].buffer;
+        const radius = Utils.convertToInt(input.radius);
 
         let result: ImageComparisonResult;
         try {
-            result = await this.imageService.compareImages(body.imageMain, body.imageAlt, body.radius);
+            result = await this.imageService.compareImages(mainImageBitmap, altImageBitmap, radius);
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
         }

@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines, max-len, no-restricted-imports */
-import { ImageComparisonResult } from '@common/image-comparison-result';
-import { HttpException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as Jimp from 'jimp';
-import { IMAGE_HEIGHT, IMAGE_WIDTH } from '../constants/services.const';
+import { IMAGE_FORMAT } from '../constants/services.const';
 import { DifferenceDetectionService } from '../difference-detection/difference-detection.service';
 
 import { ImageService } from './image.service';
@@ -32,7 +30,7 @@ describe('Image Service tests', () => {
         expect(spy1).toHaveBeenCalled();
     });
     it('getImage should call imageExists', () => {
-        const spy1 = jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
+        const spy1 = jest.spyOn(imageService as any, 'imageExists').mockImplementation(() => {
             return true;
         });
         jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
@@ -46,7 +44,7 @@ describe('Image Service tests', () => {
     });
     it('getImage should call getPath if this imageExists return true', () => {
         const spy = jest.spyOn(imageService, 'getPath');
-        jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
+        jest.spyOn(imageService as any, 'imageExists').mockImplementation(() => {
             return true;
         });
         jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
@@ -56,7 +54,7 @@ describe('Image Service tests', () => {
         expect(spy).toHaveBeenCalled();
     });
     it('getImage should Read the correct path', () => {
-        jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
+        jest.spyOn(imageService as any, 'imageExists').mockImplementation(() => {
             return true;
         });
         const spy = jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
@@ -66,20 +64,20 @@ describe('Image Service tests', () => {
         expect(spy).toHaveBeenCalledWith(imageService.getPath(12));
     });
     it('save should write with the correct path and ID', () => {
-        const spy1 = jest.spyOn(imageService, 'generateId').mockImplementation(() => {
+        const spy1 = jest.spyOn(imageService as any, 'generateId').mockImplementation(() => {
             return 12;
         });
 
-        const spy2 = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {
+        const spy2 = jest.spyOn(Jimp.prototype, 'write').mockImplementation(() => {
             return null;
         });
         imageService.saveImage(null);
         expect(spy1).toHaveBeenCalled();
-        expect(spy2).toHaveBeenCalledWith(imageService.getPath(12), null);
+        expect(spy2).toHaveBeenCalledWith(imageService.getPath(12));
     });
 
     it('deleteImage should call imageExists', () => {
-        const spy1 = jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
+        const spy1 = jest.spyOn(imageService as any, 'imageExists').mockImplementation(() => {
             return true;
         });
         jest.spyOn(fs, 'unlinkSync').mockImplementation(() => {
@@ -94,7 +92,7 @@ describe('Image Service tests', () => {
         const spy = jest.spyOn(fs, 'unlinkSync').mockImplementation(() => {
             return null;
         });
-        jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
+        jest.spyOn(imageService as any, 'imageExists').mockImplementation(() => {
             return true;
         });
 
@@ -115,52 +113,16 @@ describe('Image Service tests', () => {
         expect(e).toEqual(new Error('Image non existante.'));
     });
 
-    it('compareImages should throw an error if the images dont exist', async () => {
-        jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
-            return false;
-        });
-        let e: HttpException;
-        try {
-            await imageService.compareImages(12, 13, 9);
-        } catch (error) {
-            e = error;
-        }
-        expect(e.message).toEqual('Image ID pas trouve.');
-    });
-
-    it('saveDifferenceImage saves image returned by diffDetectionService', () => {
-        const stubPath = 'test-path';
-        const stubResult: ImageComparisonResult = {
-            isValid: true,
-            isHard: false,
-            differenceCount: 0,
-        };
-        const testDiffDetService: DifferenceDetectionService = Object.assign({
-            generateDifferenceImage: jest.fn(() => {
-                return new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT);
-            }),
-        });
-        const generateDiffSpy = jest.spyOn(testDiffDetService, 'generateDifferenceImage');
-        jest.spyOn(imageService, 'getPath').mockImplementation(() => stubPath);
-        jest.spyOn(imageService, 'generateId').mockImplementation(() => 42);
-        const writeSpy = jest.spyOn(Jimp.prototype, 'write').mockImplementation(() => new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT));
-
-        imageService['saveDifferenceImage'](stubResult, testDiffDetService);
-
-        expect(generateDiffSpy).toBeCalled();
-        expect(writeSpy).toBeCalledWith(stubPath);
-    });
-
     it('deleteImage should create new differenceDetectionService, compare the 2 images path and get the results', async () => {
-        jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
+        jest.spyOn(imageService as any, 'imageExists').mockImplementation(() => {
             return true;
         });
-        const spy2 = jest.spyOn(DifferenceDetectionService.prototype, 'compareImagePaths').mockImplementation(() => {
+        const spy2 = jest.spyOn(DifferenceDetectionService.prototype, 'compareImages').mockImplementation(() => {
             return null;
         });
 
         try {
-            await imageService.compareImages(12, 13, 9);
+            await imageService.compareImages(Buffer.from([]), Buffer.from([]), 9);
         } catch (error) {
             // e = error;
         }
@@ -169,10 +131,10 @@ describe('Image Service tests', () => {
     });
 
     it('if the results are invalid, generateDifferenceImage should not be called', async () => {
-        jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
+        jest.spyOn(imageService as any, 'imageExists').mockImplementation(() => {
             return true;
         });
-        jest.spyOn(DifferenceDetectionService.prototype, 'compareImagePaths').mockImplementation(() => {
+        jest.spyOn(DifferenceDetectionService.prototype, 'compareImages').mockImplementation(() => {
             return null;
         });
         const spy1 = jest.spyOn(DifferenceDetectionService.prototype, 'generateDifferenceImage').mockImplementation(() => {
@@ -184,7 +146,7 @@ describe('Image Service tests', () => {
 
         // let e: HttpException;
         try {
-            await imageService.compareImages(12, 13, 9);
+            await imageService.compareImages(Buffer.from([]), Buffer.from([]), 9);
         } catch (error) {
             // e = error;
         }
@@ -192,10 +154,10 @@ describe('Image Service tests', () => {
     });
 
     it('if the results are valid, generateDifferenceImage should  be called and diffWrite should be called', async () => {
-        jest.spyOn(imageService, 'imageExists').mockImplementation(() => {
+        jest.spyOn(imageService as any, 'imageExists').mockImplementation(() => {
             return true;
         });
-        jest.spyOn(DifferenceDetectionService.prototype, 'compareImagePaths').mockImplementation(() => {
+        jest.spyOn(DifferenceDetectionService.prototype, 'compareImages').mockImplementation(() => {
             return null;
         });
         const spy1 = jest.spyOn(DifferenceDetectionService.prototype, 'generateDifferenceImage').mockImplementation(() => {
@@ -206,12 +168,12 @@ describe('Image Service tests', () => {
             result.isValid = true;
             return result;
         });
-        jest.spyOn(imageService, 'generateId').mockImplementation(() => {
+        jest.spyOn(imageService as any, 'generateId').mockImplementation(() => {
             return 12;
         });
 
         try {
-            await imageService.compareImages(12, 13, 9);
+            await imageService.compareImages(Buffer.from([]), Buffer.from([]), 9);
         } catch (error) {
             // e = error;
         }
@@ -219,23 +181,50 @@ describe('Image Service tests', () => {
     });
 
     it('getPATH should return the correct path', () => {
-        expect(imageService.getPath(12)).toEqual('assets/gameImages/12.png');
+        expect(imageService.getPath(12)).toEqual(`assets/gameImages/12.${IMAGE_FORMAT}`);
     });
     it('imageExists should return true if the image is in the list of all images', () => {
         jest.spyOn(imageService, 'getAllImageIds').mockImplementation(() => {
             return [12];
         });
-        expect(imageService.imageExists(12)).toBeTruthy();
+        expect(imageService['imageExists'](12)).toBeTruthy();
     });
     it('imageExists should return false if the image is not the list of all images', () => {
         jest.spyOn(imageService, 'getAllImageIds').mockImplementation(() => {
             return [13];
         });
-        expect(imageService.imageExists(12)).toBeFalsy();
+        expect(imageService['imageExists'](12)).toBeFalsy();
     });
+
     it('generateID should return a valid number', () => {
-        const generatedId = imageService.generateId();
+        const generatedId = imageService['generateId']();
         expect(generatedId).toBeDefined();
         expect(generatedId).toBeGreaterThanOrEqual(0);
+    });
+
+    it('imageToBase64 resolves to getBase64 of Jimp image', async () => {
+        const base64Str = 'base64';
+        const img = new Jimp(10, 10);
+        const jimpBase64Spy = jest.spyOn(Jimp.prototype, 'getBase64').mockImplementation((_, cb) => {
+            (cb as any)(undefined, base64Str);
+            return img;
+        });
+        const result = await imageService['imageToBase64'](img);
+
+        expect(jimpBase64Spy).toBeCalled();
+        expect(result).toEqual(base64Str);
+    });
+
+    it('imageToBase64 rejects when Jimp base64 fails', async () => {
+        const img = new Jimp(10, 10);
+        const error = { message: '' };
+        jest.spyOn(Jimp.prototype, 'getBase64').mockImplementation((_, cb) => {
+            (cb as any)(error, '');
+            return img;
+        });
+
+        expect(async () => {
+            await imageService['imageToBase64'](img);
+        }).rejects.toEqual(error);
     });
 });
