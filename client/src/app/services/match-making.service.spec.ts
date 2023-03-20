@@ -10,7 +10,7 @@ class SocketClientServiceMock extends SocketClientService {
     override connect() {}
 }
 
-describe('MatchMakingService', () => {
+fdescribe('MatchMakingService', () => {
     let service: MatchMakingService;
     let socketServiceMock: SocketClientServiceMock;
     let socketHelper: SocketTestHelper;
@@ -162,12 +162,22 @@ describe('MatchMakingService', () => {
         expect(sendSpy).toHaveBeenCalledWith('leaveWaitingRoom', gameId);
     });
 
-    it('askForSessionId should call socketService.send with "askForSessionId" and a gameId', () => {
+    it('startMultiSession should call socketService.send with "startMultiSession" and a data', () => {
         const sendSpy = spyOn(service['socketService'], 'send');
-        const gameId = '42';
-        // service.askForSessionId(gameId);
+        const gameId = '213';
+        const data = { gameId, isSolo: false };
+        service.startMultiSession(gameId);
         expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('askForSessionId', gameId);
+        expect(sendSpy).toHaveBeenCalledWith('startSession', data);
+    });
+
+    it('startSoloSession should call socketService.send with "startSoloSession" and a data', () => {
+        const sendSpy = spyOn(service['socketService'], 'sendAndCallBack');
+        const gameId = '213';
+        const data = { gameId, isSolo: true };
+        service.startSoloSession(gameId, () => {});
+        expect(sendSpy).toHaveBeenCalled();
+        expect(sendSpy).toHaveBeenCalledWith('startSession', data, jasmine.any(Function));
     });
 
     it('updateRoomView should call socketService.on with "updateRoomView" and a callback', () => {

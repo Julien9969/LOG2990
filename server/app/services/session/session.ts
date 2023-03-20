@@ -83,6 +83,16 @@ export class Session {
         return this.buildGuessResult(isCorrect, diffPixelList);
     }
 
+    getNotFoundDifferences(): Coordinate[][] {
+        const notFoundDifferences: Coordinate[][] = [];
+        this.differenceValidationService.differenceCoordLists.forEach((differenceCoord, index) => {
+            if (!this.isDiffAlreadyFound(index)) {
+                notFoundDifferences.push(differenceCoord);
+            }
+        });
+
+        return notFoundDifferences;
+    }
     /**
      * Construit l'objet GuessResult à retourner au client
      *

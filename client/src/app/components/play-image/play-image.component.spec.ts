@@ -64,6 +64,7 @@ describe('PlayImageComponent', () => {
             'originalImgContext',
             'modifiedImgContext',
             'setCanvasContext',
+            'disableCheat',
         ]);
         TestBed.configureTestingModule({
             imports: [HttpClientModule],
@@ -82,7 +83,6 @@ describe('PlayImageComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(PlayImageComponent);
         component = fixture.componentInstance;
-        component['imageOperationService'] = imageOperationServiceSpy;
         fixture.detectChanges();
     });
 
@@ -230,5 +230,10 @@ describe('PlayImageComponent', () => {
         const drawSpy = spyOn(component.canvasContext1, 'drawImage');
         component.drawImageOnCanvas(component.canvasContext1, new Image());
         expect(drawSpy).toHaveBeenCalled();
+    });
+
+    it('ngOnDestroy should call imageOperationService.disableCheat', () => {
+        component.ngOnDestroy();
+        expect(imageOperationServiceSpy.disableCheat).toHaveBeenCalled();
     });
 });
