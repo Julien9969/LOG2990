@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { TIME_CONST } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio.service';
 import { CommunicationService } from '@app/services/communication.service';
@@ -13,7 +13,7 @@ import { GuessResult } from '@common/guess-result';
     templateUrl: './play-image.component.html',
     styleUrls: ['./play-image.component.scss'],
 })
-export class PlayImageComponent implements AfterViewInit, OnInit {
+export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     @ViewChild('canvas1', { static: false }) imageCanvas1!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas2', { static: false }) imageCanvas2!: ElementRef<HTMLCanvasElement>;
 
@@ -32,12 +32,13 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
         winnerName: undefined,
     };
     errorGuess: boolean = false;
-    private imageOperationService: ImageOperationService = new ImageOperationService();
 
+    // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
     constructor(
         private readonly mouseService: MouseService,
         private readonly communicationService: CommunicationService,
         private readonly audioService: AudioService,
+        private readonly imageOperationService: ImageOperationService,
         private readonly socket: InGameService,
     ) {}
 
@@ -53,6 +54,12 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
         return this.imageCanvas2.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
     }
 
+    @HostListener('window:keydown.t', ['$event'])
+    async handleCheat(event: KeyboardEvent) {
+        event.preventDefault();
+        await this.imageOperationService.handleCheat(this.sessionID);
+    }
+
     ngOnInit(): void {
         this.errorCounter = 0;
         this.lastDifferenceFound = {
@@ -66,10 +73,10 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
         });
     }
 
-    ngAfterViewInit(): void {
+    async ngAfterViewInit(): Promise<void> {
+        await this.loadImage(this.canvasContext1, this.imageMainId);
+        await this.loadImage(this.canvasContext2, this.imageAltId);
         this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
-        this.loadImage(this.canvasContext1, this.imageMainId);
-        this.loadImage(this.canvasContext2, this.imageAltId);
     }
 
     sendPosition(event: MouseEvent): void {
@@ -145,5 +152,9 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
             }
         }
         return false;
+    }
+
+    ngOnDestroy(): void {
+        this.imageOperationService.disableCheat();
     }
 }

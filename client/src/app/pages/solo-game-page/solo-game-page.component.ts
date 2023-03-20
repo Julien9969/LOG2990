@@ -29,6 +29,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
 
     time: string = '0:00';
 
+    // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
         private readonly dialog: MatDialog,
         private readonly communicationService: CommunicationService,

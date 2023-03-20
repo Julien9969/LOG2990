@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { MatchMakingEvents } from '@app/gateway/match-making/match-making.gateway.events';
+import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { createStubInstance, SinonStubbedInstance, /* , match,*/ stub } from 'sinon';
@@ -436,7 +437,8 @@ describe('MatchmakingGateway', () => {
 
         it('should emit opponentLeft if the accepting room exist', () => {
             const roomId = 'gameRoom-124-123456789';
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]])); // 2 clients in the room
+            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]]));
+            stub(gateway['acceptingRooms'], 'find').returns({ gameId: '124', roomId });
             jest.spyOn(gateway['server'], 'to').mockReturnValue({
                 emit: (event: string) => {
                     expect(event).toEqual(MatchMakingEvents.OpponentLeft);
@@ -460,6 +462,18 @@ describe('MatchmakingGateway', () => {
             jest.spyOn(gateway['server'], 'emit');
             gateway.handleDisconnect(socket);
             expect(gateway['server'].emit).toHaveBeenCalledWith('updateRoomView');
+        });
+
+        it('should send SessionEvents.OpponentLeftGame if room have 1 players but not in waiting or accepting', () => {
+            const roomId = 'gameRoom-124-123456789';
+            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]]));
+            jest.spyOn(gateway['server'], 'to').mockReturnValue({
+                emit: (event: string) => {
+                    expect(event).toEqual(SessionEvents.OpponentLeftGame);
+                },
+            } as BroadcastOperator<unknown, unknown>);
+
+            gateway.handleDisconnect(socket);
         });
     });
 });

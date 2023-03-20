@@ -13,5 +13,6 @@ export enum SessionEvents {
     ProvideName = 'provideName',
     PlayerName = 'playerName',
     PlayerWon = 'playerWon',
-    SessionId = 'sessionId'
+    SessionId = 'sessionId',
+    CheatGetAllDifferences = 'cheatGetAllDifferences',
 }

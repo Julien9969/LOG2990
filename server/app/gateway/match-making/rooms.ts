@@ -37,6 +37,10 @@ export class Rooms {
         this.rooms = this.rooms.filter((room) => room.roomId !== roomId);
     }
 
+    find(roomId: string): Room {
+        return this.rooms.find((room) => room.roomId === roomId);
+    }
+
     private getDateFromRoomId(roomId: string) {
         return new Date(parseInt(roomId.split('-')[2], 10));
     }

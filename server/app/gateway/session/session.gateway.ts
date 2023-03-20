@@ -121,6 +121,21 @@ export class SessionGateway {
             this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid`);
         }
     }
+    /**
+     * Récuperer la liste des différences non trouvées dans une session
+     *
+     * @param _ client (ne sert pas)
+     * @param sessionId l'id de la session
+     * @returns les différences non trouvées
+     */
+    @SubscribeMessage(SessionEvents.CheatGetAllDifferences)
+    cheatGetAllDifferences(_: Socket, sessionId: number) {
+        const session = this.sessionService.findBySessionId(sessionId);
+
+        if (session) {
+            return session.getNotFoundDifferences();
+        }
+    }
 
     /**
      * Lorsqu'un client quitte une partie, il envoie un message pour prévenir les autres

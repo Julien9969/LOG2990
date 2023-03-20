@@ -3,6 +3,7 @@ import { Rooms } from '@app/gateway/match-making/rooms';
 import { Logger } from '@nestjs/common';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { SessionEvents } from '@common/session.gateway.events';
 
 @WebSocketGateway({ cors: true })
 export class MatchmakingGateway implements OnGatewayDisconnect {
@@ -34,7 +35,7 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
         this.waitingRooms.push({ gameId, roomId });
         client.join(roomId);
 
-        this.logger.log('Current games rooms : ' + JSON.stringify(this.waitingRooms));
+        this.logger.log('GameRoom created : ' + roomId);
         this.server.emit(MatchMakingEvents.UpdateRoomView);
     }
 
@@ -77,9 +78,9 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
             if (roomId.startsWith('gameRoom')) {
                 if (this.serverRooms.get(roomId).size < 2) {
                     this.waitingRooms.removeThisRoom(roomId);
-                    this.logger.log(`${client.id} : leave and was alone, close this room : ` + this.waitingRooms);
+                    this.logger.log(`${client.id} : leave, room deleted : ` + roomId);
                 } else {
-                    this.logger.log(`${client.id} : leave and was not alone, room still exist : ` + this.waitingRooms);
+                    this.logger.log(`${client.id} : leave and was not alone, room still exist : ` + roomId);
                     client.to(roomId).emit(MatchMakingEvents.OpponentLeft);
                     this.acceptingRooms.removeThisRoom(roomId);
                     this.waitingRooms.insertSortByDate(gameId, roomId);
@@ -170,6 +171,7 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
 
     handleDisconnect(client: Socket) {
         this.logger.log(`Client disconnected from Match-making : ${client.id}`);
+
         this.waitingRooms.forEach((room) => {
             if (!this.serverRooms.get(room.roomId)) {
                 this.waitingRooms.removeThisRoom(room.roomId);
@@ -189,6 +191,16 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
                 }
             }
         });
+
+        this.serverRooms.forEach((socketIds, roomId) => {
+            if (roomId.startsWith('gameRoom')) {
+                if (socketIds.size < 2 && !this.waitingRooms.find(roomId) && !this.acceptingRooms.find(roomId)) {
+                    this.server.to(roomId).emit(SessionEvents.OpponentLeftGame);
+                    this.logger.log(`Client ${client.id} left room : ${roomId}`);
+                }
+            }
+        });
+
         this.server.emit(MatchMakingEvents.UpdateRoomView);
     }
 

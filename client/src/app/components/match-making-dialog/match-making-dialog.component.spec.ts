@@ -27,7 +27,6 @@ describe('MatchMakingDialogComponent', () => {
     const gameId = '10';
 
     beforeEach(async () => {
-        // routerSpy = jasmine.createSpyObj('RouterMock', ['navigateByUrl', 'events']);
         matchMakingSpy = jasmine.createSpyObj('MatchMakingServiceMock', [
             'connect',
             'leaveWaiting',
@@ -44,8 +43,10 @@ describe('MatchMakingDialogComponent', () => {
             'opponentLeft',
             'roomReachable',
             'updateRoomView',
-            'askForMultiSessionId',
             'askForSoloSessionId',
+            'askForMultiSessionId',
+            'startMultiSession',
+            'startSoloSession',
         ]);
 
         matchMakingSpy['socketService'] = jasmine.createSpyObj('SocketServiceMock', ['on']);
@@ -77,7 +78,7 @@ describe('MatchMakingDialogComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('on press enter if isSolo is true and nameForm is valid, navigateToSolo shoul be call', () => {
+    it('on press enter if isSolo is true and nameForm is valid, navigateToSolo should be call', () => {
         const event = new KeyboardEvent('keydown', {
             key: 'enter',
         });
@@ -88,7 +89,7 @@ describe('MatchMakingDialogComponent', () => {
         expect(component.navigateToSoloGame).toHaveBeenCalled();
     });
 
-    it('on press enter if isSolo is false and nameForm is valid, joinGame shoul be call', () => {
+    it('on press enter if isSolo is false and nameForm is valid, joinGame should be call', () => {
         const event = new KeyboardEvent('keydown', {
             key: 'enter',
         });
@@ -99,10 +100,6 @@ describe('MatchMakingDialogComponent', () => {
         expect(component.joinGame).toHaveBeenCalled();
     });
 
-    it('component should get the id passed in the data', () => {
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        expect(component.gameInfo.id).toEqual('10');
-    });
     it('component should get the id passed in the data', () => {
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         expect(component.gameInfo.id).toEqual('10');
@@ -206,7 +203,6 @@ describe('MatchMakingDialogComponent', () => {
             );
             await component.acceptOpponent();
             expect(component.matchMaking.acceptOpponent).toHaveBeenCalled();
-            // expect(component.matchMaking.askForSessionId).toHaveBeenCalled();
         });
     });
 

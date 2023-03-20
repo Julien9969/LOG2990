@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AudioService } from '@app/services/audio.service';
-// import { InGameService } from '@app/services/in-game.service';
 
 /**
  * @title Injecting data when opening a dialog
@@ -19,7 +18,6 @@ export class PopupDialogComponent implements OnInit {
 
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: string[],
-        // private readonly socket: InGameService,
         public dialogRef: MatDialogRef<PopupDialogComponent>,
         private audioService: AudioService,
     ) {
