@@ -4,7 +4,7 @@
     <div class="formContainer">
         <form>
             <input #title id="title" placeholder="Titre du nouveau jeu" (change)="setTitle(title.value)"/>
-            <div [ngStyle]="{'visibility': isValid? 'hidden' : 'visible'}" class="flex">
+            <div [ngClass]="isValid? 'hidden' : ''" class="flex">
                 <app-upload-image-square 
                     #mainImageSquare
                     title="main"
@@ -47,6 +47,6 @@
                 (cancelGameCreation)="this.isValid = false"
                 ></app-image-difference-popup>
         </form>
-        <app-draw-bottom-bar [ngStyle]="{'visibility': isValid? 'hidden' : 'visible'}"></app-draw-bottom-bar>
+        <app-draw-bottom-bar [ngClass]="isValid? 'hidden' : ''"></app-draw-bottom-bar>
     </div>
 </div>

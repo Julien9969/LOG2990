@@ -74,6 +74,11 @@ export const PERMITTED_BITE_SIZE = 24;
 
 export const DEFAULT_TOOL_SIZE = 5;
 
+// for upload-image-square.component
+
+export const CANVAS_BIT_DEPTH = 4;
+export const UPLOADED_IMAGE_BIT_DEPTH = 3;
+
 // for tests
 
 export const PATH_TO_VALID_IMAGE = '/assets/test-assets/image_empty.bmp';

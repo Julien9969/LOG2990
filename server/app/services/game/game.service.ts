@@ -4,14 +4,8 @@ import {
     DEFAULT_GAME_TIME,
     DEFAULT_PENALTY_TIME,
     DEFAULT_REWARD_TIME,
-    DIFFERENCE_IMAGES_FOLDER,
-    DIFFERENCE_IMAGES_PREFIX,
     DIFFERENCE_LISTS_FOLDER,
     DIFFERENCE_LISTS_PREFIX,
-    IMAGE_FOLDER_PATH,
-    // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
-    // eslint-disable-next-line prettier/prettier
-    IMAGE_FORMAT
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageService } from '@app/services/images/image.service';
@@ -42,18 +36,22 @@ export class GameService {
      * @param inputGame Les informations du jeu
      * @returns Le jeu créé
      */
-    async create(inputGame: InputGame): Promise<Game> {
+    async create(inputGame: InputGame, mainImageBuffer: Buffer, altImageBuffer: Buffer): Promise<Game> {
         const diffDetectionService = new DifferenceDetectionService();
         let result: ImageComparisonResult;
         try {
-            result = await this.compareImages(inputGame, diffDetectionService);
+            result = await this.compareImages(inputGame, mainImageBuffer, altImageBuffer, diffDetectionService);
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
         }
         if (!result.isValid) throw new HttpException('Images choisies ne respectent pas les contraintes de jeu.', HttpStatus.BAD_REQUEST);
+        const mainImageId = this.imageService.saveImage(mainImageBuffer);
+        const altImageId = this.imageService.saveImage(altImageBuffer);
 
         const newGame: UnsavedGame = {
             ...inputGame,
+            imageMain: mainImageId,
+            imageAlt: altImageId,
             isHard: result.isHard,
             isValid: result.isValid,
             differenceCount: result.differenceCount,
@@ -80,7 +78,6 @@ export class GameService {
         }
         this.imageService.deleteImage(game.imageMain);
         this.imageService.deleteImage(game.imageAlt);
-        fs.unlinkSync(`${DIFFERENCE_IMAGES_FOLDER}/${DIFFERENCE_IMAGES_PREFIX}${game.id}.bmp`);
         fs.unlinkSync(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${game.id}.json`);
         try {
             await this.gameModel.deleteOne({ _id: id });
@@ -111,14 +108,17 @@ export class GameService {
      * @param diffDetectionService L'instance du système de détection de différence
      * @returns Le résultat de la comparaison d'images
      */
-    async compareImages(game: InputGame, diffDetectionService: DifferenceDetectionService): Promise<ImageComparisonResult> {
-        if (game.imageAlt === undefined || game.imageMain === undefined || game.radius === undefined) {
+    async compareImages(
+        game: InputGame,
+        mainImageBuffer: Buffer,
+        altImageBuffer: Buffer,
+        diffDetectionService: DifferenceDetectionService,
+    ): Promise<ImageComparisonResult> {
+        if (!mainImageBuffer || !altImageBuffer || game.radius === undefined) {
             throw new Error('Le jeu nécessite une image ou rayon.');
         }
-        const imageMainPath: string = IMAGE_FOLDER_PATH + '/' + game.imageMain + '.' + IMAGE_FORMAT;
-        const imageAltPath: string = IMAGE_FOLDER_PATH + '/' + game.imageAlt + '.' + IMAGE_FORMAT;
 
-        await diffDetectionService.compareImagePaths(imageMainPath, imageAltPath, game.radius);
+        await diffDetectionService.compareImages(mainImageBuffer, altImageBuffer, game.radius);
 
         return diffDetectionService.getComparisonResult();
     }
@@ -149,7 +149,7 @@ export class GameService {
         }
     }
 
-    verifyGameId(id: string): void {
+    private verifyGameId(id: string): void {
         if (!mongoose.isValidObjectId(id)) {
             throw new Error(`Le ID "${id}" n'est pas un ID valide (format non-valide)`);
         }
@@ -162,7 +162,7 @@ export class GameService {
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        diffDetectionService.saveDifferences(createdGame.id);
+        diffDetectionService.saveDifferenceLists(createdGame.id);
         return createdGame;
     }
 }

@@ -1,4 +1,4 @@
-import { IMAGE_FOLDER_PATH, IMAGE_FORMAT, IMAGE_ID_CAP } from '@app/services/constants/services.const';
+import { IMAGE_FOLDER_PATH, IMAGE_FORMAT, IMAGE_HEIGHT, IMAGE_ID_CAP, IMAGE_WIDTH } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { Injectable } from '@nestjs/common';
@@ -34,14 +34,15 @@ export class ImageService {
     /**
      * Sauvegarde une image en persistance
      *
-     * @param imageData Le buffer contenant l'image
+     * @param imageData Le buffer contenant les données bitmap de l'image
      */
     saveImage(imageData: Buffer): number {
         const newImageId = this.generateId();
         const imagePath = this.getPath(newImageId);
 
-        fs.writeFileSync(imagePath, imageData);
-
+        // eslint-disable-next-line -- La fonction vide est indispensable pour le constructeur de Jimp
+        const image = new Jimp({ data: imageData, width: IMAGE_WIDTH, height: IMAGE_HEIGHT }, () => {});
+        image.write(imagePath);
         return newImageId;
     }
 
@@ -61,26 +62,24 @@ export class ImageService {
     /**
      * Compare 2 images sans créer de jeu, en suivant les règles de comparaison
      *
-     * @param mainId L'ID de l'image principale
-     * @param altId L'ID de l'image alternative
+     * @param mainImageBitmap Les données bitmap de l'image principale
+     * @param altImageBitmap Les données bitmap de l'image alternative
      * @param radius Le rayon d'élargissement
      * @returns Le résultat de la comparaison
      */
-    async compareImages(mainId: number, altId: number, radius: number): Promise<ImageComparisonResult> {
-        if (!this.imageExists(mainId) || !this.imageExists(altId)) {
-            throw new Error('Image ID pas trouve.');
-        } else {
-            const diffDetectionService: DifferenceDetectionService = new DifferenceDetectionService();
-            await diffDetectionService.compareImagePaths(this.getPath(mainId), this.getPath(altId), radius);
+    async compareImages(mainImageBitmap: Buffer, altImageBitmap: Buffer, radius: number): Promise<ImageComparisonResult> {
+        const diffDetectionService: DifferenceDetectionService = new DifferenceDetectionService();
+        await diffDetectionService.compareImages(mainImageBitmap, altImageBitmap, radius);
 
-            // Création de l'objet résultat et sauvegarde des différences
-            const result: ImageComparisonResult = diffDetectionService.getComparisonResult();
-            if (result.isValid) {
-                this.saveDifferenceImage(result, diffDetectionService);
-            }
+        // Création de l'objet résultat et sauvegarde des différences
+        const result: ImageComparisonResult = diffDetectionService.getComparisonResult();
+        if (result.isValid) {
+            const diffImage = diffDetectionService.generateDifferenceImage();
 
-            return result;
+            result.differenceImageBase64 = await this.imageToBase64(diffImage);
         }
+
+        return result;
     }
 
     /**
@@ -99,7 +98,7 @@ export class ImageService {
      * @param findID L'identifiant de l'image recherchée
      * @returns Si l'image de cet identifiant existe ou non.
      */
-    imageExists(findID: number): boolean {
+    private imageExists(findID: number): boolean {
         const imageList: number[] = this.getAllImageIds();
         return imageList.includes(findID);
     }
@@ -109,7 +108,7 @@ export class ImageService {
      *
      * @returns L'identifiant généré
      */
-    generateId(): number {
+    private generateId(): number {
         let id: number;
         while (id === undefined || this.imageExists(id)) {
             id = Math.floor(Math.random() * IMAGE_ID_CAP);
@@ -117,12 +116,12 @@ export class ImageService {
         return id;
     }
 
-    private saveDifferenceImage(result: ImageComparisonResult, diffDetectionService: DifferenceDetectionService) {
-        // On sauvegarde l'image de difference pour pouvoir la renvoyer au client
-        const diffImage: Jimp = diffDetectionService.generateDifferenceImage();
-        const newImageId = this.generateId();
-
-        diffImage.write(this.getPath(newImageId));
-        result.differenceImageId = newImageId;
+    private async imageToBase64(image: Jimp): Promise<string> {
+        return new Promise((resolve, reject) => {
+            image.getBase64(Jimp.MIME_PNG, (err, base64Str) => {
+                if (err) reject(err);
+                resolve(base64Str);
+            });
+        });
     }
 }

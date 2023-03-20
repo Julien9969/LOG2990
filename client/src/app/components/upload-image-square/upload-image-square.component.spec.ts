@@ -42,23 +42,21 @@ describe('UploadImageSquareComponent', () => {
 
     describe('getImageFile', () => {
         it('converts canvas to blob with correct parameters', async () => {
-            const file = new Blob();
-            const toBlobSpy = spyOn(component.canvas, 'toBlob').and.callFake((clbck) => {
-                clbck(file);
+            const imageDataSpy = spyOn(component.canvasContext, 'getImageData').and.callFake(() => {
+                return new ImageData(1, 1);
             });
             const receivedFile = await component.getImageFile();
 
-            expect(receivedFile).toEqual(new File([await receivedFile], 'image.png'));
-            expect(toBlobSpy).toHaveBeenCalled();
+            expect(receivedFile).toEqual(new File([await receivedFile], 'image.bmp'));
+            expect(imageDataSpy).toHaveBeenCalled();
         });
 
-        it('rejects promise when blob is null', async () => {
-            const toBlobSpy = spyOn(component.canvas, 'toBlob').and.callFake((clbck) => {
-                clbck(null);
+        it('throws error when canvas getImageData fails', async () => {
+            spyOn(component.canvasContext, 'getImageData').and.callFake(() => {
+                throw new Error();
             });
 
-            expect(toBlobSpy).toThrow();
-            await expectAsync(component.getImageFile()).toBeRejected();
+            await expect(() => component.getImageFile()).toThrow();
         });
     });
 

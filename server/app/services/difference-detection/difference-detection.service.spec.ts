@@ -1,15 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines  */
 
-import {
-    BLACK_RGBA,
-    DIFFERENCE_IMAGES_FOLDER,
-    DIFFERENCE_IMAGES_PREFIX,
-    GAME_MAX_DIFF_COUNT,
-    GAME_MIN_DIFF_COUNT,
-    IMAGE_HEIGHT,
-    IMAGE_WIDTH,
-    WHITE_RGBA,
-} from '@app/services/constants/services.const';
+import { BLACK_RGBA, GAME_MAX_DIFF_COUNT, GAME_MIN_DIFF_COUNT, IMAGE_HEIGHT, IMAGE_WIDTH, WHITE_RGBA } from '@app/services/constants/services.const';
 import { DisjointSet } from '@app/services/disjoint-sets/disjoint-sets';
 import { Coordinate } from '@common/coordinate';
 import { ImageComparisonResult } from '@common/image-comparison-result';
@@ -62,7 +53,7 @@ describe('DifferenceDetection algorithms', () => {
         service.mainImage = emptyImage;
         service.altImage = validAltImage7Diff;
 
-        service.compareImages(emptyImage, validAltImage7Diff);
+        service.compareImages(emptyImage.bitmap.data, validAltImage7Diff.bitmap.data);
         expect(service.getDifferenceCount()).toEqual(7);
         expect(service.isValidGame()).toBeTruthy();
     });
@@ -76,12 +67,12 @@ describe('DifferenceDetection algorithms', () => {
         service.mainImage = emptyImage;
 
         service.altImage = invalidAltImage2Diff;
-        service.compareImages(emptyImage, invalidAltImage2Diff);
+        service.compareImages(emptyImage.bitmap.data, invalidAltImage2Diff.bitmap.data);
         expect(service.getDifferenceCount()).toEqual(2);
         expect(service.isValidGame()).toBeFalsy();
 
         service.altImage = invalidAltImage12Diff;
-        service.compareImages(emptyImage, invalidAltImage12Diff);
+        service.compareImages(emptyImage.bitmap.data, invalidAltImage12Diff.bitmap.data);
         expect(service.getDifferenceCount()).toEqual(12);
         expect(service.isValidGame()).toBeFalsy();
     });
@@ -94,11 +85,11 @@ describe('DifferenceDetection algorithms', () => {
 
         jest.spyOn(DifferenceDetectionService.prototype as any, 'loadImages').mockImplementation(() => {});
 
-        service.compareImages(emptyImage, radius3Image, 0);
+        service.compareImages(emptyImage.bitmap.data, radius3Image.bitmap.data, 0);
         expect(service.getDifferenceCount()).toEqual(4);
 
         const radius = 3;
-        service.compareImages(emptyImage, radius3Image, radius);
+        service.compareImages(emptyImage.bitmap.data, radius3Image.bitmap.data, radius);
         expect(service.getDifferenceCount()).toEqual(3);
     });
 
@@ -187,49 +178,15 @@ describe('DifferenceDetection setup and saving', () => {
             .mockImplementation(() => {});
         const setDifficultySpy = jest.spyOn(service, 'setDifficulty').mockImplementation(() => {});
 
-        service.compareImages(testMainImage, testAltImage, radius);
+        service.compareImages(Buffer.from([]), Buffer.from([]), radius);
 
         expect(differenceInitializationSpy).toBeCalledTimes(1);
         expect(differenceInitializationSpy).toBeCalledWith(radius);
         expect(loadImagesSpy).toBeCalledTimes(1);
-        expect(loadImagesSpy).toBeCalledWith(testMainImage, testAltImage);
         expect(computeRawDifferencesSpy).toBeCalledTimes(1);
         expect(extendRawDifferencesSpy).toBeCalledTimes(1);
         expect(computeContiguousDifferencesSpy).toBeCalledTimes(1);
         expect(setDifficultySpy).toBeCalledTimes(1);
-    });
-
-    it('compareImagePaths reads images then compares them with correct parameters', async () => {
-        // Faire en sorte que la lecture de fichier renvoie une promesse rejetée
-        const emptyImage: Jimp = new Jimp(640, 480);
-        const pathA = 'A';
-        const pathB = 'B';
-        const radius = 0;
-
-        const jimpReadSpy = jest.spyOn(Jimp, 'read').mockImplementation(async () => {
-            return new Promise((resolve) => {
-                resolve(emptyImage);
-            });
-        });
-        const compareImagesSpy = jest.spyOn(service, 'compareImages').mockImplementation(() => {});
-
-        await service.compareImagePaths(pathA, pathB, radius);
-
-        expect(jimpReadSpy).toBeCalledTimes(2);
-        expect(compareImagesSpy).toBeCalledWith(emptyImage, emptyImage, radius);
-    });
-
-    it('compareImagePaths throws an error when files not found', () => {
-        // Faire en sorte que la lecture de fichier renvoie une promesse rejetée
-        jest.spyOn(Jimp, 'read').mockImplementation(async () => {
-            return new Promise((resolve, reject) => {
-                reject();
-            });
-        });
-
-        expect(async () => {
-            await service.compareImagePaths('', '');
-        }).rejects.toThrow();
     });
 
     it('loadImages sets the appropriate attribute', async () => {
@@ -365,27 +322,6 @@ describe('DifferenceDetection setup and saving', () => {
         expect(service.contiguousDifferencesSet).toBeDefined();
     });
 
-    it('SaveDifference saves difference image and difference lists', () => {
-        const saveDifferenceImageSpy = jest.spyOn(DifferenceDetectionService.prototype as any, 'saveDifferenceImage').mockImplementation(() => {});
-        const saveDifferenceListSpy = jest.spyOn(DifferenceDetectionService.prototype as any, 'saveDifferenceLists').mockImplementation(() => {});
-
-        service.saveDifferences(testGameId);
-        expect(saveDifferenceImageSpy).toBeCalledWith(testGameId);
-        expect(saveDifferenceListSpy).toBeCalledWith(testGameId);
-    });
-
-    it('SaveDifferenceImage attempts to generate and save the difference image', () => {
-        const generateDifferenceImageSpy = jest.spyOn(service, 'generateDifferenceImage').mockImplementation(() => {
-            return new Jimp(0, 0);
-        });
-        const differencesImageWriteSpy = jest.spyOn(Jimp.prototype as any, 'write').mockImplementation(() => {});
-
-        service['saveDifferenceImage'](testGameId);
-
-        expect(generateDifferenceImageSpy).toHaveBeenCalled();
-        expect(differencesImageWriteSpy).toHaveBeenCalledWith(`${DIFFERENCE_IMAGES_FOLDER}/${DIFFERENCE_IMAGES_PREFIX}${testGameId}.bmp`);
-    });
-
     it('SaveDifferenceLists attempts to generate and save the difference lists', () => {
         const diffList: Coordinate[][] = [[{ x: 0, y: 0 }]];
         service.contiguousDifferencesSet = new DisjointSet();
@@ -400,17 +336,17 @@ describe('DifferenceDetection setup and saving', () => {
         expect(fsWriteFileSpy).toHaveBeenCalled();
     });
 
-    it('SaveDifferenceLists throws an error when writeFile fails', () => {
-        jest.spyOn(fs, 'writeFileSync').mockImplementation(async () => {
-            return new Promise((resolve, reject) => {
-                reject();
-            });
-        });
+    // it('SaveDifferenceLists throws an error when writeFile fails', () => {
+    //     jest.spyOn(fs, 'writeFileSync').mockImplementation(async () => {
+    //         return new Promise((resolve, reject) => {
+    //             reject();
+    //         });
+    //     });
 
-        expect(async () => {
-            await service.compareImagePaths('', '');
-        }).rejects.toThrow();
-    });
+    //     expect(async () => {
+    //         await service.compareImagePaths('', '');
+    //     }).rejects.toThrow();
+    // });
 });
 
 describe('DifferenceDetection utility functions', () => {

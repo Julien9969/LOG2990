@@ -2,10 +2,42 @@
 import { Game } from '@common/game';
 import { InputGame } from '@common/input-game';
 
+export const stubGameCreationBody = {
+    name: 'gamename',
+    radius: '0',
+};
+export const stubGameFileInput = {
+    mainFile: [
+        {
+            buffer: undefined,
+            fieldname: '',
+            originalname: '',
+            encoding: '',
+            mimetype: '',
+            size: 0,
+            stream: undefined,
+            destination: '',
+            filename: '',
+            path: '',
+        },
+    ],
+    altFile: [
+        {
+            buffer: undefined,
+            fieldname: '',
+            originalname: '',
+            encoding: '',
+            mimetype: '',
+            size: 0,
+            stream: undefined,
+            destination: '',
+            filename: '',
+            path: '',
+        },
+    ],
+};
 export const stubInputGame: InputGame = {
     name: 'gamename',
-    imageMain: 0,
-    imageAlt: 0,
     radius: 0,
 };
 export const stubGame: Game = {

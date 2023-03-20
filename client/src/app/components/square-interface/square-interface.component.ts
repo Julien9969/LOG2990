@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDuringLoadingComponent } from '@app/components/error-during-loading/error-during-loading.component';
 import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
-import { GAMES_PER_PAGE, DELAY_BEFORE_BUTTONS_UPDATE } from '@app/constants/utils-constants';
+import { DELAY_BEFORE_BUTTONS_UPDATE, GAMES_PER_PAGE } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game.service';
 import { MatchMakingService } from '@app/services/match-making.service';
 import { Game } from '@common/game';
@@ -86,13 +86,19 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
      */
     async deleteGame(gameId: string): Promise<void> {
         await this.gameService.deleteGame(gameId);
-        window.location.reload();
+        this.reloadWindow();
     }
 
     baseMatchMakingFeatures(): void {
         this.matchMaking.updateRoomView(async () => {
             await this.reachableGames();
         });
+    }
+
+    // Cette fonction est un wrapper autour de window.location.reload(), pour pouvoir la mock.
+    // Elle n'est pas couverte par les tests.
+    private reloadWindow() {
+        window.location.reload();
     }
 
     // Sprint 3?

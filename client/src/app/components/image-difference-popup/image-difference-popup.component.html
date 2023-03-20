@@ -2,7 +2,7 @@
     <div class="container" >
         <h2>résultat de l'analyse</h2>
         <div class="analysisWindow">
-            <img src="{{imgDifferencesUrl}}" id="differencesImg">
+            <img [src]="getImgDifferencesUrlSanitized()" id="differencesImg">
             <p>Nombre de différences trouvées: <strong>{{this.nbDifferences}}</strong> </p>
             <p>Difficulté du jeu: <strong>{{this.isHard ? 'Difficile': 'facile'}}</strong> </p>
         </div>   

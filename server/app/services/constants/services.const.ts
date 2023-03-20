@@ -25,7 +25,6 @@ export const TIME_CONST = {
 export const DIFFERENCE_LISTS_FOLDER = 'assets/difference-matrix';
 export const DIFFERENCE_LISTS_PREFIX = 'diff-matrix-';
 export const DIFFERENCE_IMAGES_FOLDER = 'assets/difference-images';
-export const DIFFERENCE_IMAGES_PREFIX = 'diff-img-';
 
 export const BLACK_RGBA = 0x000000ff;
 export const WHITE_RGBA = 0xffffffff;
@@ -44,7 +43,7 @@ export const HARD_GAME_MAX_DIFF_PROPORTION = 0.15;
  */
 export const IMAGE_FOLDER_PATH = 'assets/gameImages';
 export const IMAGE_ID_CAP = 10000;
-export const IMAGE_FORMAT = 'png';
+export const IMAGE_FORMAT = 'bmp';
 
 /**
  * Constantes de gestion de jeu

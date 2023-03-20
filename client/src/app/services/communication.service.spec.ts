@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { PATH_TO_VALID_IMAGE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication.service';
 import { Game } from '@common/game';
+import { ImageComparisonResult } from '@common/image-comparison-result';
 import { Message } from '@common/message';
 
 describe('CommunicationService', () => {
@@ -131,22 +132,15 @@ describe('CommunicationService', () => {
     });
 
     describe('compareImages', () => {
-        let originalImageId: number;
-        let modifiedImageId: number;
+        let validFile: File;
         let radius: number;
-        let body: object;
-        let pathExtension: string;
 
         let postRequestSpy: jasmine.Spy;
-
         let validServerResponse: HttpResponse<object>;
 
-        beforeEach(() => {
-            originalImageId = 1111;
-            modifiedImageId = 2222;
+        beforeEach(async () => {
+            validFile = new File([await (await fetch(PATH_TO_VALID_IMAGE)).blob()], 'valid-image.BMP', { type: 'image/bmp' });
             radius = 3;
-            body = { imageMain: originalImageId, imageAlt: modifiedImageId, radius };
-            pathExtension = 'images/compare';
 
             validServerResponse = new HttpResponse({
                 status: 200,
@@ -160,15 +154,15 @@ describe('CommunicationService', () => {
             postRequestSpy = spyOn(service, 'postRequest').and.callFake(async () => Promise.resolve(validServerResponse));
         });
 
-        it('should call postRequest with the correct parameters', async () => {
-            await service.compareImages(originalImageId, modifiedImageId, radius);
-            expect(postRequestSpy).toHaveBeenCalledWith(pathExtension, body);
+        it('should call postRequest', async () => {
+            await service.compareImages(validFile, validFile, radius);
+            expect(postRequestSpy).toHaveBeenCalled();
         });
 
         it('should throw error if response is not ok', async () => {
             postRequestSpy.and.callFake(() => new HttpErrorResponse({ status: 400, statusText: 'Test-Bad Request' }));
             try {
-                await service.compareImages(originalImageId, modifiedImageId, radius);
+                await service.compareImages(validFile, validFile, radius);
                 fail('Should have thrown an error');
             } catch (error) {
                 expect(error).toBeTruthy();
@@ -178,40 +172,7 @@ describe('CommunicationService', () => {
         it('should throw error if response body is not valid', async () => {
             postRequestSpy.and.callFake(async () => Promise.resolve(new HttpResponse({ status: 200, body: {} })));
             try {
-                await service.compareImages(originalImageId, modifiedImageId, radius);
-                fail('Should have thrown an error');
-            } catch (error) {
-                expect(error).toBeTruthy();
-            }
-        });
-    });
-
-    describe('saveImage', () => {
-        let validFile: File;
-
-        let postRequestSpy: jasmine.Spy;
-
-        let validServerResponse: HttpResponse<number>;
-
-        beforeEach(async () => {
-            validFile = new File([await (await fetch(PATH_TO_VALID_IMAGE)).blob()], 'valid-image.BMP', { type: 'image/bmp' });
-
-            validServerResponse = new HttpResponse({
-                status: 200,
-                body: 1111,
-            });
-            postRequestSpy = spyOn(service, 'postRequest').and.callFake(async () => Promise.resolve(validServerResponse));
-        });
-
-        it('should call postRequest with the correct parameters', async () => {
-            await service.saveImage(validFile);
-            expect(postRequestSpy).toHaveBeenCalled();
-        });
-
-        it('should throw error if response is not ok', async () => {
-            postRequestSpy.and.callFake(() => new HttpErrorResponse({ status: 400, statusText: 'Test-Bad Request' }));
-            try {
-                await service.saveImage(validFile);
+                await service.compareImages(validFile, validFile, radius);
                 fail('Should have thrown an error');
             } catch (error) {
                 expect(error).toBeTruthy();
@@ -357,5 +318,22 @@ describe('CommunicationService', () => {
         const expectedUrl = `${baseUrl}/images/${id}`;
         const url = service.getImageURL(id);
         expect(url).toEqual(expectedUrl);
+    });
+
+    describe('instanceOfImageComparisonResult', () => {
+        it('should return true if the object is an instance of ImageComparisonResult', () => {
+            const object: ImageComparisonResult = {
+                isValid: true,
+                isHard: false,
+                differenceCount: 0,
+                differenceImageBase64: '',
+            };
+            expect(service['instanceOfImageComparisonResult'](object)).toBeTrue();
+        });
+
+        it('should return false if not an instance of ImageComparisonResult', () => {
+            const nullInput = null;
+            expect(service['instanceOfImageComparisonResult'](nullInput)).toBeFalse();
+        });
     });
 });

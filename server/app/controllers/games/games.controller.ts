@@ -1,7 +1,10 @@
+import { GameImageInput } from '@app/interfaces/game-image-input';
 import { GameService } from '@app/services/game/game.service';
+import { Utils } from '@app/services/utils/utils.service';
 import { Game } from '@common/game';
 import { InputGame } from '@common/input-game';
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 /**
  * Controlleur de games. Les jeux crées sont permanents et la synchronisation entre la memoire serveur et la permanence est automatique
@@ -16,14 +19,31 @@ export class GamesController {
      * @returns le nouveau jeu créé, avec son ID généré
      */
     @Post()
-    async newGame(@Body() inputGame: InputGame) {
-        if (!inputGame || !inputGame.name) {
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: 'mainFile', maxCount: 1 },
+            { name: 'altFile', maxCount: 1 },
+        ]),
+    )
+    async newGame(@Body() input: { name: string; radius: string }, @UploadedFiles() files: GameImageInput): Promise<Game> {
+        if (!input || !input.name) {
             throw new HttpException('Nom du jeu absent.', HttpStatus.BAD_REQUEST);
         }
-        let game: Game;
+        if (!files || !files.mainFile || !files.altFile || input.radius === undefined) {
+            throw new HttpException('Le jeu necessite 2 images et un rayon.', HttpStatus.BAD_REQUEST);
+        }
 
+        // Conversion de type du rayon, puisque les forms html envoient des string
+        const inputGame: InputGame = {
+            name: input.name,
+            radius: Utils.convertToInt(input.radius),
+        };
+
+        let game: Game;
         try {
-            game = await this.gameService.create(inputGame);
+            const mainImageBuffer = files.mainFile[0].buffer;
+            const altImageBuffer = files.altFile[0].buffer;
+            game = await this.gameService.create(inputGame, mainImageBuffer, altImageBuffer);
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
         }

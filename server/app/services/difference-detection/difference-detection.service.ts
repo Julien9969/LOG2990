@@ -1,7 +1,5 @@
 import {
     BLACK_RGBA,
-    DIFFERENCE_IMAGES_FOLDER,
-    DIFFERENCE_IMAGES_PREFIX,
     DIFFERENCE_LISTS_FOLDER,
     DIFFERENCE_LISTS_PREFIX,
     GAME_MAX_DIFF_COUNT,
@@ -11,9 +9,7 @@ import {
     IMAGE_HEIGHT,
     IMAGE_WIDTH,
     VALID_RADIUS_LIST,
-    // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
-    // eslint-disable-next-line prettier/prettier
-    WHITE_RGBA
+    WHITE_RGBA,
 } from '@app/services/constants/services.const';
 import { CoordSetObject } from '@app/services/disjoint-sets/coord-set-object';
 import { DisjointSet } from '@app/services/disjoint-sets/disjoint-sets';
@@ -64,7 +60,12 @@ export class DifferenceDetectionService {
      * @param mainImage L'image principale
      * @param altImage L'image secondaire à comparer
      */
-    compareImages(mainImage: Jimp, altImage: Jimp, extensionRadius: number = 0) {
+    compareImages(mainImageBitmap: Buffer, altImageBitmap: Buffer, extensionRadius: number = 0) {
+        // eslint-disable-next-line -- La fonction vide est indispensable pour le constructeur de Jimp
+        const mainImage = new Jimp({ data: mainImageBitmap, width: IMAGE_WIDTH, height: IMAGE_HEIGHT }, () => {});
+        // eslint-disable-next-line -- La fonction vide est indispensable pour le constructeur de Jimp
+        const altImage = new Jimp({ data: altImageBitmap, width: IMAGE_WIDTH, height: IMAGE_HEIGHT }, () => {});
+
         // Initialisation des objets et des images
         this.differenceInitialization(extensionRadius);
         this.loadImages(mainImage, altImage);
@@ -85,32 +86,21 @@ export class DifferenceDetectionService {
     }
 
     /**
-     * Compare 2 images à partir de leur chemin en persistance
-     *
-     * @param mainImagePath Le chemin vers l'image de base
-     * @param altImagePath Le chemin vers l'image alternative
-     * @param extensionRadius Le rayon d'elargissement
-     */
-    async compareImagePaths(mainImagePath: string, altImagePath: string, extensionRadius: number = 0) {
-        let mainImage: Jimp;
-        let altImage: Jimp;
-        try {
-            mainImage = await Jimp.read(mainImagePath);
-            altImage = await Jimp.read(altImagePath);
-        } catch (error) {
-            throw new Error('Images ' + mainImagePath + ' ' + altImagePath + ' non trouvees.');
-        }
-        this.compareImages(mainImage, altImage, extensionRadius);
-    }
-
-    /**
      * Permet de sauvegarder les résultats de l'analyse des différences dans le serveur
      *
      * @param gameId L'identifiant unique du jeu (permet d'identifier la paire d'images)
      */
-    saveDifferences(gameId: string) {
-        this.saveDifferenceImage(gameId);
-        this.saveDifferenceLists(gameId);
+    saveDifferenceLists(gameId: string) {
+        const differenceLists: Coordinate[][] = this.contiguousDifferencesSet.extract().map((coordList: CoordSetObject[]) => {
+            return coordList.map((coord) => {
+                return {
+                    x: coord.x,
+                    y: coord.y,
+                };
+            });
+        });
+        const diffJson: string = JSON.stringify(differenceLists);
+        fs.writeFileSync(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${gameId}.json`, diffJson);
     }
 
     /**
@@ -185,19 +175,6 @@ export class DifferenceDetectionService {
             }
         });
         this.diffProportion = differencePixelCount / (IMAGE_WIDTH * IMAGE_HEIGHT);
-    }
-
-    private saveDifferenceLists(gameId: string) {
-        const differenceLists: Coordinate[][] = this.contiguousDifferencesSet.extract().map((coordList: CoordSetObject[]) => {
-            return coordList.map((coord) => {
-                return {
-                    x: coord.x,
-                    y: coord.y,
-                };
-            });
-        });
-        const diffJson: string = JSON.stringify(differenceLists);
-        fs.writeFileSync(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${gameId}.json`, diffJson);
     }
 
     private loadImages(mainImage: Jimp, altImage: Jimp) {
@@ -316,11 +293,5 @@ export class DifferenceDetectionService {
         return neighbours.filter((pix) => {
             return pix.x >= 0 && pix.x < IMAGE_WIDTH && pix.y >= 0 && pix.y < IMAGE_HEIGHT;
         });
-    }
-
-    /* Génère et sauvegarde l'image de différences élargies */
-    private saveDifferenceImage(gameId: string) {
-        const differencesImage = this.generateDifferenceImage();
-        differencesImage.write(`${DIFFERENCE_IMAGES_FOLDER}/${DIFFERENCE_IMAGES_PREFIX}${gameId}.bmp`);
     }
 }

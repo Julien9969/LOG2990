@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Coordinate } from '@common/coordinate';
+import { ImageComparisonResult } from '@common/image-comparison-result';
 
-import { ImgCompareRes, instanceOfImgCompareRes } from '@app/interfaces/image-comparison-response';
 import { Game } from '@common/game';
 import { Message } from '@common/message';
 import { firstValueFrom, Observable, of } from 'rxjs';
@@ -47,27 +47,6 @@ export class CommunicationService {
     }
 
     /**
-     * Envoie les coordonnées de la tentative de différenciation au serveur
-     *
-     * @param gameSession l'id de la session de jeu
-     * @param coordinates Les coordonnées de la tentative
-     * @returns le resultat de la tentative
-     */
-    sendCoordinates(gameSession: number, coordinates: Coordinate): Observable<HttpResponse<object>> {
-        return this.http.post(`${this.baseUrl}/session/${gameSession}/guess`, coordinates, { observe: 'response', responseType: 'json' });
-    }
-
-    /**
-     * Récupère les informations du jeu depuis le serveur à partir de son id
-     *
-     * @param gameId id du jeu
-     * @returns les informations du jeu
-     */
-    gameInfoGet(gameId: string): Observable<Game> {
-        return this.http.get<Game>(`${this.baseUrl}/games/${gameId}`).pipe(catchError(this.handleError<Game>('error getting game info')));
-    }
-
-    /**
      * Envoie une requête POST au serveur en utilisant le chemin de la route du serveur et le payload de la requête
      *
      * @param pathExtension chemin vers la bonne route du serveur
@@ -82,44 +61,6 @@ export class CommunicationService {
         return await firstValueFrom(observer);
     }
 
-    // Images route methods
-
-    /**
-     * envoie une requête au serveur pour comparer les différences entre 2 images déjà sauvegardées sur le serveur
-     *
-     * @param originalImageId l'id de l'image originale sauvegardée sur le serveur
-     * @param altImageId l'id de l'image alternative sauvegardée sur le serveur
-     * @param radius le rayon des cercles à utiliser pour la comparaison
-     * @returns response if the server returns the right information or throws error if not
-     */
-    async compareImages(originalImageId: number, altImageId: number, radius: number): Promise<ImgCompareRes> {
-        if (typeof originalImageId === 'number' && typeof altImageId === 'number') {
-            const body = { imageMain: originalImageId, imageAlt: altImageId, radius };
-            const response = await this.postRequest('images/compare', body);
-            if (response instanceof HttpResponse && typeof response.body === 'object') {
-                if (response.ok && instanceOfImgCompareRes(response.body)) return response.body;
-            }
-        }
-        throw new Error("l'image n'a pas pu être comparé");
-    }
-
-    /**
-     * Envoyer une requête POST au serveur pour sauvegarder une image sur le serveur
-     *
-     * @param imageToSave Le fichier image à sauvegarder
-     * @returns l'id de l'image sauvegardée ou une erreur si la sauvegarde a échoué
-     */
-    async saveImage(imageToSave: File): Promise<number> {
-        const formData: FormData = new FormData();
-        formData.append('file', imageToSave, imageToSave.name);
-        const headers = new HttpHeaders();
-        headers.append('content-type', 'image/png');
-        headers.append('Accept', 'application/json');
-
-        const response = await this.postRequest('images', formData, headers);
-        if (response.ok && typeof response.body === 'number') return response.body;
-        throw new Error("l'image n'a pas pu être enregistrer");
-    }
     /**
      * Envoie une requête GET au serveur en utilisant le chemin de la route du serveur et le payload de la requête
      *
@@ -150,6 +91,27 @@ export class CommunicationService {
     }
 
     /**
+     * Récupère les informations du jeu depuis le serveur à partir de son id
+     *
+     * @param gameId id du jeu
+     * @returns les informations du jeu
+     */
+    gameInfoGet(gameId: string): Observable<Game> {
+        return this.http.get<Game>(`${this.baseUrl}/games/${gameId}`).pipe(catchError(this.handleError<Game>('error getting game info')));
+    }
+
+    /**
+     * Envoie les coordonnées de la tentative de différenciation au serveur
+     *
+     * @param gameSession l'id de la session de jeu
+     * @param coordinates Les coordonnées de la tentative
+     * @returns le resultat de la tentative
+     */
+    sendCoordinates(gameSession: number, coordinates: Coordinate): Observable<HttpResponse<object>> {
+        return this.http.post(`${this.baseUrl}/session/${gameSession}/guess`, coordinates, { observe: 'response', responseType: 'json' });
+    }
+
+    /**
      * Crée un stream d'une image à partir de son id
      *
      * @param id l'id de l'image à récupérer l'url
@@ -157,6 +119,31 @@ export class CommunicationService {
      */
     getImageURL(id: number) {
         return `${this.baseUrl}/images/${id}`;
+    }
+
+    /**
+     * envoie une requête au serveur pour comparer les différences entre 2 images déjà sauvegardées sur le serveur
+     *
+     * @param originalImageId l'id de l'image originale sauvegardée sur le serveur
+     * @param altImageId l'id de l'image alternative sauvegardée sur le serveur
+     * @param radius le rayon des cercles à utiliser pour la comparaison
+     * @returns response if the server returns the right information or throws error if not
+     */
+    async compareImages(originalImage: File, altImage: File, radius: number): Promise<ImageComparisonResult> {
+        const formData: FormData = new FormData();
+        formData.append('mainFile', originalImage, originalImage.name);
+        formData.append('altFile', altImage, altImage.name);
+        formData.append('radius', radius.toString());
+
+        const headers = new HttpHeaders();
+        headers.append('content-type', 'multipart/form-data');
+        headers.append('Accept', 'application/json');
+
+        const response = await this.postRequest('images/compare', formData, headers);
+        if (response instanceof HttpResponse && typeof response.body === 'object') {
+            if (response.ok && this.instanceOfImageComparisonResult(response.body)) return response.body;
+        }
+        throw new Error("l'image n'a pas pu être comparé");
     }
 
     /**
@@ -168,5 +155,10 @@ export class CommunicationService {
      */
     private handleError<T>(request: string, result?: T): (error: Error) => Observable<T> {
         return () => of(result as T);
+    }
+
+    private instanceOfImageComparisonResult(object: object | null): object is ImageComparisonResult {
+        if (object) return 'isValid' in object && 'isHard' in object && 'differenceCount' in object;
+        return false;
     }
 }

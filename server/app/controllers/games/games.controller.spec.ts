@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines  */
 import { GameService } from '@app/services/game/game.service';
-import { stubGame, stubInputGame } from '@app/services/game/game.service.spec.const';
+import { stubGame, stubGameCreationBody, stubGameFileInput } from '@app/services/game/game.service.spec.const';
 import { Game } from '@common/game';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -43,23 +43,6 @@ describe('GameController tests', () => {
         expect(deleteSpy).toBeCalledWith('5');
     });
 
-    it('creating a valid game returns created game', async () => {
-        jest.spyOn(controller['gameService'], 'create').mockReturnValue(Promise.resolve(stubGame));
-
-        const result = await controller.newGame(stubInputGame);
-        expect(result).toEqual(stubGame);
-    });
-
-    it('trying to create an invalid game should return an error', () => {
-        let testGame: undefined;
-
-        jest.spyOn(controller['gameService'], 'create').mockReturnValue(Promise.resolve(testGame));
-
-        expect(async () => {
-            await controller.newGame(testGame);
-        }).rejects.toThrowError(HttpException);
-    });
-
     it('get should return an error if the id is invalid', async () => {
         jest.spyOn(controller['gameService'], 'findById').mockReturnValue(undefined);
         expect(async () => {
@@ -87,27 +70,57 @@ describe('GameController tests', () => {
         expect(spy).toHaveBeenCalled();
     });
 
-    it('newGame should return an error if called without a game', () => {
-        jest.spyOn(controller['gameService'], 'create').mockImplementation(async () => {
-            return new Promise<Game>((resolve) => {
-                resolve(exampleGame);
-            });
-        });
-        expect(async () => {
-            await controller.newGame(null);
-        }).rejects.toThrowError(new HttpException('Nom du jeu absent.', HttpStatus.BAD_REQUEST));
-    });
+    describe('newGame', () => {
+        it('creating a valid game returns created game', async () => {
+            jest.spyOn(controller['gameService'], 'create').mockReturnValue(Promise.resolve(stubGame));
 
-    it('newGame should return an error if the game isnt valid', () => {
-        jest.spyOn(controller['gameService'], 'create').mockImplementation(async () => {
-            return new Promise<Game>((resolve, reject) => {
-                reject(new Error(''));
-            });
+            const result = await controller.newGame(stubGameCreationBody, stubGameFileInput);
+            expect(result).toEqual(stubGame);
         });
-        const invalidGame = exampleGame;
-        invalidGame.isValid = false;
-        expect(async () => {
-            await controller.newGame(stubInputGame);
-        }).rejects.toThrowError(new HttpException('', HttpStatus.BAD_REQUEST));
+
+        it('trying to create an invalid game should return an error', () => {
+            let testGame: undefined;
+
+            jest.spyOn(controller['gameService'], 'create').mockReturnValue(Promise.resolve(testGame));
+
+            expect(async () => {
+                await controller.newGame({ name: '', radius: undefined }, stubGameFileInput);
+            }).rejects.toThrowError(HttpException);
+        });
+
+        it('should return an error if called without a game', () => {
+            jest.spyOn(controller['gameService'], 'create').mockImplementation(async () => {
+                return new Promise<Game>((resolve) => {
+                    resolve(exampleGame);
+                });
+            });
+            expect(async () => {
+                await controller.newGame(null, null);
+            }).rejects.toThrowError(new HttpException('Nom du jeu absent.', HttpStatus.BAD_REQUEST));
+        });
+
+        it('should return an error if called without files', () => {
+            jest.spyOn(controller['gameService'], 'create').mockImplementation(async () => {
+                return new Promise<Game>((resolve) => {
+                    resolve(exampleGame);
+                });
+            });
+            expect(async () => {
+                await controller.newGame(stubGameCreationBody, null);
+            }).rejects.toThrowError(new HttpException('Le jeu necessite 2 images et un rayon.', HttpStatus.BAD_REQUEST));
+        });
+
+        it('should return an error if the game isnt valid', () => {
+            jest.spyOn(controller['gameService'], 'create').mockImplementation(async () => {
+                return new Promise<Game>((resolve, reject) => {
+                    reject(new Error(''));
+                });
+            });
+            const invalidGame = exampleGame;
+            invalidGame.isValid = false;
+            expect(async () => {
+                await controller.newGame(stubGameCreationBody, stubGameFileInput);
+            }).rejects.toThrowError(new HttpException('', HttpStatus.BAD_REQUEST));
+        });
     });
 });
