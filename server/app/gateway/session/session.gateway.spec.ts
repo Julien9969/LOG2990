@@ -1,33 +1,64 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- need to use any to spy on private method */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
+import { GameService } from '@app/services/game/game.service';
+import { Session } from '@app/services/session/session';
+import { SessionService } from '@app/services/session/session.service';
+import { StartSessionData } from '@common/askSessionIdData';
+import { Coordinate } from '@common/coordinate';
+import { GuessResult } from '@common/guess-result';
+import { NewScore } from '@common/new-score';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { createStubInstance, SinonStubbedInstance } from 'sinon';
-import { Server } from 'socket.io';
-
-describe('MatchmakingGateway', () => {
-    let gateway: MatchmakingGateway;
+import { BroadcastOperator, Server, Socket } from 'socket.io';
+import { SessionGateway } from './session.gateway';
+import { SessionEvents } from './session.gateway.events';
+describe('SessionGateway', () => {
+    let gateway: SessionGateway;
     let logger: SinonStubbedInstance<Logger>;
-    // let socket: SinonStubbedInstance<Socket>;
+    // eslint-disable-next-line no-unused-vars
+    let socket: SinonStubbedInstance<Socket>;
     let server: SinonStubbedInstance<Server>;
+    let sessionService: SinonStubbedInstance<SessionService>;
+    let gameService: SinonStubbedInstance<GameService>;
+    let session: SinonStubbedInstance<Session>;
 
     beforeEach(async () => {
         logger = createStubInstance(Logger);
-        // socket = createStubInstance<Socket>(Socket);
-        // const newLocal = (server = createStubInstance<Server>(Server));
+        socket = createStubInstance<Socket>(Socket);
+        server = createStubInstance<Server>(Server);
+        sessionService = createStubInstance<SessionService>(SessionService);
+        gameService = createStubInstance<GameService>(GameService);
+        session = createStubInstance<Session>(Session);
         const module: TestingModule = await Test.createTestingModule({
             providers: [
-                MatchmakingGateway,
+                SessionGateway,
+                {
+                    provide: Socket,
+                    useValue: socket,
+                },
                 {
                     provide: Logger,
                     useValue: logger,
                 },
+                {
+                    provide: SessionService,
+                    useValue: sessionService,
+                },
+                {
+                    provide: GameService,
+                    useValue: gameService,
+                },
+                {
+                    provide: Session,
+                    useValue: session,
+                },
             ],
         }).compile();
 
-        gateway = module.get<MatchmakingGateway>(MatchmakingGateway);
+        gateway = module.get<SessionGateway>(SessionGateway);
         gateway['server'] = server;
+        jest.spyOn(logger, 'log').mockImplementation();
     });
 
     afterEach(() => {
@@ -39,6 +70,217 @@ describe('MatchmakingGateway', () => {
         expect(gateway).toBeDefined();
     });
 
+    describe('getClientId', () => {
+        it('should return client socket Id', () => {
+            jest.spyOn(logger, 'log');
+            expect(gateway.getClientId(socket)).toEqual(socket.id);
+            expect(logger.log).toHaveBeenCalledWith(`Client ${socket.id} has requested his socket Id`);
+        });
+        it('should call the right log', () => {
+            jest.spyOn(logger, 'log');
+            gateway.getClientId(socket);
+            expect(logger.log).toHaveBeenCalledWith(`Client ${socket.id} has requested his socket Id`);
+        });
+    });
+
+    describe('askForSessionId', () => {
+        const sessionCreatedId = 123;
+        const gameId = '233';
+        let isSolo: boolean;
+        let askSessionIdData: StartSessionData;
+        it('should return sessionId and call sessionService.createNewSession when solo game', () => {
+            isSolo = true;
+            askSessionIdData = { gameId, isSolo };
+            jest.spyOn(sessionService, 'createNewSession').mockReturnValue(sessionCreatedId);
+            expect(gateway.askForSessionId(socket, askSessionIdData)).toEqual(sessionCreatedId);
+            expect(sessionService.createNewSession).toHaveBeenLastCalledWith(gameId, socket.id);
+            expect(logger.log).toHaveBeenCalledWith(`Client ${socket.id} asked for session id`);
+            expect(logger.log).toHaveBeenCalledWith(`solo session ${sessionCreatedId} was created by ${socket.id}`);
+        });
+        it('should call log.logger with the right messages when solo game', () => {
+            isSolo = true;
+            askSessionIdData = { gameId, isSolo };
+            expect(gateway.askForSessionId(socket, askSessionIdData));
+            expect(logger.log).toHaveBeenCalledWith(`Client ${socket.id} asked for session id`);
+            expect(logger.log).toHaveBeenCalledWith(`solo session ${sessionCreatedId} was created by ${socket.id}`);
+        });
+
+        it('should call the right functions when multiplayer game', () => {
+            const roomId = 'gameRoom-123-asdgdfgds';
+            const otherSocket = createStubInstance<Socket>(Socket);
+            jest.spyOn(sessionService, 'createNewSession').mockReturnValue(sessionCreatedId);
+            jest.spyOn(gateway, 'startSessionTimer').mockImplementation();
+            jest.spyOn(gateway['server'], 'emit').mockImplementation();
+            jest.spyOn(logger, 'log').mockImplementation();
+
+            jest.spyOn(gateway['server'], 'in').mockReturnValue({
+                emit: (event: string) => {
+                    expect(event).toEqual(123);
+                },
+            } as BroadcastOperator<unknown, unknown>);
+            jest.spyOn(gateway['server'], 'allSockets').mockImplementation(async () => {
+                return new Set([socket.id, otherSocket.id]);
+            });
+            expect(gateway.askForSessionId(socket, askSessionIdData)).toEqual(undefined);
+            expect(sessionService.createNewSession).toHaveBeenLastCalledWith(gameId, socket.id, otherSocket.id);
+            expect(gateway['server'].to(roomId).emit).toHaveBeenCalledWith('sessionId', sessionCreatedId);
+            expect(gateway.startSessionTimer).toHaveBeenCalledWith(socket, 123);
+        });
+    });
+
+    describe('leaveRoom', () => {
+        it('should make the client leave the room', () => {
+            const gameId = '123';
+            const roomId = `gameRoom-roomId-${gameId}-ASJndsajs`;
+            socket.join(roomId);
+            // socketIOClient.mockReturnValue(socket);
+            gateway.leaveRoom(socket);
+            expect(socket.leave).toHaveBeenCalledWith(roomId);
+        });
+    });
+
+    describe('handleCoordinatesSubmission for solo games', () => {
+        it('should call the right functions and return the guess result when no winner and guessResult.isCorrect is not correct', () => {
+            const sessionId = 123;
+            const data: [number, Coordinate] = [sessionId, { x: -1, y: -1 }];
+            const gameId = '123';
+            const sessionStub: Session = new Session(gameId, socket.id);
+            const guessResultStub: GuessResult = { isCorrect: false, differencesByPlayer: [], differencePixelList: [] };
+            const newScoreStub: NewScore = { guessResult: guessResultStub, gameWonBy: 'No winner' };
+
+            jest.spyOn(sessionService, 'findById').mockReturnValue(sessionStub);
+            jest.spyOn(sessionStub, 'tryGuess').mockReturnValue(newScoreStub);
+            jest.spyOn(gateway, 'notifyPlayersOfDiffFound').mockImplementation();
+            jest.spyOn(socket, 'emit').mockImplementation();
+            jest.spyOn(sessionStub, 'isSolo', 'get').mockReturnValue(true);
+
+            expect(gateway.handleCoordinatesSubmission(socket, data)).toEqual(newScoreStub.guessResult);
+            expect(sessionService.findBySessionId).toHaveBeenCalledWith(data[0]);
+            expect(sessionStub.tryGuess).toHaveBeenCalledWith(data[0], socket.id);
+            expect(gateway.notifyPlayersOfDiffFound).not.toHaveBeenCalledWith(socket, newScoreStub.guessResult);
+            expect(gateway.playerWon).not.toHaveBeenCalled();
+            expect(socket.emit).toHaveBeenCalledWith(SessionEvents.DifferenceFound, newScoreStub.guessResult);
+        });
+
+        it('should call the right functions and return the guess result when no winner and guessResult.isCorrect is correct', () => {
+            const sessionId = 123;
+            const data: [number, Coordinate] = [sessionId, { x: -1, y: -1 }];
+            const gameId = '123';
+            const sessionStub: Session = new Session(gameId, socket.id);
+            const guessResultStub: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [] };
+            const newScoreStub: NewScore = { guessResult: guessResultStub, gameWonBy: 'No winner' };
+
+            jest.spyOn(sessionService, 'findById').mockReturnValue(sessionStub);
+            jest.spyOn(sessionStub, 'tryGuess').mockReturnValue(newScoreStub);
+            jest.spyOn(gateway, 'notifyPlayersOfDiffFound').mockImplementation();
+            jest.spyOn(socket, 'emit').mockImplementation();
+            jest.spyOn(sessionStub, 'isSolo', 'get').mockReturnValue(true);
+
+            expect(gateway.handleCoordinatesSubmission(socket, data)).toEqual(newScoreStub.guessResult);
+            expect(sessionService.findBySessionId).toHaveBeenCalledWith(data[0]);
+            expect(sessionStub.tryGuess).toHaveBeenCalledWith(data[0], socket.id);
+            expect(gateway.notifyPlayersOfDiffFound).toHaveBeenCalledWith(socket, newScoreStub.guessResult);
+            expect(gateway.playerWon).not.toHaveBeenCalled();
+            expect(socket.emit).not.toHaveBeenCalled();
+        });
+
+        it('should call the right functions and return the guess result when there is a winner and the guessResult.isCorrect is correct', () => {
+            const sessionId = 123;
+            const data: [number, Coordinate] = [sessionId, { x: -1, y: -1 }];
+            const gameId = '123';
+            const sessionStub: Session = new Session(gameId, socket.id);
+            const guessResultStub: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [] };
+            const newScoreStub: NewScore = { guessResult: guessResultStub, gameWonBy: 'No winner' };
+
+            jest.spyOn(sessionService, 'findById').mockReturnValue(sessionStub);
+            jest.spyOn(sessionStub, 'tryGuess').mockReturnValue(newScoreStub);
+            jest.spyOn(gateway, 'notifyPlayersOfDiffFound').mockImplementation();
+            jest.spyOn(socket, 'emit').mockImplementation();
+            jest.spyOn(sessionStub, 'isSolo', 'get').mockReturnValue(true);
+
+            expect(gateway.handleCoordinatesSubmission(socket, data)).toEqual(newScoreStub.guessResult);
+            expect(sessionService.findBySessionId).toHaveBeenCalledWith(data[0]);
+            expect(sessionStub.tryGuess).toHaveBeenCalledWith(data[0], socket.id);
+            expect(gateway.notifyPlayersOfDiffFound).toHaveBeenCalledWith(socket, newScoreStub.guessResult);
+            expect(gateway.playerWon).toHaveBeenCalledWith(socket, newScoreStub.gameWonBy, true);
+            expect(socket.emit).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('handleCoordinatesSubmission for multi games', () => {
+        const sessionId = 123;
+        const data: [number, Coordinate] = [sessionId, { x: -1, y: -1 }];
+        const gameId = '123';
+        const sessionStub: Session = new Session(gameId, socket.id);
+        const guessResultStub: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [] };
+        const newScoreStub: NewScore = { guessResult: guessResultStub, gameWonBy: socket.id };
+        it('should call the right functions and not return the guess result when no winner and guessResult.isCorrect is not correct', () => {
+            jest.spyOn(sessionService, 'findById').mockReturnValue(sessionStub);
+            jest.spyOn(sessionStub, 'tryGuess').mockReturnValue(newScoreStub);
+            jest.spyOn(gateway, 'notifyPlayersOfDiffFound').mockImplementation();
+            jest.spyOn(socket, 'emit').mockImplementation();
+            jest.spyOn(sessionStub, 'isSolo', 'get').mockReturnValue(false);
+
+            expect(gateway.handleCoordinatesSubmission(socket, data)).toEqual(newScoreStub.guessResult);
+            expect(sessionService.findBySessionId).toHaveBeenCalledWith(data[0]);
+            expect(sessionStub.tryGuess).toHaveBeenCalledWith(data[0], socket.id);
+            expect(gateway.notifyPlayersOfDiffFound).not.toHaveBeenCalledWith(socket, newScoreStub.guessResult);
+            // expect(gateway.playerWon).not.toHaveBeenCalledWith(socket, newScoreStub.gameWonBy, true);
+            expect(gateway.playerWon).not.toHaveBeenCalled();
+            expect(socket.emit).toHaveBeenCalledWith(SessionEvents.DifferenceFound, newScoreStub.guessResult);
+        });
+
+        it('should call the right functions and return the guess result when no winner and guessResult.isCorrect is correct', () => {
+            jest.spyOn(sessionService, 'findById').mockReturnValue(sessionStub);
+            jest.spyOn(sessionStub, 'tryGuess').mockReturnValue(newScoreStub);
+            jest.spyOn(gateway, 'notifyPlayersOfDiffFound').mockImplementation();
+            jest.spyOn(socket, 'emit').mockImplementation();
+            jest.spyOn(sessionStub, 'isSolo', 'get').mockReturnValue(false);
+
+            expect(gateway.handleCoordinatesSubmission(socket, data)).toEqual(newScoreStub.guessResult);
+            expect(sessionService.findBySessionId).toHaveBeenCalledWith(data[0]);
+            expect(sessionStub.tryGuess).toHaveBeenCalledWith(data[0], socket.id);
+            expect(gateway.notifyPlayersOfDiffFound).toHaveBeenCalledWith(socket, newScoreStub.guessResult);
+            // expect(gateway.playerWon).not.toHaveBeenCalledWith(socket, newScoreStub.gameWonBy, true);
+            expect(gateway.playerWon).not.toHaveBeenCalled();
+            expect(socket.emit).not.toHaveBeenCalled();
+        });
+
+        it('should call the right functions and return the guess result when there is a winner and the guessResult.isCorrect is correct', () => {
+            jest.spyOn(sessionService, 'findById').mockReturnValue(sessionStub);
+            jest.spyOn(sessionStub, 'tryGuess').mockReturnValue(newScoreStub);
+            jest.spyOn(gateway, 'notifyPlayersOfDiffFound').mockImplementation();
+            jest.spyOn(socket, 'emit').mockImplementation();
+            jest.spyOn(sessionStub, 'isSolo', 'get').mockReturnValue(false);
+
+            expect(gateway.handleCoordinatesSubmission(socket, data)).toEqual(newScoreStub.guessResult);
+            expect(sessionService.findBySessionId).toHaveBeenCalledWith(data[0]);
+            expect(sessionStub.tryGuess).toHaveBeenCalledWith(data[0], socket.id);
+            expect(gateway.notifyPlayersOfDiffFound).toHaveBeenCalledWith(socket, newScoreStub.guessResult);
+            expect(gateway.playerWon).toHaveBeenCalledWith(socket, newScoreStub.gameWonBy, false);
+            expect(socket.emit).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('playerLeft', () => {
+        const sessionId = 123;
+        const data: [number, Coordinate] = [sessionId, { x: -1, y: -1 }];
+        const gameId = '123';
+        const sessionStub: Session = new Session(gameId, socket.id);
+        const guessResultStub: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [] };
+        const newScoreStub: NewScore = { guessResult: guessResultStub, gameWonBy: socket.id };
+        const roomId = 'gameRoom-asddss-asdd';
+        it('should call the right functions when session and room exist', () => {
+            jest.spyOn(gateway['server'], 'in').mockReturnValue({
+                emit: (event: string) => {
+                    expect(event).toEqual(123);
+                },
+            } as BroadcastOperator<unknown, unknown>);
+            socket.join('roomId');
+            jest.spyOn(gateway['server'], 'emit').mockImplementation();
+            jest.spyOn(gateway['server'], 'socketsLeave').getMockImplementation();
+        });
+    });
     //     describe('get', () => {
     //         it('serverRooms should return the rooms of the server', () => {
     //             const roomsStub = new Map([['roomId', new Set([socket.id])]]);

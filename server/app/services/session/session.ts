@@ -1,7 +1,7 @@
+import { TIME_CONST } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
-import { NewScore } from '@common/new-score';
 
 export class Session {
     gameID: string;
@@ -11,6 +11,8 @@ export class Session {
     nDifferences: number;
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
     differencesFoundByPlayer: [userSocketId: string, differencesFound: number[]][] = [];
+    timeElapsed: number = 0;
+    timerId: NodeJS.Timeout;
 
     constructor(gameID: string, firstSocketId: string, secondSocketId?: string) {
         this.differencesFoundByPlayer.push([firstSocketId, []]);
@@ -23,12 +25,30 @@ export class Session {
     }
 
     /**
-     * Retourne le nombre de joueurs se trouvant dans cette session
+     * Retourne le temps écoulé depuis le début de la session en format mm:ss
+     *
+     * @returns Le temps en format mm:ss
+     */
+    get formatedTimeElapsed(): string {
+        const minutes = Math.floor(this.timeElapsed / TIME_CONST.minute);
+        const seconds = this.timeElapsed % TIME_CONST.minute;
+        return minutes + ':' + seconds.toString().padStart(2, '0');
+    }
+
+    /**
+     * Retourne si la session est en solo ou multi-joueur
      *
      * @returns le nombre de joueurs dans la session
      */
-    getNbPlayers() {
-        return this.differencesFoundByPlayer.length;
+    get isSolo(): boolean {
+        return this.differencesFoundByPlayer.length === 1;
+    }
+
+    /**
+     * Arrête le timer de la session
+     */
+    stopTimer() {
+        clearInterval(this.timerId);
     }
 
     /**
@@ -37,67 +57,66 @@ export class Session {
      * @param guess La coordonnée de l'essai
      * @returns Le résultat de l'essai
      */
-    tryGuess(guess: Coordinate, userSocketId: string): NewScore {
+    tryGuess(guess: Coordinate, userSocketId: string): GuessResult {
         let diffNum: number;
         let diffPixelList: Coordinate[] = [];
-        if (!this.differenceValidationService.validateGuess(guess)) {
-            throw new Error('Mauvais format de guess.');
-        }
+        if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
+
         try {
-            // Vérification de la différence dans les données de jeu
             diffNum = this.differenceValidationService.checkDifference(guess.x, guess.y);
-            if (diffNum !== undefined && !this.isDiffAlreadyFound(diffNum)) {
+            if (diffNum !== undefined && !this.isDiffAlreadyFound(diffNum))
                 diffPixelList = this.differenceValidationService.getDifferencePixelList(diffNum);
-            }
         } catch (error) {
             throw new Error(error.message);
         }
 
-        // Formation de l'objet resultat
-        const result: GuessResult = {
-            isCorrect: diffNum !== undefined && !this.isDiffAlreadyFound(diffNum),
-            differencesByPlayer: [],
-            differencePixelList: diffPixelList,
-        };
-
+        const isCorrect = diffNum !== undefined && !this.isDiffAlreadyFound(diffNum);
         // Traitement des pénalités, le cas échéant
-        if (result.isCorrect) {
+        if (isCorrect) {
             const index = this.getDiffTupleIndex(userSocketId);
             if (index !== undefined) {
                 this.differencesFoundByPlayer[index][1].push(diffNum);
                 this.nGuesses++;
             }
-        } else {
-            this.nPenalties++;
-        }
-        result.differencesByPlayer.push([this.differencesFoundByPlayer[0][0], this.differencesFoundByPlayer[0][1].length]);
-        if (this.differencesFoundByPlayer.length === 2) {
-            result.differencesByPlayer.push([this.differencesFoundByPlayer[1][0], this.differencesFoundByPlayer[1][1].length]);
-        }
-        const newScore: NewScore = {
-            guessResult: result,
-            gameWonBy: this.verifyGameWon(),
-        };
-        return newScore;
+        } else this.nPenalties++;
+
+        return this.buildGuessResult(isCorrect, diffPixelList);
     }
+
+    /**
+     * Construit l'objet GuessResult à retourner au client
+     *
+     * @param isCorrect si le guess est correct ou non
+     * @param differencePixelList liste des pixels de la différence trouvée
+     * @returns l'objet GuessResult
+     */
+    buildGuessResult(isCorrect: boolean, differencePixelList: Coordinate[]): GuessResult {
+        const guessResult: GuessResult = {
+            isCorrect,
+            differencesByPlayer: [[this.differencesFoundByPlayer[0][0], this.differencesFoundByPlayer[0][1].length]],
+            differencePixelList,
+            winnerName: this.verifyGameWon(),
+        };
+
+        if (!this.isSolo) guessResult.differencesByPlayer.push([this.differencesFoundByPlayer[1][0], this.differencesFoundByPlayer[1][1].length]);
+
+        return guessResult;
+    }
+
     /**
      * Verifie si un joueur a gagne la partie
      *
-     * @returns le socketId du joueur gagnant ou une string vide
+     * @returns le socketId du joueur gagnant ou un string indiquant qu'il n'y a pas de gagnant
      */
-    verifyGameWon(): string {
-        if (this.differencesFoundByPlayer.length === 1) {
-            if (this.nDifferences === this.differencesFoundByPlayer[0][1].length) {
-                return this.differencesFoundByPlayer[0][0];
-            } else return 'No winner';
-        } else if (this.nDifferences / 2 <= this.differencesFoundByPlayer[0][1].length) {
-            // console.log('Player a gagne la game yessir')
-            return this.differencesFoundByPlayer[0][0];
-        } else if (this.nDifferences / 2 <= this.differencesFoundByPlayer[1][1].length) {
-            return this.differencesFoundByPlayer[1][0];
-        } else {
-            return 'No winner';
+    verifyGameWon(): string | undefined {
+        if (this.isSolo) {
+            if (this.nDifferences === this.differencesFoundByPlayer[0][1].length) return this.differencesFoundByPlayer[0][0];
+            return;
         }
+
+        if (this.nDifferences / 2 <= this.differencesFoundByPlayer[0][1].length) return this.differencesFoundByPlayer[0][0];
+        if (this.nDifferences / 2 <= this.differencesFoundByPlayer[1][1].length) return this.differencesFoundByPlayer[1][0];
+        return;
     }
 
     /**
@@ -107,12 +126,8 @@ export class Session {
      * @returns si c'est une différence déjà trouvé ou non
      */
     private isDiffAlreadyFound(differenceNum: number) {
-        for (const differenceList of this.differencesFoundByPlayer) {
-            if (differenceList[1].includes(differenceNum)) {
-                return true;
-            }
-        }
-        return false;
+        if (this.isSolo) return this.differencesFoundByPlayer[0][1].includes(differenceNum);
+        return this.differencesFoundByPlayer[0][1].includes(differenceNum) || this.differencesFoundByPlayer[1][1].includes(differenceNum);
     }
 
     /**
@@ -123,9 +138,7 @@ export class Session {
      */
     private getDiffTupleIndex(userSocketId: string): number | undefined {
         for (let i = 0; i < this.differencesFoundByPlayer.length; i++) {
-            if (this.differencesFoundByPlayer[i][0] === userSocketId) {
-                return i;
-            }
+            if (this.differencesFoundByPlayer[i][0] === userSocketId) return i;
         }
     }
 }

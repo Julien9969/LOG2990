@@ -1,13 +1,15 @@
+import { SECOND_IN_MILLISECONDS } from '@app/gateway/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
 import { SessionService } from '@app/services/session/session.service';
-import { AskSessionIdData } from '@common/askSessionIdData';
 import { Coordinate } from '@common/coordinate';
+import { FinishedGame } from '@common/finishedGame';
 import { GuessResult } from '@common/guess-result';
-import { NewScore } from '@common/new-score';
+import { SessionEvents } from '@common/session.gateway.events';
+import { StartSessionData } from '@common/start-session-data';
+import { WinnerInfo } from '@common/winner-info';
 import { Logger } from '@nestjs/common';
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { SessionEvents } from './session.gateway.events';
 
 @WebSocketGateway({ cors: true })
 export class SessionGateway {
@@ -15,32 +17,15 @@ export class SessionGateway {
 
     constructor(private readonly logger: Logger, private readonly sessionService: SessionService, private readonly gameService: GameService) {}
 
+    /**
+     *
+     * @param client
+     * @returns
+     */
     @SubscribeMessage(SessionEvents.GetClientId)
     getClientId(client: Socket) {
         this.logger.log(`Client ${client.id} has requested his socket Id`);
         return client.id;
-    }
-
-    /**
-     * Récupérer toutes les sessions de jeu active
-     *
-     * @returns La liste des sessions de jeu
-     */
-    @SubscribeMessage(SessionEvents.GetAllSessions)
-    getAllActiveSession() {
-        return this.sessionService.getAll();
-    }
-
-    /**
-     * Récupère les informations d'une session en cours
-     *
-     * @param id L'identifiant de la session
-     * @returns La session recherchée
-     */
-    @SubscribeMessage(SessionEvents.GetSession)
-    getSessionById(client: Socket, sessionId: number) {
-        const session = this.sessionService.findById(sessionId);
-        return session;
     }
 
     /**
@@ -49,25 +34,30 @@ export class SessionGateway {
      * @param id L'identifiant de la session à supprimer
      */
     @SubscribeMessage(SessionEvents.CloseSession)
-    deleteGame(sessionId: number) {
-        this.sessionService.delete(sessionId);
+    closeSession(sessionId: number) {
+        try {
+            this.sessionService.delete(sessionId);
+        } catch (error) {
+            this.logger.error(error);
+        }
         return sessionId;
     }
 
     /**
      * Lorsqu'un joueur entre dans une salle solo ou lorsque 2 joueurs rentres dans
-     * une salle multijoueur et le créateur envoie uen requête, une session est crée
+     * une salle multijoueur et le créateur envoie une requête, une session est crée
      * et son identifiant (id) est envoyé à tout les joueurs dans la salle.
      *
      * @param client Le client qui a fait la demande d'un identifiant (id) de session
      * @param gameId L'identifiant du jeu que le client veut jouer
      */
-    @SubscribeMessage(SessionEvents.AskForSessionId)
-    async askForSessionId(client: Socket, askSessionIdData: AskSessionIdData) {
-        const { gameId, isSolo } = askSessionIdData;
+    @SubscribeMessage(SessionEvents.StartSession)
+    async startSession(client: Socket, data: StartSessionData) {
+        const { gameId, isSolo } = data;
         this.logger.log(`Client ${client.id} asked for session id`);
         if (isSolo) {
             const sessionId = this.sessionService.createNewSession(gameId, client.id);
+            this.startSessionTimer(client, sessionId);
             this.logger.log(`solo session ${sessionId} was created by ${client.id}`);
             return sessionId;
         }
@@ -77,14 +67,15 @@ export class SessionGateway {
                 if (clientsInRoom.size === 2) {
                     const [firstClientId, secondClientId] = clientsInRoom;
                     const sessionId = this.sessionService.createNewSession(gameId, firstClientId, secondClientId);
-                    this.server.to(roomId).emit('sessionId', sessionId);
+                    this.startSessionTimer(client, sessionId);
+                    this.server.to(roomId).emit(SessionEvents.SessionId, sessionId);
                     this.logger.log(`multiplayer session ${sessionId} was created by client ${client.id}`);
                 }
             }
         });
     }
 
-    @SubscribeMessage('leaveRoom')
+    @SubscribeMessage(SessionEvents.LeaveRoom)
     leaveRoom(client: Socket) {
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
@@ -92,12 +83,6 @@ export class SessionGateway {
             }
         });
     }
-    // TODO : DELETE
-    // afterInit() {
-    //     setInterval(() => {
-    //         this.emitTime();
-    //     }, DELAY_BEFORE_EMITTING_TIME);
-    // }
 
     /**
      * Lorsqu'un joueur clic sur l'une des images, les coordonnés de ce clic sont envoyés
@@ -109,31 +94,31 @@ export class SessionGateway {
      * @returns le résultat s'il n'y a qu'un joueur dans la salle
      */
     @SubscribeMessage(SessionEvents.SubmitCoordinates)
-    handleCoordinatesSubmission(client: Socket, data: GuessResult) {
-        const sessionId: number = data[0];
-        const coordinates: Coordinate = data[1];
-        const session = this.sessionService.findById(sessionId);
-        let result: NewScore;
+    handleCoordinatesSubmission(client: Socket, data: [number, Coordinate]) {
+        const [sessionId, coordinates] = data;
+        const session = this.sessionService.findBySessionId(sessionId);
+        let result: GuessResult;
         this.logger.log(`Client ${client.id} submitted coordinates`);
         if (!session) {
             this.logger.log(`Client ${client.id} submitted coordinates but session is invalid`);
+            return;
         }
         try {
             result = session.tryGuess(coordinates, client.id);
-            if (result.guessResult.isCorrect) {
-                this.notifyPlayersOfDiffFound(client, result.guessResult);
-                if (result.gameWonBy !== 'No winner') {
-                    this.playerWon(client, result.gameWonBy, session.getNbPlayers() === 1);
-                }
+            if (session.isSolo) {
+                if (!result.isCorrect) this.logger.log(`Client ${client.id} submitted a wrong guess`);
+                else if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
+                return result;
+            }
+            if (result.isCorrect) {
+                this.notifyPlayersOfDiffFound(client, result);
+                if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
             } else {
                 this.logger.log(`Client ${client.id} submitted a wrong guess`);
-                client.emit('differenceFound', result.guessResult);
+                client.emit(SessionEvents.DifferenceFound, result);
             }
         } catch (error) {
             this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid`);
-        }
-        if (session.getNbPlayers() === 1) {
-            return result.guessResult;
         }
     }
 
@@ -143,21 +128,57 @@ export class SessionGateway {
      * @param client Le client qui a quitté la partie
      */
     @SubscribeMessage(SessionEvents.PlayerLeft)
-    playerLeft(client: Socket) {
+    playerLeft(client: Socket, sessionId: number) {
         this.logger.log(`Client ${client.id} exited the game`);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 this.logger.log(`Client ${client.id} emited that he left the game to ${roomId}`);
-                this.server.to(roomId).except(client.id).emit('opponentLeftGame');
+                this.server.to(roomId).except(client.id).emit(SessionEvents.OpponentLeftGame);
                 this.server.socketsLeave(roomId);
             }
         });
+        if (this.sessionService.findBySessionId(sessionId)) {
+            try {
+                this.sessionService.delete(sessionId);
+            } catch (error) {
+                this.logger.error(error);
+            }
+        }
         client.disconnect();
     }
 
     /**
-     * S'il y a d'autres joueurs dans la salle, leur envoie les
-     * nouvelles différences trouvé
+     * Commence le timer pour une session donnée, stocke l'id du timer dans la session
+     * et envoie le temps (toutes les secondes) aux joueurs dans la session
+     *
+     * @param client Le client qui a fait la demande de démarrage du timer
+     * @param sessionId L'identifiant de la session pour laquelle le timer doit être démarré
+     */
+    startSessionTimer(client: Socket, sessionId: number) {
+        this.logger.log(`Client ${client.id} started the timer`);
+        const session = this.sessionService.findBySessionId(sessionId);
+        if (session) {
+            if (session.isSolo) {
+                session.timerId = setInterval(() => {
+                    session.timeElapsed++;
+                    client.emit(SessionEvents.TimerUpdate, session.formatedTimeElapsed);
+                }, SECOND_IN_MILLISECONDS);
+            } else {
+                client.rooms.forEach((roomId) => {
+                    if (roomId.startsWith('gameRoom')) {
+                        session.timerId = setInterval(() => {
+                            session.timeElapsed++;
+                            this.server.to(roomId).emit(SessionEvents.TimerUpdate, session.formatedTimeElapsed);
+                        }, SECOND_IN_MILLISECONDS);
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * Envoie les différences trouvées à tous les joueurs d'une salle
+     *
      *
      * @param client
      * @param differenceFound
@@ -166,30 +187,54 @@ export class SessionGateway {
         this.logger.log(`Client ${client.id} found a difference`);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
-                this.server.to(roomId).emit('differenceFound', differenceFound);
+                this.server.to(roomId).emit(SessionEvents.DifferenceFound, differenceFound);
                 this.logger.log(`Client ${client.id} emited that he found a difference to the room: ${roomId}`);
             }
         });
     }
+
     /**
      * Envoie aux joueurs d'une partie que la partie est finie
      *
-     * @param client
-     * @param differenceFound
+     * @param client socket du client qui a gagné
+     * @param sessionId id de la session
+     * @param isSolo true si la partie est solo et false si c'est multijoueur
      */
-    playerWon(client: Socket, winnerName: string, isSolo: boolean) {
-        if (isSolo) {
-            this.logger.log(`Client ${client.id}  won the game`);
-            this.server.to(client.id).emit('playerWon', winnerName);
-        } else {
-            client.rooms.forEach((roomId) => {
-                if (roomId.startsWith('gameRoom')) {
-                    this.logger.log(`Someone in Client ${client.id}'s room won the game`);
-                    this.logger.log(`Client ${client.id} made the players leave the game ${roomId}`);
-                    this.server.to(roomId).emit('playerWon', winnerName);
-                    this.server.socketsLeave(roomId);
-                }
-            });
-        }
+    async playerWon(client: Socket, sessionId: number, isSolo: boolean) {
+        let winnerName: string;
+        const session = this.sessionService.findBySessionId(sessionId);
+        const seconds = session.timeElapsed;
+        const gameId = session.gameID;
+        session.stopTimer();
+
+        client.emit(SessionEvents.ProvideName);
+        client.on(SessionEvents.PlayerName, (playerName: string) => {
+            winnerName = playerName;
+            const winnerInfo: WinnerInfo = { name: playerName, socketId: client.id };
+            const finishedGame: FinishedGame = { winner: winnerName, time: seconds, solo: isSolo } as FinishedGame;
+            this.gameService.addToScoreboard(gameId, finishedGame);
+
+            if (isSolo) {
+                this.logger.log(`Client ${client.id}  won the game`);
+                this.server.to(client.id).emit(SessionEvents.PlayerWon, winnerInfo);
+            } else {
+                client.rooms.forEach((roomId) => {
+                    if (roomId.startsWith('gameRoom')) {
+                        this.logger.log(`Someone in Client ${client.id}'s room won the game`);
+                        this.server.to(roomId).emit(SessionEvents.PlayerWon, winnerInfo);
+                        this.server.socketsLeave(roomId);
+                    }
+                });
+            }
+        });
+    }
+
+    getRoomId(client: Socket): string {
+        client.rooms.forEach((roomId) => {
+            if (roomId.startsWith('gameRoom')) {
+                return roomId;
+            }
+        });
+        return;
     }
 }

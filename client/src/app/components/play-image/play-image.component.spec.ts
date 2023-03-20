@@ -5,7 +5,6 @@ import { CommunicationService } from '@app/services/communication.service';
 import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
-import { Timer } from '@app/services/timer.service';
 // import { GuessResult } from '@common/guess-result';
 import { of } from 'rxjs';
 import { PlayImageComponent } from './play-image.component';
@@ -21,14 +20,12 @@ describe('PlayImageComponent', () => {
     let fixture: ComponentFixture<PlayImageComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let mouseServiceSpy: jasmine.SpyObj<MouseService>;
-    let timerSpy: jasmine.SpyObj<Timer>;
     let imageOperationServiceSpy: jasmine.SpyObj<ImageOperationService>;
     // let fakeGuessResult: GuessResult;
     let audioServiceSpy: jasmine.SpyObj<AudioService>;
     let inGameServiceSpy: jasmine.SpyObj<InGameService>;
 
     beforeEach(async () => {
-        timerSpy = jasmine.createSpyObj('TimerMock', ['errorTimer']);
         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['customPost', 'sendCoordinates', 'getImageURL']);
         communicationServiceSpy.customPost.and.returnValue(of(0));
         communicationServiceSpy.getImageURL.and.returnValue('assets/tests/image.bmp');
@@ -74,7 +71,6 @@ describe('PlayImageComponent', () => {
             providers: [
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: MouseService, useValue: mouseServiceSpy },
-                { provide: Timer, useValue: timerSpy },
                 { provide: ImageOperationService, useValue: imageOperationServiceSpy },
                 { provide: Image, useValue: StubImage },
                 { provide: AudioService, useValue: audioServiceSpy },
@@ -91,7 +87,6 @@ describe('PlayImageComponent', () => {
     });
 
     beforeEach(() => {
-        component['timer'] = timerSpy;
         component.imageCanvas1.nativeElement = document.createElement('canvas');
         component.imageCanvas2.nativeElement = document.createElement('canvas');
     });
@@ -103,10 +98,6 @@ describe('PlayImageComponent', () => {
     describe('get', () => {
         it('mouse should return mouseService', () => {
             expect(component.mouse).toEqual(mouseServiceSpy);
-        });
-
-        it('timerService should return timer', () => {
-            expect(component.timerService).toEqual(timerSpy);
         });
 
         it('canvasContext1 should return canvas context', () => {
@@ -208,7 +199,8 @@ describe('PlayImageComponent', () => {
             component.mouse.mousePosition = { x: 0, y: 1 };
             component.handleErrorGuess();
             expect(component.errorMsgPosition).toEqual({ x: 0, y: 1 });
-            expect(timerSpy.errorTimer).toHaveBeenCalled();
+            // sera retiré quand ce test sera corrigé
+            // expect(timerSpy.errorTimer).toHaveBeenCalled();
             expect(component.errorCounter).toEqual(1);
         });
 

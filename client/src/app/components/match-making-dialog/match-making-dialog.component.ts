@@ -83,7 +83,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     async acceptOpponent(): Promise<void> {
         if (await this.matchMaking.acceptOpponent(this.playerName)) {
-            this.matchMaking.askForMultiSessionId(this.gameInfo.id);
+            this.matchMaking.startMultiSession(this.gameInfo.id);
         } else {
             this.dialogInfos.template = 'waitingRoom';
             this.dialogInfos.message = "l'adversaire précendent a quitté la recherche";
@@ -107,7 +107,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     navigateToSoloGame(): void {
-        this.matchMaking.askForSoloSessionId(this.gameInfo.id, (newSessionId: number) => {
+        this.matchMaking.startSoloSession(this.gameInfo.id, (newSessionId: number) => {
             this.router.navigateByUrl(this.routerLink, {
                 state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
             });

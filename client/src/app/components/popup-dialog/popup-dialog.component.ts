@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { AudioService } from '@app/services/audio.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { AudioService } from '@app/services/audio.service';
 // import { InGameService } from '@app/services/in-game.service';
 
 /**
@@ -37,9 +37,4 @@ export class PopupDialogComponent implements OnInit {
         const noMagicNumber = 10;
         return noMagicNumber;
     }
-
-    // playerQuit() {
-    //     this.socket.playerExited();
-    //     this.dialogRef.close();
-    // }
 }
