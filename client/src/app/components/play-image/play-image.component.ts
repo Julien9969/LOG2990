@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { TIME_CONST } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio.service';
 import { CommunicationService } from '@app/services/communication.service';
 import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
-import { Timer } from '@app/services/timer.service';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 
@@ -29,9 +29,9 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
         isCorrect: false,
         differencesByPlayer: [],
         differencePixelList: [{ x: 0, y: 0 }],
+        winnerName: undefined,
     };
-
-    private timer = new Timer();
+    errorGuess: boolean = false;
     private imageOperationService: ImageOperationService = new ImageOperationService();
 
     constructor(
@@ -43,10 +43,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
 
     get mouse(): MouseService {
         return this.mouseService;
-    }
-
-    get timerService(): Timer {
-        return this.timer;
     }
 
     get canvasContext1(): CanvasRenderingContext2D {
@@ -63,9 +59,9 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
             isCorrect: false,
             differencesByPlayer: [],
             differencePixelList: [{ x: 0, y: 0 }],
+            winnerName: undefined,
         };
-        // Sert a savoir lorsque notre adversaire trouve une nouvelle différence
-        this.socket.receiveDifferenceFound().subscribe((differenceFound: GuessResult) => {
+        this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
     }
@@ -77,9 +73,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
     }
 
     sendPosition(event: MouseEvent): void {
-        if (this.timer.errorGuess) {
-            return;
-        }
         this.mouseService.clickProcessing(event);
         this.socket
             .submitCoordinates(this.sessionID, this.mouseService.mousePosition)
@@ -110,7 +103,10 @@ export class PlayImageComponent implements AfterViewInit, OnInit {
 
     handleErrorGuess(): void {
         this.errorMsgPosition = { x: this.mouseService.mousePosition.x, y: this.mouseService.mousePosition.y };
-        this.timer.errorTimer();
+        this.errorGuess = true;
+        window.setTimeout(() => {
+            this.errorGuess = false;
+        }, TIME_CONST.secondInMillisecond);
         this.errorCounter++;
 
         if (this.errorCounter % 3 === 0) {

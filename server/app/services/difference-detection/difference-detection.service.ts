@@ -11,7 +11,9 @@ import {
     IMAGE_HEIGHT,
     IMAGE_WIDTH,
     VALID_RADIUS_LIST,
-    WHITE_RGBA,
+    // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
+    // eslint-disable-next-line prettier/prettier
+    WHITE_RGBA
 } from '@app/services/constants/services.const';
 import { CoordSetObject } from '@app/services/disjoint-sets/coord-set-object';
 import { DisjointSet } from '@app/services/disjoint-sets/disjoint-sets';

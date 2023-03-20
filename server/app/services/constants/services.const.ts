@@ -8,6 +8,18 @@ export const IMAGE_WIDTH = 640;
 export const IMAGE_HEIGHT = 480;
 
 /**
+ * Constantes de la classe session
+ */
+
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const NO_WINNER: null = null;
+
+export const TIME_CONST = {
+    secondInMilliseconds: 1000,
+    minute: 60,
+};
+
+/**
  * Constantes du système de détéction de différences
  */
 export const DIFFERENCE_LISTS_FOLDER = 'assets/difference-matrix';
@@ -40,14 +52,15 @@ export const IMAGE_FORMAT = 'png';
 export const GAME_DATA_FILE_PATH = 'assets/gamesData/gamesData.json';
 export const GAME_ID_CAP = 10000;
 
-export const DEFAULT_SCOREBOARD: [string, number][] = [
+export const DEFAULT_GAME_TIME = 30;
+export const DEFAULT_REWARD_TIME = 5;
+export const DEFAULT_PENALTY_TIME = 5;
+
+export const DEFAULT_GAME_LEADERBOARD: [string, number][] = [
     ['Bowser', 150],
     ['Peach', 250],
     ['Mario', 780],
 ];
-export const DEFAULT_GAME_TIME = 30;
-export const DEFAULT_REWARD_TIME = 5;
-export const DEFAULT_PENALTY_TIME = 5;
 
 /*
  * Constante de gestion de Session;

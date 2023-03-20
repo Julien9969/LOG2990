@@ -1,6 +1,6 @@
 export const TIME_CONST = {
-    oneSecond: 1000,
-    oneMinute: 60,
+    secondInMillisecond: 1000,
+    minute: 60,
 };
 
 export enum MouseButton {

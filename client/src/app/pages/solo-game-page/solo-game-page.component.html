@@ -5,7 +5,7 @@
                 <span id="player-counter" class="diff-counter" color="player"
                     >{{ playerName }} : <mat-icon>search</mat-icon> {{ nDiffFoundMainPlayer }}/{{ gameInfos.differenceCount }}
                 </span>
-                <span id="timer">{{ getTimer.formatTime }}</span>
+                <span id="timer">{{ this.time }}</span>
                 <span *ngIf="!isSolo" id="opponent-counter" class="diff-counter" color="opponent"
                     >{{ opponentName }} : <mat-icon>search</mat-icon> {{ nDiffFoundOpponent }}/{{ gameInfos.differenceCount }}
                 </span>

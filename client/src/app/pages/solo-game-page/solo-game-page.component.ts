@@ -4,8 +4,8 @@ import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.
 import { CommunicationService } from '@app/services/communication.service';
 import { InGameService } from '@app/services/in-game.service';
 import { SocketClientService } from '@app/services/socket-client.service';
-import { Timer } from '@app/services/timer.service';
 import { Game } from '@common/game';
+import { WinnerInfo } from '@common/winner-info';
 
 @Component({
     selector: 'app-solo-game-page',
@@ -27,7 +27,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     nDiffFoundMainPlayer: number = 0;
     nDiffFoundOpponent: number = 0;
 
-    private timer = new Timer();
+    time: string = '0:00';
 
     constructor(
         private readonly dialog: MatDialog,
@@ -36,7 +36,6 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         private readonly socketClient: SocketClientService,
     ) {
         this.isLoaded = false;
-        this.timer = new Timer();
 
         this.isSolo = window.history.state.isSolo;
         if (!this.isSolo) {
@@ -45,10 +44,6 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         this.playerName = window.history.state.playerName;
         this.sessionId = window.history.state.sessionId;
         this.gameID = window.history.state.gameID;
-    }
-
-    get getTimer(): Timer {
-        return this.timer;
     }
 
     @HostListener('window:beforeunload', ['$event'])
@@ -65,13 +60,16 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         this.socket.retrieveSocketId().then((userSocketId) => {
             this.userSocketId = userSocketId;
         });
-        this.timer.startGameTimer(0);
         this.socket.listenOpponentLeaves(() => {
             this.openDialog('opponentLeftGame');
         });
-        this.socket.playerWon((winnerName: string) => {
-            this.endGameDialog(winnerName);
+        this.socket.listenPlayerWon((winnerInfo: WinnerInfo) => {
+            this.endGameDialog(winnerInfo);
         });
+        this.socket.listenTimerUpdate((time: string) => {
+            this.time = time;
+        });
+        this.socket.listenProvideName(this.playerName);
     }
 
     getGameInfos(): void {
@@ -94,13 +92,14 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     }
 
     playerExited() {
-        this.socket.playerExited();
+        this.socket.playerExited(this.sessionId);
     }
 
-    endGameDialog(winnerSocketId: string) {
+    endGameDialog(winnerInfo: WinnerInfo) {
         let message = '';
-        if (winnerSocketId === this.userSocketId) message = 'Bravo! Vous avez gagné vous êtes très fort et beau';
-        else message = 'Vous êtes décevant et vous avez perdu!';
+        if (winnerInfo.socketId === this.userSocketId) {
+            message = this.isSolo ? `Bravo! Vous avez gagné avec un temps de ${this.time}` : `Vous avez gagné, ${winnerInfo.name} est le vainqueur`;
+        } else message = `Vous avez perdu, ${winnerInfo.name} remporte la victoire`;
         this.dialog.closeAll();
         this.dialog.open(PopupDialogComponent, {
             closeOnNavigation: true,

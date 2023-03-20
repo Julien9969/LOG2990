@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { TestBed } from '@angular/core/testing';
-import { MatchMakingService } from './match-making.service';
 import { SocketClientService } from '@app/services/socket-client.service';
 import { SocketTestHelper } from '@common/socket-test-helper';
 import { Socket } from 'socket.io-client';
+import { MatchMakingService } from './match-making.service';
 
 class SocketClientServiceMock extends SocketClientService {
     override connect() {}

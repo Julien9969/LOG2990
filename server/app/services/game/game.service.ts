@@ -1,9 +1,9 @@
 import { GameDocument } from '@app/Schemas/game/game.schema';
 import {
+    DEFAULT_GAME_LEADERBOARD,
     DEFAULT_GAME_TIME,
     DEFAULT_PENALTY_TIME,
     DEFAULT_REWARD_TIME,
-    DEFAULT_SCOREBOARD,
     DIFFERENCE_IMAGES_FOLDER,
     DIFFERENCE_IMAGES_PREFIX,
     DIFFERENCE_LISTS_FOLDER,
@@ -50,25 +50,21 @@ export class GameService {
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
         }
-        if (!result.isValid) {
-            throw new HttpException('Images choisies ne respectent pas les contraintes de jeu.', HttpStatus.BAD_REQUEST);
-        }
+        if (!result.isValid) throw new HttpException('Images choisies ne respectent pas les contraintes de jeu.', HttpStatus.BAD_REQUEST);
 
         const newGame: UnsavedGame = {
             ...inputGame,
             isHard: result.isHard,
             isValid: result.isValid,
             differenceCount: result.differenceCount,
-            scoreBoardSolo: [...DEFAULT_SCOREBOARD],
-            scoreBoardMulti: [...DEFAULT_SCOREBOARD],
+            scoreBoardSolo: DEFAULT_GAME_LEADERBOARD,
+            scoreBoardMulti: DEFAULT_GAME_LEADERBOARD,
             time: DEFAULT_GAME_TIME,
             penalty: DEFAULT_PENALTY_TIME,
             reward: DEFAULT_REWARD_TIME,
         };
 
-        const createdGame: Game = await this.gameModel.create(newGame);
-        diffDetectionService.saveDifferences(createdGame.id);
-        return createdGame;
+        return this.saveGameInDatabase(newGame, diffDetectionService);
     }
 
     /**
@@ -86,7 +82,11 @@ export class GameService {
         this.imageService.deleteImage(game.imageAlt);
         fs.unlinkSync(`${DIFFERENCE_IMAGES_FOLDER}/${DIFFERENCE_IMAGES_PREFIX}${game.id}.bmp`);
         fs.unlinkSync(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${game.id}.json`);
-        await this.gameModel.deleteOne({ _id: id });
+        try {
+            await this.gameModel.deleteOne({ _id: id });
+        } catch (err) {
+            throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -97,8 +97,11 @@ export class GameService {
      */
     async findById(findID: string): Promise<Game> {
         this.verifyGameId(findID);
-        const gameDocument = await this.gameModel.findOne({ _id: findID });
-        return gameDocument;
+        try {
+            return await this.gameModel.findOne({ _id: findID });
+        } catch (err) {
+            throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -116,9 +119,8 @@ export class GameService {
         const imageAltPath: string = IMAGE_FOLDER_PATH + '/' + game.imageAlt + '.' + IMAGE_FORMAT;
 
         await diffDetectionService.compareImagePaths(imageMainPath, imageAltPath, game.radius);
-        const result: ImageComparisonResult = diffDetectionService.getComparisonResult();
 
-        return result;
+        return diffDetectionService.getComparisonResult();
     }
 
     async getSoloScoreboard(id: string) {
@@ -132,20 +134,35 @@ export class GameService {
     }
 
     async addToScoreboard(gameId: string, finishedGame: FinishedGame) {
-        let scoreBoard;
-        if (finishedGame.solo) scoreBoard = await this.getSoloScoreboard(gameId);
-        else scoreBoard = await this.getMultiScoreboard(gameId);
-        if (finishedGame.time < scoreBoard[2][1]) {
-            scoreBoard[2] = [finishedGame.winner, finishedGame.time];
-        }
+        const scoreBoard: [string, number][] = finishedGame.solo ? await this.getSoloScoreboard(gameId) : await this.getMultiScoreboard(gameId);
+
+        scoreBoard.push([finishedGame.winner, finishedGame.time]);
         scoreBoard.sort((a, b) => {
             return a[1] - b[1];
         });
+        if (scoreBoard.length > 3) scoreBoard.pop();
+
+        try {
+            this.gameModel.updateOne({ _id: gameId }, finishedGame.solo ? { scoreBoardSolo: scoreBoard } : { scoreBoardMulti: scoreBoard }).exec();
+        } catch (err) {
+            throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     verifyGameId(id: string): void {
         if (!mongoose.isValidObjectId(id)) {
             throw new Error(`Le ID "${id}" n'est pas un ID valide (format non-valide)`);
         }
+    }
+
+    private async saveGameInDatabase(newGame: UnsavedGame, diffDetectionService: DifferenceDetectionService) {
+        let createdGame: Game;
+        try {
+            createdGame = await this.gameModel.create(newGame);
+        } catch (err) {
+            throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        diffDetectionService.saveDifferences(createdGame.id);
+        return createdGame;
     }
 }
