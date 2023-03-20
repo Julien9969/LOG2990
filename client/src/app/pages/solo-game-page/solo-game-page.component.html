@@ -19,7 +19,7 @@
                 [imageAltId]="gameInfos.imageAlt"
             >
             </app-play-image>
-            <app-sidebar *ngIf="isSolo"></app-sidebar>
+            <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="isSolo"></app-sidebar>
         </div>
         <div id="bottom-bar">
             <mat-toolbar color="primary">

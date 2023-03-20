@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { Coordinate } from '@common/coordinate';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 
+import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
-import { Message } from '@common/message';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -22,8 +22,8 @@ export class CommunicationService {
      *
      * @returns message du serveur
      */
-    basicGet(): Observable<Message> {
-        return this.http.get<Message>(`${this.baseUrl}/example`).pipe(catchError(this.handleError<Message>('basicGet')));
+    basicGet(): Observable<communicationMessage> {
+        return this.http.get<communicationMessage>(`${this.baseUrl}/example`).pipe(catchError(this.handleError<communicationMessage>('basicGet')));
     }
 
     /**
@@ -42,7 +42,7 @@ export class CommunicationService {
      * @param message envoie un message au serveur
      * @returns HttpResponse<string> la réponse du serveur
      */
-    basicPost(message: Message): Observable<HttpResponse<string>> {
+    basicPost(message: communicationMessage): Observable<HttpResponse<string>> {
         return this.http.post(`${this.baseUrl}/example/send`, message, { observe: 'response', responseType: 'text' });
     }
 

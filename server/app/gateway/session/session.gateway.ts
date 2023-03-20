@@ -16,6 +16,11 @@ export class SessionGateway {
     @WebSocketServer() private server: Server;
 
     constructor(private readonly logger: Logger, private readonly sessionService: SessionService, private readonly gameService: GameService) {}
+    @SubscribeMessage(SessionEvents.GiveName)
+    getNewName(client: Socket, name: string) {
+        this.logger.log('added new name to dict');
+        this.sessionService.addName(client.id, name);
+    }
 
     /**
      *
@@ -80,6 +85,7 @@ export class SessionGateway {
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 client.leave(roomId);
+                this.sessionService.removeName(client.id);
             }
         });
     }
@@ -112,8 +118,12 @@ export class SessionGateway {
             }
             if (result.isCorrect) {
                 this.notifyPlayersOfDiffFound(client, result);
+                this.sendSystemMessage(client, 'guess_good');
+
                 if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
             } else {
+                this.sendSystemMessage(client, 'guess_bad');
+
                 this.logger.log(`Client ${client.id} submitted a wrong guess`);
                 client.emit(SessionEvents.DifferenceFound, result);
             }
@@ -148,7 +158,9 @@ export class SessionGateway {
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 this.logger.log(`Client ${client.id} emited that he left the game to ${roomId}`);
+                this.sendSystemMessage(client, 'userDisconnected');
                 this.server.to(roomId).except(client.id).emit(SessionEvents.OpponentLeftGame);
+                this.sendSystemMessage(client, 'userDisconnected');
                 this.server.socketsLeave(roomId);
             }
         });
@@ -244,6 +256,16 @@ export class SessionGateway {
         });
     }
 
+    getGameRoom(client: Socket): string {
+        let correctRoom = client.id;
+        client.rooms.forEach((room: string) => {
+            if (room.startsWith('gameRoom')) {
+                correctRoom = room;
+            }
+        });
+        return correctRoom;
+    }
+
     getRoomId(client: Socket): string {
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
@@ -251,5 +273,10 @@ export class SessionGateway {
             }
         });
         return;
+    }
+
+    sendSystemMessage(client: Socket, systemCode: string) {
+        const playerName: string = this.sessionService.getName(client.id);
+        this.server.to(this.getGameRoom(client)).emit('systemMessageFromServer', { playerName, systemCode });
     }
 }

@@ -1,15 +1,44 @@
 .container {
-    height: 100%;
-    border: 3px solid black;
+    height: 90%;
     padding: 0 5px 0 5px;
+    border: 3px solid black;
 }
 
+.chat-container {
+    justify-self: flex-end;
+    overflow: auto;
+    flex-direction: column;
+}
+.datetime {
+    float: right;
+    color: #999;
+}
+.send-message-form {
+}
+.message {
+    border-bottom: solid 1px #ccc;
+    padding: 20px;
+    max-width: 23vw;
+    overflow-wrap: break-word;
+}
+
+.otherUserMessage {
+    color: blue;
+}
+.systemMessage {
+    color: #ff0000;
+}
 .flex {
     display: flex;
-    flex-direction: column;
-    height: 100%;
+    flex-direction: column-reverse;
+    height: 90vh;
+    min-width: 15vw;
 }
-
+.send-message-form {
+    input {
+        width: 99%; //a 100%, on a une barre verticale qui apparait TODO:make this cleaner
+    }
+}
 #title {
     justify-content: space-around;
     font-size: 1.5em;
