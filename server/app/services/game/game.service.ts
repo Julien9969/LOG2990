@@ -6,7 +6,9 @@ import {
     DEFAULT_PENALTY_TIME,
     DEFAULT_REWARD_TIME,
     DIFFERENCE_LISTS_FOLDER,
-    DIFFERENCE_LISTS_PREFIX,
+    // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
+    // eslint-disable-next-line prettier/prettier
+    DIFFERENCE_LISTS_PREFIX
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageService } from '@app/services/images/image.service';
@@ -115,6 +117,8 @@ export class GameService {
      * @param diffDetectionService L'instance du système de détection de différence
      * @returns Le résultat de la comparaison d'images
      */
+    // (paramêtres sont nécessaires)
+    // eslint-disable-next-line max-params
     async compareImages(
         game: InputGame,
         mainImageBuffer: Buffer,
