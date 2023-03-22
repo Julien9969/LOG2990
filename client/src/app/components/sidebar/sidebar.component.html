@@ -1,18 +1,23 @@
 <div class="container flex">
     <div class="chat-container">
-        <div *ngFor="let message of chatService.messageList" class="message">
+        <div
+            *ngFor="let message of chatService.messageList"
+            class="message"
+            [ngClass]="{
+                systemMessage: message.isFromSystem,
+                otherUserMessage: !message.isFromSystem && !chatService.isFromMe(message),
+                thisUserMessage: !message.isFromSystem && chatService.isFromMe(message)
+            }"
+        >
             <div class="datetime">
                 {{ formatedTime(message.time) }}
             </div>
-            <p
-                [ngClass]="{
-                    systemMessage: message.isFromSystem,
-                    otherUserMessage: !message.isFromSystem && chatService.isFromMe(message)
-                }"
-            >
-                <b>{{ message.author }}: </b>{{ message.message }}
+            <br />
+            <p>
+                <b>{{ message.author }}: <br /> </b>{{ message.message }}
             </p>
         </div>
+
         <div *ngIf="!isSolo">
             <form id="textbox" class="send-message-form" [formGroup]="messageForm" #formGroup (ngSubmit)="send()">
                 <input [maxlength]="200" formControlName="text" type="text" placeholder="tapez votre message ici..." />

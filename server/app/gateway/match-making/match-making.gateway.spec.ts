@@ -42,7 +42,7 @@ describe('MatchmakingGateway', () => {
     it('should be defined', () => {
         expect(gateway).toBeDefined();
     });
-    f;
+
     describe('get', () => {
         it('serverRooms should return the rooms of the server', () => {
             const roomsStub = new Map([['roomId', new Set([socket.id])]]);

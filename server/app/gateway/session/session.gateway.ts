@@ -112,8 +112,14 @@ export class SessionGateway {
         try {
             result = session.tryGuess(coordinates, client.id);
             if (session.isSolo) {
-                if (!result.isCorrect) this.logger.log(`Client ${client.id} submitted a wrong guess`);
-                else if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
+                if (!result.isCorrect) {
+                    this.logger.log(`Client ${client.id} submitted a wrong guess`);
+                    this.sendSystemMessage(client, 'guess_bad');
+                } else {
+                    this.sendSystemMessage(client, 'guess_good');
+                    if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
+                }
+
                 return result;
             }
             if (result.isCorrect) {

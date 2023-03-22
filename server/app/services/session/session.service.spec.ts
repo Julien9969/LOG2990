@@ -9,6 +9,11 @@ let sessionService: SessionService;
 // let session: Session;
 
 describe('Session tests', () => {
+    const exampleId = 'asd123123';
+    const badId = 'bbbbsfojdsafo1232';
+    const exampleName = 'michel';
+    const newExampleName = 'Julien Sr.';
+    const exampleDictionnary = { asd123123: 'michel', dqqwee12313: 'victor', dasd123: 'Seb', jksoj78: 'Maxime' };
     beforeAll(async () => {
         sessionService = new SessionService();
         // session = new Session(gameId);
@@ -22,7 +27,65 @@ describe('Session tests', () => {
     it('service should be defined', async () => {
         expect(sessionService).toBeDefined();
     });
+    it('addName should add a new name to the nameDictionnary if it doesnt exists', async () => {
+        const spy = jest.spyOn(sessionService, 'addName');
+        sessionService.socketIdToName = {};
+        sessionService.addName(exampleId, exampleName);
+        expect(spy).toHaveBeenCalled();
+        expect(sessionService.socketIdToName[exampleId]).toEqual(exampleName);
+    });
 
+    it('addName should replace the name in the nameDictionnary if it exists', async () => {
+        const spy = jest.spyOn(sessionService, 'addName');
+        sessionService.socketIdToName = exampleDictionnary;
+        expect(sessionService.socketIdToName[exampleId]).toEqual(exampleName);
+        sessionService.addName(exampleId, newExampleName);
+        expect(spy).toHaveBeenCalled();
+        expect(sessionService.socketIdToName[exampleId]).toEqual(newExampleName);
+    });
+    it('removeName should remove the name in the nameDictionnary if it exists', async () => {
+        const spy = jest.spyOn(sessionService, 'removeName');
+        sessionService.socketIdToName = exampleDictionnary;
+        expect(sessionService.socketIdToName[exampleId]).toBeTruthy();
+
+        sessionService.removeName(exampleId);
+        expect(spy).toHaveBeenCalled();
+        expect(sessionService.socketIdToName[exampleId]).toBeFalsy();
+    });
+    it('removeName should not throw an error if it the name is not in the dictionnary ', async () => {
+        const spy = jest.spyOn(sessionService, 'removeName');
+        sessionService.socketIdToName = {};
+        try {
+            sessionService.removeName(exampleId);
+        } catch (e) {
+            fail('removeName has thrown an error');
+        }
+        expect(spy).toHaveBeenCalled();
+        expect(sessionService.socketIdToName[exampleId]).toBeFalsy();
+    });
+    it('getName should return the name if it is in the  dictionnary', async () => {
+        const spy = jest.spyOn(sessionService, 'getName');
+        sessionService.socketIdToName = {};
+        sessionService.addName(exampleId, exampleName);
+
+        const result = sessionService.getName('asd123123');
+
+        expect(spy).toHaveBeenCalled();
+        expect(sessionService.socketIdToName['asd123123']).toEqual('michel');
+        expect(result).toEqual('michel');
+    });
+    it('getName should not throw an error if it the name is not in the dictionnary, instead returning null ', async () => {
+        const spy = jest.spyOn(sessionService, 'getName');
+        sessionService.socketIdToName = {};
+        let result: string;
+        try {
+            result = sessionService.getName(badId);
+        } catch (error) {
+            fail('getName has thrown an error');
+        }
+        expect(spy).toHaveBeenCalled();
+        expect(result).toEqual(undefined);
+    });
     describe('tryGuess function', () => {
         const gameId = 'gameId';
         const firstSocketId = 'firstSocketId';
