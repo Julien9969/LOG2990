@@ -10,9 +10,11 @@ export class SessionService {
     getName(socketId: string): string {
         return this.socketIdToName[socketId];
     }
+
     addName(socketId: string, playerName: string) {
         this.socketIdToName[socketId] = playerName;
     }
+
     removeName(socketId: string) {
         delete this.socketIdToName[socketId];
     }
