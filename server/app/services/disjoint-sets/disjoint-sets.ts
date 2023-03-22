@@ -54,25 +54,25 @@ export class DisjointSet {
         return this;
     }
 
-    getSetLists(): CoordSetObject[][] {
+    extract(): CoordSetObject[][] {
         let rootId: number;
-        const joinedSet = {};
-        const joinedSetsList = [];
+        const resObj = {};
+        const resArr = [];
 
         for (const id of Object.keys(this.relations)) {
             rootId = this.findById(parseInt(id, 10));
 
-            if (typeof joinedSet[rootId] === 'undefined') {
-                joinedSet[rootId] = [];
+            if (typeof resObj[rootId] === 'undefined') {
+                resObj[rootId] = [];
             }
-            joinedSet[rootId].push(this.objects[id]);
+            resObj[rootId].push(this.objects[id]);
         }
 
-        for (const key1 of Object.keys(joinedSet)) {
-            joinedSetsList.push(joinedSet[key1]);
+        for (const key1 of Object.keys(resObj)) {
+            resArr.push(resObj[key1]);
         }
 
-        return joinedSetsList;
+        return resArr;
     }
 
     private findById(id: number): number {

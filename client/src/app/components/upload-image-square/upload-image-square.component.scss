@@ -3,6 +3,10 @@ $image-width: 32vw;
 $image-max-width: 640px;
 $aspect-ratio: calc(640/480);
 
+main {
+    text-align: center;
+}
+
 input.invisible {
     display: none;
 }
