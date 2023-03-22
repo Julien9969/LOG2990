@@ -16,4 +16,5 @@ export enum SessionEvents {
     SessionId = 'sessionId',
     CheatGetAllDifferences = 'cheatGetAllDifferences',
     GiveName = 'giveName',
+    GameDeleted = "gameDeleted",
 }

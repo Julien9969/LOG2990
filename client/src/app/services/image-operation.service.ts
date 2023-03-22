@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, RGB_RED, RGB_GREEN } from '@app/constants/utils-constants';
+import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CHEAT_PERIOD_MS, CANVAS, RGB_RED, RGB_GREEN } from '@app/constants/utils-constants';
 import { Coordinate } from '@common/coordinate';
 import { InGameService } from '@app/services/in-game.service';
 
@@ -154,8 +154,8 @@ export class ImageOperationService {
             setTimeout(() => {
                 this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
                 this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
-            }, BLINK_PERIOD_MS);
-        }, BLINK_PERIOD_MS * 2);
+            }, CHEAT_PERIOD_MS);
+        }, CHEAT_PERIOD_MS * 2);
     }
 
     disableCheat(): void {

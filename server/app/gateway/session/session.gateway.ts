@@ -245,7 +245,11 @@ export class SessionGateway {
             winnerName = playerName;
             const winnerInfo: WinnerInfo = { name: playerName, socketId: client.id };
             const finishedGame: FinishedGame = { winner: winnerName, time: seconds, solo: isSolo } as FinishedGame;
-            this.gameService.addToScoreboard(gameId, finishedGame);
+            try {
+                this.gameService.addToScoreboard(gameId, finishedGame);
+            } catch (error) {
+                this.logger.error('error while adding to scoreboard : game is deleted');
+            }
 
             if (isSolo) {
                 this.logger.log(`Client ${client.id}  won the game`);

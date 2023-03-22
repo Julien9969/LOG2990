@@ -47,6 +47,7 @@ describe('MatchMakingDialogComponent', () => {
             'askForMultiSessionId',
             'startMultiSession',
             'startSoloSession',
+            'gameDeleted',
         ]);
 
         matchMakingSpy['socketService'] = jasmine.createSpyObj('SocketServiceMock', ['on']);
@@ -76,6 +77,10 @@ describe('MatchMakingDialogComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('get window should return global window', () => {
+        expect(component.window).toEqual(window);
     });
 
     it('on press enter if isSolo is true and nameForm is valid, navigateToSolo should be call', () => {
@@ -299,6 +304,14 @@ describe('MatchMakingDialogComponent', () => {
             matchMakingSpy.iVeBeenRejected.calls.mostRecent().args[0](playerName);
             expect(component.opponentName).toEqual(playerName);
             expect(component.dialogInfos.template).toEqual('rejected');
+            expect(component.dialogInfos.message).toEqual('');
+        });
+
+        it('should call matchMaking.gameDeleted with a callback that set the template to gameDelete', () => {
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.gameDeleted).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.gameDeleted.calls.mostRecent().args[0]();
+            expect(component.dialogInfos.template).toEqual('gameDelete');
             expect(component.dialogInfos.message).toEqual('');
         });
     });
