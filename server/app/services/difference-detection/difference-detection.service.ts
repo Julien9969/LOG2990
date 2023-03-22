@@ -93,7 +93,7 @@ export class DifferenceDetectionService {
      * @param gameId L'identifiant unique du jeu (permet d'identifier la paire d'images)
      */
     saveDifferenceLists(gameId: string) {
-        const differenceLists: Coordinate[][] = this.contiguousDifferencesSet.extract().map((coordList: CoordSetObject[]) => {
+        const differenceLists: Coordinate[][] = this.contiguousDifferencesSet.getSetLists().map((coordList: CoordSetObject[]) => {
             return coordList.map((coord) => {
                 return {
                     x: coord.x,
@@ -122,7 +122,7 @@ export class DifferenceDetectionService {
      * @returns Le nombre de différences dans l'image
      */
     getDifferenceCount(): number {
-        return this.contiguousDifferencesSet.extract().length;
+        return this.contiguousDifferencesSet.getSetLists().length;
     }
 
     /**
@@ -147,7 +147,7 @@ export class DifferenceDetectionService {
      */
     generateDifferenceImage(): Jimp {
         const differencesImage: Jimp = new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT, WHITE_RGBA);
-        const differences: { x: number; y: number }[][] = this.contiguousDifferencesSet.extract();
+        const differences: { x: number; y: number }[][] = this.contiguousDifferencesSet.getSetLists();
 
         const differenceColour: number = BLACK_RGBA;
         differences.forEach((diff) => {
@@ -292,8 +292,10 @@ export class DifferenceDetectionService {
         });
 
         // Filtrer valeurs qui dépassent l'image
-        return neighbours.filter((pix) => {
-            return pix.x >= 0 && pix.x < IMAGE_WIDTH && pix.y >= 0 && pix.y < IMAGE_HEIGHT;
-        });
+        return neighbours.filter((pix) => this.pixelInBound(pix));
+    }
+
+    private pixelInBound(pixel: Coordinate) : Boolean {
+        return pixel.x >= 0 && pixel.x < IMAGE_WIDTH && pixel.y >= 0 && pixel.y < IMAGE_HEIGHT;
     }
 }
