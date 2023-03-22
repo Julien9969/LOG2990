@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-with */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-classes-per-file */
 import { Component, Input } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -11,6 +14,7 @@ import { PlayImageComponent } from '@app/components/play-image/play-image.compon
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication.service';
 import { SocketClientService } from '@app/services/socket-client.service';
+import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
 import { SoloGamePageComponent } from './solo-game-page.component';
 
@@ -94,14 +98,132 @@ describe('SoloGamePageComponent', () => {
         const newComponent = TestBed.createComponent(SoloGamePageComponent);
         expect(newComponent.componentInstance.opponentName).toBeDefined();
     });
+    describe('onInit', () => {
+        it('should call  getGameInfos, ', () => {
+            spyOn(component['socket'], 'listenOpponentLeaves').and.callFake(() => {
+                return;
+            });
+            component.sessionId = 123;
+            component.gameID = '123';
+            spyOn(component, 'getGameInfos');
+            component.ngOnInit();
+            expect(component.getGameInfos).toHaveBeenCalled();
+            expect(component.gameInfos).toBeDefined();
+        });
+        it('should call listenProvideName', () => {
+            const listenProvideNameSpy = spyOn(component['socket'], 'listenProvideName').and.callFake(() => {});
+            component.ngOnInit();
 
-    it('onInit should call getGameInfo and startTimer', () => {
-        spyOn(component, 'getGameInfos');
-        component.ngOnInit();
-        expect(component.getGameInfos).toHaveBeenCalled();
-        expect(component.gameInfos).toBeDefined();
-        // sera retiré quand ce test sera corrigé
-        // expect(component['timer'].startGameTimer).toHaveBeenCalled();
+            expect(listenProvideNameSpy).toHaveBeenCalledWith(component.playerName);
+        });
+        it('should get the socketId', fakeAsync(() => {
+            const socketId = 'socketId';
+            const socketRetrieveSocketIdSpy = spyOn(component['socket'], 'retrieveSocketId').and.callFake(async () => {
+                return Promise.resolve(socketId);
+            });
+            component.ngOnInit();
+            tick(3000);
+            expect(socketRetrieveSocketIdSpy).toHaveBeenCalled();
+            expect(component.userSocketId).toEqual(socketId);
+            flush();
+        }));
+        it('should listen for opponent leaving', () => {
+            const listenOpponentLeaves = spyOn(component['socket'], 'listenOpponentLeaves').and.callFake((callback: () => void) => {
+                callback();
+            });
+            const openDialogSpy = spyOn(component, 'openDialog').and.callFake(() => {});
+            component.ngOnInit();
+
+            expect(listenOpponentLeaves).toHaveBeenCalled();
+            expect(openDialogSpy).toHaveBeenCalled();
+        });
+        it('should listen for a player winning', () => {
+            const listenPlayerWonSpy = spyOn(component['socket'], 'listenPlayerWon').and.callFake((callback: (winnerInfo: WinnerInfo) => void) => {
+                callback({ name: 'name', socketId: 'socketId' });
+            });
+            const endGameDialogSpy = spyOn(component, 'endGameDialog').and.callFake(() => {});
+            component.ngOnInit();
+
+            expect(listenPlayerWonSpy).toHaveBeenCalled();
+            expect(endGameDialogSpy).toHaveBeenCalledWith({ name: 'name', socketId: 'socketId' });
+        });
+        it('should listen for time update', () => {
+            const listenTimerUpdateSpy = spyOn(component['socket'], 'listenTimerUpdate').and.callFake((callback: (time: string) => void) => {
+                callback('35:12');
+            });
+            component.time = '31:12';
+            component.ngOnInit();
+
+            expect(listenTimerUpdateSpy).toHaveBeenCalled();
+            expect(component.time).toEqual('35:12');
+        });
+    });
+
+    describe('handleDiffFoundUpdate', () => {
+        it('solo: should give the right value to n.DiffFoundMainPlayer', () => {
+            const diffFound: [string, number][] = [['socketId', 2]];
+            component.isSolo = true;
+            component.nDiffFoundMainPlayer = 0;
+            component.handleDiffFoundUpdate(diffFound);
+            expect(component.nDiffFoundMainPlayer).toEqual(2);
+        });
+        it('multi: should give the right value to n.DiffFoundMainPlayer', () => {
+            const diffFound: [string, number][] = [
+                ['socketId', 2],
+                ['socketId2', 3],
+            ];
+            component.userSocketId = 'socketId2';
+            component.isSolo = false;
+            component.nDiffFoundMainPlayer = 0;
+            component.handleDiffFoundUpdate(diffFound);
+            expect(component.nDiffFoundMainPlayer).toEqual(3);
+            expect(component.nDiffFoundOpponent).toEqual(2);
+        });
+    });
+
+    describe('endGameDialog', () => {
+        it('solo: when this client is the winner should give the winner s message', () => {
+            const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
+            component.userSocketId = 'socketId';
+            component.time = '9:14';
+            component.isSolo = true;
+
+            component.endGameDialog(winnerInfo);
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
+                closeOnNavigation: true,
+                disableClose: true,
+                autoFocus: false,
+                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`],
+            });
+        });
+        it('multi: when this client is the winner should give the winner s message', () => {
+            const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
+            component.userSocketId = 'socketId';
+            component.time = '9:14';
+            component.isSolo = false;
+
+            component.endGameDialog(winnerInfo);
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
+                closeOnNavigation: true,
+                disableClose: true,
+                autoFocus: false,
+                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`],
+            });
+        });
+        it('multi: when this client is the loser should give the loser s message', () => {
+            const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId2' };
+            component.userSocketId = 'socketId';
+            component.time = '9:14';
+            component.isSolo = false;
+
+            component.endGameDialog(winnerInfo);
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
+                closeOnNavigation: true,
+                disableClose: true,
+                autoFocus: false,
+                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`],
+            });
+        });
     });
 
     it('getGameInfos should call communicationService.gameInfoGet and set the gameInfos attribute', () => {
@@ -151,45 +273,26 @@ describe('SoloGamePageComponent', () => {
         expect(event.returnValue).toEqual(true);
     });
 
-    // it('incrementDiff should increment nDiffFound ', () => {
-    //     component.incrementDiff();
-    //     expect(component.nDiffFound).toEqual(1);
-    //     component.incrementDiff();
-    //     expect(component.nDiffFound).toEqual(2);
-    // });
+    describe('openDialog', () => {
+        it('openDialog with "clue" as argument call dialog.open with right args', () => {
+            component.openDialog('clue');
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
+        });
 
-    // it('incrementDiff open the endGame dialog if all differences were found', () => {
-    //     component.gameInfos.differenceCount = 7;
-    //     component.nDiffFound = 7;
-    //     component.incrementDiff();
-    //     expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-    //         closeOnNavigation: true,
-    //         disableClose: true,
-    //         autoFocus: false,
-    //         data: 'endGame',
-    //     });
-    // });
-
-    it('openDialog with "clue" as argument call dialog.open with right args', () => {
-        component.openDialog('clue');
-        expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
-    });
-
-    it('openDialog with "quit" as argument call dialog.open with right args', () => {
-        component.openDialog('quit');
-        expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
-    });
-
-    it('openDialog with "endGame" as argument call dialog.open with right args', () => {
-        component.openDialog('endGame');
-        expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-            closeOnNavigation: true,
-            disableClose: true,
-            autoFocus: false,
-            data: ['endGame'],
+        it('openDialog with "quit" as argument call dialog.open with right args', () => {
+            component.openDialog('quit');
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
+        });
+        it('openDialog with "opponentLeftGame" as argument call dialog.open with right args', () => {
+            component.openDialog('opponentLeftGame');
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
+                closeOnNavigation: true,
+                disableClose: true,
+                autoFocus: false,
+                data: ['opponentLeft'],
+            });
         });
     });
-
     it('ngOnDestroy should call socketClientService with leaveRoom', () => {
         socketServiceSpy.send.and.callFake(<T>() => {});
         component.ngOnDestroy();
