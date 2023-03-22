@@ -7,8 +7,9 @@ import { Server, Socket } from 'socket.io';
 export class ChatGateway {
     @WebSocketServer() protected server: Server;
     constructor(private readonly logger: Logger) {}
+
     @SubscribeMessage('giveName')
-    giveclientId(client: Socket): void {
+    giveClientId(client: Socket): void {
         client.emit('giveClientID', client.id);
     }
 

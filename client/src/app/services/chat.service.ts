@@ -17,7 +17,6 @@ export class ChatService {
     }
     start() {
         this.messageList = [];
-        this.connect();
         this.listenForMessage();
         this.listenForSystemMessage();
         this.listenForId();
@@ -77,10 +76,5 @@ export class ChatService {
         this.socketService.on('giveClientID', (receivedId: string) => {
             this.clientId = receivedId;
         });
-    }
-    connect() {
-        if (!this.socketService.isSocketAlive()) {
-            this.socketService.connect();
-        }
     }
 }
