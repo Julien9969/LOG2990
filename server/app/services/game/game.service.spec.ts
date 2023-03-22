@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, no-restricted-imports, max-lines, max-len  */
+import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { GameDocument } from '@app/Schemas/game/game.schema';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
@@ -17,6 +18,7 @@ describe('Game Service tests', () => {
     let gameService: GameService;
     let gameModel: Model<GameDocument>;
     let imageService: ImageService;
+    let matchMakingGateway: MatchmakingGateway;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -32,12 +34,19 @@ describe('Game Service tests', () => {
                     },
                 },
                 ImageService,
+                {
+                    provide: MatchmakingGateway,
+                    useValue: {
+                        notifyGameDeleted: jest.fn().mockImplementation(() => {}),
+                    },
+                },
             ],
         }).compile();
 
         gameService = module.get<GameService>(GameService);
         gameModel = module.get<Model<GameDocument>>(getModelToken('Game'));
         imageService = module.get<ImageService>(ImageService);
+        matchMakingGateway = module.get<MatchmakingGateway>(MatchmakingGateway);
     });
 
     afterEach(() => {
@@ -129,6 +138,16 @@ describe('Game Service tests', () => {
             expect(unlinkSpy).toHaveBeenCalledWith(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${stubGame.id}.json`);
             expect(gameModel.deleteOne).toHaveBeenCalledWith({ _id: stubGame.id });
             expect(gameModel.deleteOne).toHaveBeenCalled();
+        });
+
+        it('should notify waiting rooms of deleted game', async () => {
+            jest.spyOn(gameService, 'findById').mockImplementation(async () => Promise.resolve(stubGame));
+            jest.spyOn(imageService, 'deleteImage').mockImplementation(() => {});
+            jest.spyOn(fs, 'unlinkSync').mockImplementation(() => {});
+            const notifyMatchMakingSpy = jest.spyOn(matchMakingGateway, 'notifyGameDeleted').mockImplementation(() => {});
+
+            await gameService.delete(stubGame.id);
+            expect(notifyMatchMakingSpy).toHaveBeenCalledWith(stubGame.id);
         });
 
         it('throws NOT FOUND when game doesnt exist', async () => {

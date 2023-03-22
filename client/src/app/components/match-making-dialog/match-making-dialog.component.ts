@@ -39,6 +39,10 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         this.gameInfo = data;
     }
 
+    get window() {
+        return window;
+    }
+
     @HostListener('window:keydown.enter', ['$event'])
     handleKeyDown(event: KeyboardEvent) {
         event.preventDefault();
@@ -142,6 +146,11 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         this.matchMaking.iVeBeenRejected((player: string) => {
             this.dialogInfos.template = 'rejected';
             this.opponentName = player;
+            this.dialogInfos.message = '';
+        });
+
+        this.matchMaking.gameDeleted(() => {
+            this.dialogInfos.template = 'gameDelete';
             this.dialogInfos.message = '';
         });
     }

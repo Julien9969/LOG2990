@@ -2,6 +2,7 @@ import { ElementRef, Injectable } from '@angular/core';
 import { SocketClientService } from '@app/services/socket-client.service';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Message } from '@common/message';
+import { SessionEvents } from '@common/session.gateway.events';
 import { SystemMessage } from '@common/systemMessage';
 import { SystemCode } from './constantes.service';
 @Injectable({
@@ -24,7 +25,7 @@ export class ChatService {
     }
 
     giveNameToServer(playerName: string) {
-        this.socketService.send(ChatEvents.GiveName, playerName);
+        this.socketService.send(SessionEvents.GiveName, playerName);
     }
     readSystemMessage(systemCode: string, playerName: string): string {
         switch (systemCode) {

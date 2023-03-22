@@ -112,8 +112,14 @@ export class SessionGateway {
         try {
             result = session.tryGuess(coordinates, client.id);
             if (session.isSolo) {
-                if (!result.isCorrect) this.logger.log(`Client ${client.id} submitted a wrong guess`);
-                else if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
+                if (!result.isCorrect) {
+                    this.logger.log(`Client ${client.id} submitted a wrong guess`);
+                    this.sendSystemMessage(client, 'guess_bad');
+                } else {
+                    this.sendSystemMessage(client, 'guess_good');
+                    if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
+                }
+
                 return result;
             }
             if (result.isCorrect) {
@@ -239,7 +245,11 @@ export class SessionGateway {
             winnerName = playerName;
             const winnerInfo: WinnerInfo = { name: playerName, socketId: client.id };
             const finishedGame: FinishedGame = { winner: winnerName, time: seconds, solo: isSolo } as FinishedGame;
-            this.gameService.addToScoreboard(gameId, finishedGame);
+            try {
+                this.gameService.addToScoreboard(gameId, finishedGame);
+            } catch (error) {
+                this.logger.error('error while adding to scoreboard : game is deleted');
+            }
 
             if (isSolo) {
                 this.logger.log(`Client ${client.id}  won the game`);

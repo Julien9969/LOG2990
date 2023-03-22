@@ -12,4 +12,5 @@ export enum MatchMakingEvents {
     RoomReachable = 'roomReachable',
     UpdateRoomView = 'updateRoomView',
     RoomCreatedForThisGame = 'roomCreatedForThisGame',
+    GameDeleted = 'gameDeleted',
 }

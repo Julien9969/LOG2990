@@ -186,4 +186,11 @@ describe('MatchMakingService', () => {
         socketHelper.peerSideEmit('updateRoomView');
         expect(callbackSpy).toHaveBeenCalled();
     });
+
+    it('gameDeleted should call socketService.on with "gameDeleted" and a callback', () => {
+        const callbackSpy = jasmine.createSpy('callback');
+        service.gameDeleted(callbackSpy);
+        socketHelper.peerSideEmit('gameDeleted');
+        expect(callbackSpy).toHaveBeenCalled();
+    });
 });

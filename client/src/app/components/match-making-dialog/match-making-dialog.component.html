@@ -45,3 +45,10 @@
         <button mat-button matDialogClose routerLink="/selection-view" (click)="leaveWaiting()" aria-label="RETOUR">Retour à la selection</button>
     </mat-dialog-actions>
 </div>
+
+<div *ngIf="dialogInfos.template === 'gameDelete'" #delete>
+    <h1 id="title" mat-dialog-title>Ce jeu vient d'être supprimé.</h1>
+    <mat-dialog-actions class="button-row">
+        <button mat-button matDialogClose routerLink="/selection-view" (click)="window.location.reload()" aria-label="RETOUR">Retour à la selection</button>
+    </mat-dialog-actions>
+</div>

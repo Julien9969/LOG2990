@@ -1,3 +1,4 @@
+import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { GameDocument } from '@app/Schemas/game/game.schema';
 import {
     DEFAULT_GAME_LEADERBOARD,
@@ -21,7 +22,11 @@ import mongoose, { Model } from 'mongoose';
 @Injectable()
 export class GameService {
     prototype: unknown;
-    constructor(@InjectModel('Game') private gameModel: Model<GameDocument>, private readonly imageService: ImageService) {}
+    constructor(
+        @InjectModel('Game') private gameModel: Model<GameDocument>,
+        private readonly imageService: ImageService,
+        private readonly matchMakingGateway: MatchmakingGateway,
+    ) {}
 
     /**
      * @returns La liste de tous les jeux
@@ -84,6 +89,8 @@ export class GameService {
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        this.matchMakingGateway.notifyGameDeleted(id);
     }
 
     /**
@@ -125,16 +132,18 @@ export class GameService {
 
     async getSoloScoreboard(id: string) {
         const game: Game = await this.findById(id);
-        return game.scoreBoardSolo;
+        return game ? game.scoreBoardSolo : null;
     }
 
     async getMultiScoreboard(id: string) {
         const game: Game = await this.findById(id);
-        return game.scoreBoardMulti;
+        return game ? game.scoreBoardMulti : null;
     }
 
     async addToScoreboard(gameId: string, finishedGame: FinishedGame) {
         const scoreBoard: [string, number][] = finishedGame.solo ? await this.getSoloScoreboard(gameId) : await this.getMultiScoreboard(gameId);
+
+        if (!scoreBoard) return;
 
         scoreBoard.push([finishedGame.winner, finishedGame.time]);
         scoreBoard.sort((a, b) => {

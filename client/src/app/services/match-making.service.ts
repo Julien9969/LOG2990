@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SocketClientService } from '@app/services/socket-client.service';
+import { SessionEvents } from '@common/session.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
 
 @Injectable({
@@ -69,7 +70,7 @@ export class MatchMakingService {
     }
 
     sessionIdReceived(callback: (sessionId: number) => void) {
-        this.socketService.on('sessionId', (sessionId: number) => {
+        this.socketService.on(SessionEvents.SessionId, (sessionId: number) => {
             callback(sessionId);
         });
     }
@@ -92,16 +93,22 @@ export class MatchMakingService {
 
     startMultiSession(gameId: string) {
         const data: StartSessionData = { gameId, isSolo: false };
-        this.socketService.send('startSession', data);
+        this.socketService.send(SessionEvents.StartSession, data);
     }
 
     startSoloSession(gameId: string, callback: (sessionId: number) => void) {
         const data: StartSessionData = { gameId, isSolo: true };
-        this.socketService.sendAndCallBack('startSession', data, callback);
+        this.socketService.sendAndCallBack(SessionEvents.StartSession, data, callback);
     }
 
     updateRoomView(callback: () => void) {
         this.socketService.on('updateRoomView', async () => {
+            callback();
+        });
+    }
+
+    gameDeleted(callback: () => void) {
+        this.socketService.on(SessionEvents.GameDeleted, async () => {
             callback();
         });
     }
