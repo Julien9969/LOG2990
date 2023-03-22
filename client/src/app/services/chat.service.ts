@@ -1,5 +1,6 @@
 import { ElementRef, Injectable } from '@angular/core';
 import { SocketClientService } from '@app/services/socket-client.service';
+import { ChatEvents } from '@common/chat.gateway.events';
 import { Message } from '@common/message';
 import { SystemMessage } from '@common/systemMessage';
 import { SystemCode } from './constantes.service';
@@ -23,7 +24,7 @@ export class ChatService {
     }
 
     giveNameToServer(playerName: string) {
-        this.socketService.send('giveName', playerName);
+        this.socketService.send(ChatEvents.GiveName, playerName);
     }
     readSystemMessage(systemCode: string, playerName: string): string {
         switch (systemCode) {
@@ -51,7 +52,7 @@ export class ChatService {
     }
 
     sendMessage(message: Message) {
-        this.socketService.send('messageFromClient', message);
+        this.socketService.send(ChatEvents.MessageFromClient, message);
     }
 
     receiveMessage(message: Message) {
@@ -62,18 +63,18 @@ export class ChatService {
         this.formElement.nativeElement.scrollIntoView();
     }
     async listenForSystemMessage() {
-        this.socketService.on('systemMessageFromServer', (systemMessage: SystemMessage) => {
+        this.socketService.on(ChatEvents.SystemMessageFromServer, (systemMessage: SystemMessage) => {
             this.receiveMessage(this.createSystemMessage(systemMessage.systemCode, systemMessage.playerName));
         });
     }
 
     async listenForMessage() {
-        this.socketService.on('messageFromServer', (newMessage: Message) => {
+        this.socketService.on(ChatEvents.MessageFromServer, (newMessage: Message) => {
             this.receiveMessage(newMessage);
         });
     }
     async listenForId() {
-        this.socketService.on('giveClientID', (receivedId: string) => {
+        this.socketService.on(ChatEvents.GiveClientID, (receivedId: string) => {
             this.clientId = receivedId;
         });
     }

@@ -10,9 +10,9 @@ export class GameService {
     constructor(private readonly communicationService: CommunicationService) {}
 
     /**
-     * Creates a list of list each with a maximum size of 4 games
+     * Créer une liste de liste(s) avec chacune une longueur maximale de 4 jeux
      *
-     * @returns a Promise of a list of list each with a maximum size of 4 games
+     * @returns une Promise de la liste de liste(s)
      */
     async getGroupedData(): Promise<Game[][]> {
         try {
@@ -33,10 +33,10 @@ export class GameService {
     }
 
     /**
-     * Get the URL of the game's main URL
+     * Prend le URL de l'image principale du jeu
      *
-     * @param game game that needs his image
-     * @returns an URL
+     * @param game Jeu qui a besoin de son image
+     * @returns l'URL de l'image principale
      */
     getMainImageURL(game: Game): string {
         try {
@@ -47,7 +47,7 @@ export class GameService {
     }
 
     /**
-     * Uses communication Service to get the list of all the games on the server
+     * Utilise CommunicationService pour prendre la liste de tout les jeux sur le serveur
      *
      * @returns a list of games
      */
