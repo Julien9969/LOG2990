@@ -295,7 +295,7 @@ export class DifferenceDetectionService {
         return neighbours.filter((pix) => this.pixelInBound(pix));
     }
 
-    private pixelInBound(pixel: Coordinate) : Boolean {
+    private pixelInBound(pixel: Coordinate): boolean {
         return pixel.x >= 0 && pixel.x < IMAGE_WIDTH && pixel.y >= 0 && pixel.y < IMAGE_HEIGHT;
     }
 }
