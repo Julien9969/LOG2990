@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { SocketClientService } from '@app/services/socket-client.service';
 import { SessionEvents } from '@common/session.gateway.events';
+import { MatchMakingEvents } from '@common/match-making.gateway.events';
+import { SocketClientService } from '@app/services/socket-client.service';
 import { StartSessionData } from '@common/start-session-data';
 
 @Injectable({
@@ -16,12 +17,12 @@ export class MatchMakingService {
     }
 
     startMatchmaking(gameId: string) {
-        this.socketService.send('startMatchmaking', gameId);
+        this.socketService.send(MatchMakingEvents.StartMatchmaking, gameId);
     }
 
     async someOneWaiting(gameId: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
-            this.socketService.sendAndCallBack('someOneWaiting', gameId, (response: boolean) => {
+            this.socketService.sendAndCallBack(MatchMakingEvents.SomeOneWaiting, gameId, (response: boolean) => {
                 resolve(response);
             });
         });
@@ -29,42 +30,42 @@ export class MatchMakingService {
 
     async roomCreatedForThisGame(gameId: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
-            this.socketService.sendAndCallBack('roomCreatedForThisGame', gameId, (response: boolean) => {
+            this.socketService.sendAndCallBack(MatchMakingEvents.RoomCreatedForThisGame, gameId, (response: boolean) => {
                 resolve(response);
             });
         });
     }
 
     opponentJoined(callback: (opponentName: string) => void) {
-        this.socketService.on('opponentJoined', (opponentName: string) => {
+        this.socketService.on(MatchMakingEvents.OpponentJoined, (opponentName: string) => {
             callback(opponentName);
         });
     }
 
     opponentLeft(callback: () => void) {
-        this.socketService.on('opponentLeft', () => {
+        this.socketService.on(MatchMakingEvents.OpponentLeft, () => {
             callback();
         });
     }
 
     joinRoom(gameId: string, playerName: string) {
-        this.socketService.send('joinRoom', { gameId, playerName });
+        this.socketService.send(MatchMakingEvents.JoinRoom, { gameId, playerName });
     }
 
     iVeBeenAccepted(callback: (opponentName: string) => void) {
-        this.socketService.on('acceptOtherPlayer', (opponentName: string) => {
+        this.socketService.on(MatchMakingEvents.AcceptOtherPlayer, (opponentName: string) => {
             callback(opponentName);
         });
     }
 
     iVeBeenRejected(callback: (player: string) => void) {
-        this.socketService.on('rejectOtherPlayer', (playerName: string) => {
+        this.socketService.on(MatchMakingEvents.RejectOtherPlayer, (playerName: string) => {
             callback(playerName);
         });
     }
 
     roomReachable(callback: () => void) {
-        this.socketService.on('roomReachable', () => {
+        this.socketService.on(MatchMakingEvents.RoomReachable, () => {
             callback();
         });
     }
@@ -77,18 +78,18 @@ export class MatchMakingService {
 
     async acceptOpponent(playerName: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
-            this.socketService.sendAndCallBack('acceptOpponent', playerName, (response: boolean) => {
+            this.socketService.sendAndCallBack(MatchMakingEvents.AcceptOpponent, playerName, (response: boolean) => {
                 resolve(response);
             });
         });
     }
 
     rejectOpponent(gameId: string, playerName: string) {
-        this.socketService.send('rejectOpponent', { gameId, playerName });
+        this.socketService.send(MatchMakingEvents.RejectOpponent, { gameId, playerName });
     }
 
     leaveWaiting(gameId: string) {
-        this.socketService.send('leaveWaitingRoom', gameId);
+        this.socketService.send(MatchMakingEvents.LeaveWaitingRoom, gameId);
     }
 
     startMultiSession(gameId: string) {
@@ -102,7 +103,7 @@ export class MatchMakingService {
     }
 
     updateRoomView(callback: () => void) {
-        this.socketService.on('updateRoomView', async () => {
+        this.socketService.on(MatchMakingEvents.UpdateRoomView, async () => {
             callback();
         });
     }

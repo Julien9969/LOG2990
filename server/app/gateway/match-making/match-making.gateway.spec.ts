@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- need to use any to spy on private method */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
-import { MatchMakingEvents } from '@app/gateway/match-making/match-making.gateway.events';
+import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -475,5 +475,22 @@ describe('MatchmakingGateway', () => {
 
             gateway.handleDisconnect(socket);
         });
+    });
+
+    it('notifyGameDeleted should emit GameDeleted to room that correspond to gameId', () => {
+        const roomId = 'gameRoom-124-123456789';
+        gateway['waitingRooms'].push({ gameId: '124', roomId });
+        gateway['acceptingRooms'].push({ gameId: '124', roomId });
+        stub(gateway, 'connectedClients').value(new Map([['1', socket]]));
+        stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]]));
+
+        socket.join(roomId);
+
+        jest.spyOn(gateway['server'], 'to').mockReturnValue({
+            emit: (event: string) => {
+                expect(event).toEqual(SessionEvents.GameDeleted);
+            },
+        } as BroadcastOperator<unknown, unknown>);
+        gateway.notifyGameDeleted('124');
     });
 });

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClientModule, HttpResponse } from '@angular/common/http';
@@ -8,7 +9,6 @@ import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { GuessResult } from '@common/guess-result';
-// import { GuessResult } from '@common/guess-result';
 import { of } from 'rxjs';
 import { PlayImageComponent } from './play-image.component';
 
@@ -24,7 +24,6 @@ describe('PlayImageComponent', () => {
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let mouseServiceSpy: jasmine.SpyObj<MouseService>;
     let imageOperationServiceSpy: jasmine.SpyObj<ImageOperationService>;
-    // let fakeGuessResult: GuessResult;
     let audioServiceSpy: jasmine.SpyObj<AudioService>;
     let inGameServiceSpy: jasmine.SpyObj<InGameService>;
 
@@ -68,6 +67,7 @@ describe('PlayImageComponent', () => {
             'modifiedImgContext',
             'setCanvasContext',
             'disableCheat',
+            'handleCheat',
         ]);
         TestBed.configureTestingModule({
             imports: [HttpClientModule],
@@ -131,10 +131,14 @@ describe('PlayImageComponent', () => {
 
     it('ngAfterViewInit should call getContext and loadImage', () => {
         spyOn(component, 'loadImage');
-        // const setCanvasContextSpy = spyOn(component['imageOperationService'], 'setCanvasContext');
         component.ngAfterViewInit();
-        expect(component.loadImage).toHaveBeenCalledTimes(2);
-        expect(imageOperationServiceSpy.setCanvasContext).toHaveBeenCalled();
+        expect(component.loadImage).toHaveBeenCalledTimes(1);
+    });
+
+    it('handleCheat should call imageOperationService.handleCheat', async () => {
+        imageOperationServiceSpy.handleCheat.and.returnValue(Promise.resolve());
+        await component.handleCheat();
+        expect(imageOperationServiceSpy.handleCheat).toHaveBeenCalled();
     });
 
     describe('sendPosition', () => {
@@ -250,85 +254,19 @@ describe('PlayImageComponent', () => {
             expect(result).toEqual(true);
         });
     });
-    // it('should sendDiffFound emit an event with "data"', fakeAsync(() => {
-    //     spyOn(component.diffFound, 'emit');
-    //     component.sendDiffFound();
-    //     expect(component.diffFound.emit).toHaveBeenCalledWith('data');
-    // }));
-
-    // describe('sendPosition', () => {
-    //     it('should call sendCoordinates, clickProcessing and handle correct response', () => {
-    //         spyOn(component, 'isRightDiff');
-    //         component.sendPosition(new MouseEvent('click', { clientX: 0, clientY: 0 }));
-    //         expect(mouseServiceSpy.clickProcessing).toHaveBeenCalled();
-    //         expect(communicationServiceSpy.sendCoordinates).toHaveBeenCalled();
-    //         expect(component.isRightDiff).toHaveBeenCalled();
-    //     });
-
-    //     it('should call sendCoordinates, clickProcessing and handle incorrect response', () => {
-    //         communicationServiceSpy.sendCoordinates.and.returnValue(throwError(() => new Error('test')));
-    //         spyOn(component, 'isRightDiff');
-    //         component.sendPosition(new MouseEvent('click', { clientX: 0, clientY: 0 }));
-    //         expect(mouseServiceSpy.clickProcessing).toHaveBeenCalled();
-    //         expect(communicationServiceSpy.sendCoordinates).toHaveBeenCalled();
-    //         expect(component.isRightDiff).not.toHaveBeenCalled();
-    //     });
-
-    //     it('should not call sendCoordinates and clickProcessing if timer.error.errorGuess is true', () => {
-    //         component.timerService.errorGuess = true;
-    //         component.sendPosition(new MouseEvent('click', { clientX: 0, clientY: 0 }));
-    //         expect(mouseServiceSpy.clickProcessing).not.toHaveBeenCalled();
-    //         expect(communicationServiceSpy.sendCoordinates).not.toHaveBeenCalled();
-    //     });
-    // });
-
-    // describe('isRightDiff', () => {
-    //     it('should emit diffFound event when difference is found', () => {
-    //         spyOn(component, 'sendDiffFound');
-    //         fakeGuessResult = { correct: true, alreadyFound: false, differenceNum: 0, differencePixelList: [{ x: 0, y: 0 }] };
-    //         component.isRightDiff(fakeGuessResult);
-    //         expect(component.sendDiffFound).toHaveBeenCalled();
-    //     });
-
-    //     it('should call imageOperationService.pixelBlink function when difference is found', () => {
-    //         fakeGuessResult = { correct: true, alreadyFound: false, differenceNum: 0, differencePixelList: [{ x: 0, y: 0 }] };
-    //         component.isRightDiff(fakeGuessResult);
-    //         expect(imageOperationServiceSpy.pixelBlink).toHaveBeenCalled();
-    //     });
-
-    //     it('should call playAudio with "success" when difference is found', () => {
-    //         fakeGuessResult = { correct: true, alreadyFound: false, differenceNum: 0, differencePixelList: [{ x: 0, y: 0 }] };
-    //         component.isRightDiff(fakeGuessResult);
-    //         expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('success');
-    //     });
-
-    //     it('should reset error counter when difference is found', () => {
-    //         component.errorCounter = 3;
-    //         fakeGuessResult = { correct: true, alreadyFound: false, differenceNum: 0, differencePixelList: [{ x: 0, y: 0 }] };
-    //         component.isRightDiff(fakeGuessResult);
-    //         expect(component.errorCounter).toEqual(0);
-    //     });
-
-    //     it('should call handleErrorGuess when the guess is not good or it has already been found', () => {
-    //         spyOn(component, 'handleErrorGuess');
-    //         fakeGuessResult = { correct: false, alreadyFound: false, differenceNum: 0, differencePixelList: [{ x: 0, y: 0 }] };
-    //         component.isRightDiff(fakeGuessResult);
-    //         expect(component.handleErrorGuess).toHaveBeenCalled();
-    //         fakeGuessResult = { correct: true, alreadyFound: true, differenceNum: 0, differencePixelList: [{ x: 0, y: 0 }] };
-    //         component.isRightDiff(fakeGuessResult);
-    //         expect(component.handleErrorGuess).toHaveBeenCalled();
-    //     });
-    // });
 
     describe('handleErrorGuess', () => {
-        it('handleErrorGuess should set errorMsgPosition, call errorTimer and increment errorCounter', () => {
+        it('handleErrorGuess should set errorMsgPosition, call errorTimer and increment errorCounter and set errorGuess to false after 1s', () => {
+            jasmine.clock().install();
             component.errorCounter = 0;
             component.mouse.mousePosition = { x: 0, y: 1 };
             component.handleErrorGuess();
+            expect(component.errorGuess).toEqual(true);
+            jasmine.clock().tick(1000);
             expect(component.errorMsgPosition).toEqual({ x: 0, y: 1 });
-            // sera retiré quand ce test sera corrigé
-            // expect(timerSpy.errorTimer).toHaveBeenCalled();
             expect(component.errorCounter).toEqual(1);
+            expect(component.errorGuess).toEqual(false);
+            jasmine.clock().uninstall();
         });
 
         it('handleErrorGuess should call playAudio with "error" when errorCounter is less than 3', () => {

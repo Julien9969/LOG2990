@@ -67,7 +67,7 @@ describe('ChatGateway', () => {
                 expect(clientId).toEqual('1234');
             },
         } as BroadcastOperator<unknown, unknown>);
-        gateway.giveclientId(socket);
+        gateway.giveClientId(socket);
     });
     it('dispatchMessageToAllClients should set the isFromSystem attribute of message to false', () => {
         jest.spyOn(gateway, 'getGameRoom').mockImplementation(() => {

@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ChatService } from '@app/services/chat.service';
+import { ImageOperationService } from '@app/services/image-operation.service';
 
 @Component({
     selector: 'app-sidebar',
@@ -21,7 +22,7 @@ export class SidebarComponent implements AfterViewInit {
         text: '',
     });
 
-    constructor(private formBuilder: FormBuilder, public chatService: ChatService) {
+    constructor(private formBuilder: FormBuilder, public chatService: ChatService, public imageOperationService: ImageOperationService) {
         this.chatService.formElement = this.formElement;
         this.chatService.start();
     }
@@ -34,17 +35,19 @@ export class SidebarComponent implements AfterViewInit {
     }
 
     send() {
-        const messageText: string = this.messageForm.value.text ?? '';
-        const currentTime: number = new Date().getTime();
-        if (messageText !== '') {
-            this.chatService.sendMessage({
-                socketId: 'unknown',
-                isFromSystem: false,
-                sessionID: this.sessionID,
-                author: this.playerName,
-                time: currentTime,
-                message: messageText,
-            });
+        if (this.messageForm.value.text) {
+            const inputMessage = this.messageForm.value.text.trim();
+            if (inputMessage.length > 0) {
+                const currentTime: number = new Date().getTime();
+                this.chatService.sendMessage({
+                    socketId: 'unknown',
+                    isFromSystem: false,
+                    sessionID: this.sessionID,
+                    author: this.playerName,
+                    time: currentTime,
+                    message: inputMessage,
+                });
+            }
         }
         this.messageForm.reset();
     }

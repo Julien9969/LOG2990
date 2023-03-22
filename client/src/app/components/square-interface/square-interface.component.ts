@@ -100,9 +100,4 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
     private reloadWindow() {
         window.location.reload();
     }
-
-    // Sprint 3?
-    // resetTimes(gameId: string): void {
-    //     this.gameService.resetTimes(game);
-    // }
 }

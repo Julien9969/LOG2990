@@ -1,15 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { SidebarComponent } from '@app/components/sidebar/sidebar.component';
+import { ChatService } from '@app/services/chat.service';
+
 describe('SidebarComponent', () => {
     let component: SidebarComponent;
     let fixture: ComponentFixture<SidebarComponent>;
+    let chatServiceSpy: jasmine.SpyObj<ChatService>;
+
     const exampleTime = 1234;
     const exampleMessage = 'blah';
     beforeEach(async () => {
+        chatServiceSpy = jasmine.createSpyObj('ChatService', ['sendMessage', 'start', 'giveNameToServer', 'readSystemMessage']);
+
         await TestBed.configureTestingModule({
-            providers: [FormBuilder],
+            providers: [{ provide: ChatService, useValue: chatServiceSpy }],
             declarations: [SidebarComponent],
+            imports: [ReactiveFormsModule],
         }).compileComponents();
     });
 
@@ -24,37 +31,26 @@ describe('SidebarComponent', () => {
     });
 
     it('formattedTime should call Date.toUTCString', () => {
-        // staging
-        const spy = spyOn(Date.prototype, 'toUTCString');
-        // acting
+        const dateSpy = spyOn(Date.prototype, 'toUTCString');
         const result = component.formatedTime(exampleTime);
-        // testing
-        expect(spy).toHaveBeenCalled();
+        expect(dateSpy).toHaveBeenCalled();
         expect(result).toEqual(new Date(exampleTime).toUTCString());
     });
 
     it('send should not call sendMessage if the messageText is empty', () => {
-        // staging
-        const spy = spyOn(component.chatService, 'sendMessage');
         component.messageForm.value.text = '';
-        // acting
         component.send();
-        // testing
-        expect(spy).not.toHaveBeenCalled();
+        expect(chatServiceSpy.sendMessage).not.toHaveBeenCalled();
     });
 
     it('send should call sendMessage', () => {
-        // staging
-        const spy = spyOn(component.chatService, 'sendMessage');
         component.messageForm.value.text = exampleMessage;
         spyOn(Date.prototype, 'getTime').and.callFake(() => {
             return exampleTime;
         });
-        // acting
         component.send();
 
-        // testing
-        expect(spy).toHaveBeenCalledWith({
+        expect(chatServiceSpy.sendMessage).toHaveBeenCalledWith({
             isFromSystem: false,
             socketId: 'unknown',
             sessionID: component.sessionID,
@@ -65,12 +61,9 @@ describe('SidebarComponent', () => {
     });
 
     it('scrollTobottom should call scrollIntoView', () => {
-        // staging
-        const spy = spyOn(component.formElement.nativeElement, 'scrollIntoView');
+        const scrollIntoViewSpy = spyOn(component.formElement.nativeElement, 'scrollIntoView');
 
-        // acting
         component.scrollToBottom();
-        // testing
-        expect(spy).toHaveBeenCalled();
+        expect(scrollIntoViewSpy).toHaveBeenCalled();
     });
 });
