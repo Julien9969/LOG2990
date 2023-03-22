@@ -1,4 +1,4 @@
-import { MatchMakingEvents } from '@app/gateway/match-making/match-making.gateway.events';
+import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { Rooms } from '@app/gateway/match-making/rooms';
 import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';

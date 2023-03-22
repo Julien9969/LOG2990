@@ -5,8 +5,7 @@
             class="message"
             [ngClass]="{
                 systemMessage: message.isFromSystem,
-                otherUserMessage: !message.isFromSystem && !chatService.isFromMe(message),
-                thisUserMessage: !message.isFromSystem && chatService.isFromMe(message)
+                otherUserMessage: !message.isFromSystem && !chatService.isFromMe(message)
             }"
         >
             <div class="datetime">
@@ -20,7 +19,7 @@
 
         <div *ngIf="!isSolo">
             <form id="textbox" class="send-message-form" [formGroup]="messageForm" #formGroup (ngSubmit)="send()">
-                <input [maxlength]="200" formControlName="text" type="text" placeholder="tapez votre message ici..." />
+                <input [maxlength]="200" (focus)="imageOperationService.isChatFocused = true" (blur)="imageOperationService.isChatFocused = false" formControlName="text" type="text" placeholder="tapez votre message ici..." />
                 <button type="submit">Send</button>
             </form>
         </div>

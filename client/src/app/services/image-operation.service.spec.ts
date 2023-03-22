@@ -3,9 +3,9 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { fakeAsync, TestBed } from '@angular/core/testing';
 import { CanvasTestHelper } from '@app/classes/canvas-test-helper';
+import { InGameService } from '@app/services/in-game.service';
 import { Coordinate } from '@common/coordinate';
 import { ImageOperationService } from './image-operation.service';
-import { InGameService } from '@app/services/in-game.service';
 
 describe('ImageOperationService', () => {
     let service: ImageOperationService;
@@ -156,15 +156,24 @@ describe('ImageOperationService', () => {
         expect(service['createImageDataCheat']).toHaveBeenCalled();
     });
 
-    it('handleCheat should call putImageData 4 times every 500ms', async () => {
+    it('handleCheat should call putImageData times every 250ms', async () => {
         const putImageDataSpy = spyOn(CanvasRenderingContext2D.prototype, 'putImageData').and.callFake(() => {});
         service.cheatBlink();
         jasmine.clock().tick(500);
-        expect(putImageDataSpy).toHaveBeenCalledTimes(2);
+        expect(putImageDataSpy).toHaveBeenCalledTimes(6);
         jasmine.clock().tick(450);
-        expect(putImageDataSpy).toHaveBeenCalledTimes(4);
+        expect(putImageDataSpy).toHaveBeenCalledTimes(12);
 
         clearInterval(service['cheatInterval']);
+    });
+
+    it('handleCheat should do nothing if isFocused is true', async () => {
+        service.isChatFocused = true;
+        spyOn(service, 'createImageDataCheat' as any);
+        spyOn(service, 'disableCheat').and.callFake(() => {});
+        service.handleCheat(1);
+        expect(service.disableCheat).not.toHaveBeenCalled();
+        expect(service['createImageDataCheat']).not.toHaveBeenCalled();
     });
 
     it('disableCheat set cheatInterval to 0', () => {
@@ -203,5 +212,17 @@ describe('ImageOperationService', () => {
         service['updateBaseImagesSave'](differences);
         expect(sliceSpy).toHaveBeenCalledTimes(differences.length);
         expect(setSpy).toHaveBeenCalledTimes(differences.length);
+    });
+
+    it('isSameDifference should return true if the list are the same', () => {
+        const list1 = [{ x: 1, y: 1 }];
+        const list2 = [{ x: 1, y: 1 }];
+        expect(service['isSameDifference'](list1, list2)).toEqual(true);
+    });
+
+    it('isSameDifference should return false if the list are not the same', () => {
+        const list1 = [{ x: 1, y: 1 }];
+        const list2 = [{ x: 2, y: 2 }];
+        expect(service['isSameDifference'](list1, list2)).toEqual(false);
     });
 });

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CHEAT_PERIOD_MS, CANVAS, RGB_RED, RGB_GREEN } from '@app/constants/utils-constants';
-import { Coordinate } from '@common/coordinate';
 import { InGameService } from '@app/services/in-game.service';
+import { Coordinate } from '@common/coordinate';
 
 @Injectable({
     providedIn: 'root',
@@ -11,6 +11,8 @@ export class ImageOperationService {
     intervalIds: number[] = [];
     newestTimerId: number = 0;
     oldestTimerId: number = 0;
+
+    isChatFocused: boolean = false;
 
     private originalImgContext: CanvasRenderingContext2D;
     private modifiedImgContext: CanvasRenderingContext2D;
@@ -127,6 +129,9 @@ export class ImageOperationService {
      * @returns l'interval de clignotement de triche
      */
     async handleCheat(sessionId: number): Promise<void> {
+        if (this.isChatFocused) {
+            return;
+        }
         if (this.cheatInterval) {
             this.disableCheat();
         } else {
@@ -188,20 +193,20 @@ export class ImageOperationService {
     /**
      * Enlève la difference de la liste des diférences et met a jour les images de base et de triche
      *
-     * @param differences liste des pixels a enlever de la liste de triche
+     * @param diffToRemove liste des pixels a enlever de la liste de triche
      */
-    private async cheatRemoveDiff(differences: Coordinate[]): Promise<void> {
+    private async cheatRemoveDiff(diffToRemove: Coordinate[]): Promise<void> {
         const differencesInOneList: Coordinate[] = [];
 
-        this.allDifferencesList.forEach((differencesList, index) => {
-            if (differencesList.length !== differences.length) {
-                differencesInOneList.push(...differencesList);
-            } else {
+        this.allDifferencesList.forEach((differenceList, index) => {
+            if (this.isSameDifference(differenceList, diffToRemove)) {
                 this.allDifferencesList[index] = [];
+            } else {
+                differencesInOneList.push(...differenceList);
             }
         });
 
-        this.updateBaseImagesSave(differences);
+        this.updateBaseImagesSave(diffToRemove);
         this.createImageDataCheat(differencesInOneList);
     }
 
@@ -216,5 +221,9 @@ export class ImageOperationService {
             const originalPixel = this.originalImageSave.data.slice(pixelIndex, pixelIndex + BIT_PER_PIXEL);
             this.modifiedImageSave.data.set(originalPixel, pixelIndex);
         });
+    }
+
+    private isSameDifference(differenceList: Coordinate[], diffToRemove: Coordinate[]): boolean {
+        return differenceList.length !== 0 && differenceList[0].x === diffToRemove[0].x && differenceList[0].y === diffToRemove[0].y;
     }
 }

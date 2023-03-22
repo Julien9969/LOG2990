@@ -55,8 +55,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     @HostListener('window:keydown.t', ['$event'])
-    async handleCheat(event: KeyboardEvent) {
-        event.preventDefault();
+    async handleCheat() {
         await this.imageOperationService.handleCheat(this.sessionID);
     }
 

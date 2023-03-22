@@ -33,7 +33,14 @@ export class StubPlayImageComponent {
     selector: 'app-sidebar',
     template: '<div></div>',
 })
-export class StubAppSidebarComponent {}
+export class StubAppSidebarComponent {
+    @Input()
+    playerName: string;
+    @Input()
+    sessionID: number;
+    @Input()
+    isSolo: boolean;
+}
 
 describe('SoloGamePageComponent', () => {
     let component: SoloGamePageComponent;
