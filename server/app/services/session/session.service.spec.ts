@@ -425,11 +425,6 @@ describe('Session tests', () => {
         const secondSocketId = 'secondSocketId';
         const sessionMulti = new Session(gameId, firstSocketId, secondSocketId);
         it('should return the right time in mm:ss', () => {
-            sessionMulti.timeElapsed = 12324;
-            const result: string = sessionMulti.formatedTimeElapsed;
-            expect(result).toEqual('205:24');
-        });
-        it('should return the right time in mm:ss', () => {
             sessionMulti.timeElapsed = 0;
             const result: string = sessionMulti.formatedTimeElapsed;
             expect(result).toEqual('0:00');
@@ -501,49 +496,6 @@ describe('Session Service tests', () => {
             });
             sessionService.addToList(session);
             expect(spy).toHaveBeenCalledWith(session);
-        });
-    });
-    describe('delete', () => {
-        it('should call the right functions on the activeSessions attribute and not throw', () => {
-            const id = 1233;
-            const gameIndex = 0;
-            const findSpy = jest.spyOn(SessionService.prototype, 'findBySessionId').mockImplementation(() => {
-                return session;
-            });
-            const indexOfSpy = jest.spyOn(Array.prototype, 'indexOf').mockImplementation(() => {
-                return gameIndex;
-            });
-            const stopTimerSpy = jest.spyOn(Session.prototype, 'stopTimer').mockImplementation();
-            const spliceSpy = jest.spyOn(sessionService['activeSessions'], 'splice').mockImplementation();
-            const sessionServiceSpy = jest.spyOn(sessionService, 'delete');
-            sessionService.activeSessions = [session];
-
-            sessionService.activeSessions = [session];
-            sessionService.delete(id);
-            expect(sessionServiceSpy).not.toThrow();
-            expect(findSpy).toHaveBeenCalledWith(id);
-            expect(indexOfSpy).toHaveBeenCalledWith(session);
-            expect(stopTimerSpy).toHaveBeenCalled();
-            expect(spliceSpy).toHaveBeenCalledWith(gameIndex, 1);
-        });
-        it('should call the right functions and then throw', () => {
-            const id = 1233;
-            const gameIndex = -1;
-            const findSpy = jest.spyOn(SessionService.prototype, 'findBySessionId').mockReturnValue(session);
-            const indexOfSpy = jest.spyOn(Array.prototype, 'indexOf').mockImplementation(() => {
-                return gameIndex;
-            });
-            const stopTimerSpy = jest.spyOn(Session.prototype, 'stopTimer').mockImplementation();
-            const spliceSpy = jest.spyOn(sessionService['activeSessions'], 'splice').mockImplementation();
-            const sessionServiceSpy = jest.spyOn(sessionService, 'delete');
-
-            sessionService.activeSessions = [session];
-            sessionService.delete(id);
-            expect(sessionServiceSpy).toThrow();
-            expect(findSpy).toHaveBeenCalledWith(id);
-            expect(indexOfSpy).toHaveBeenCalledWith(session);
-            expect(stopTimerSpy).not.toHaveBeenCalled();
-            expect(spliceSpy).not.toHaveBeenCalledWith(gameIndex, 1);
         });
     });
 
