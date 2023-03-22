@@ -1,9 +1,9 @@
 .formContainer {
+    // height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     user-select: none;
-    margin-top: 3px;
 }
 
 .message {
@@ -30,11 +30,11 @@
 }
 
 input#title {
-    margin-top: 1.5vh;
+    margin-top: 3vh;
     margin-left: 50%;
     transform: translateX(-50%);
     width: 20vw;
-    height: 2vh;
+    height: 3vh;
     font-size: x-large;
     border: 0px;
     background-color: transparent;
@@ -85,7 +85,7 @@ button {
     // justify-content: center;
     > * {
         display: block;
-        margin: 15px auto 30px auto;
+        margin: 30px auto 30px auto;
     }
 }
 

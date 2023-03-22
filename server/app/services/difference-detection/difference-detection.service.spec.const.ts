@@ -10,9 +10,9 @@ export const TEST_12_DIFF_IMAGE: string = TEST_IMAGES_PATH + 'image_12_diff.bmp'
 export const TEST_25_PERCENT_IMAGE: string = TEST_IMAGES_PATH + '25_percent_diff.bmp';
 export const TEST_50_PERCENT_IMAGE: string = TEST_IMAGES_PATH + '50_percent_diff.bmp';
 
-export const TEST_GAME_ID = '11111';
+export const testGameId = '11111';
 
-export const TEST_RADIUS_3_EXTENSION = [
+export const testRadius3Extension = [
     { x: -2, y: -3 },
     { x: -1, y: -3 },
     { x: 0, y: -3 },
@@ -59,8 +59,8 @@ export const TEST_RADIUS_3_EXTENSION = [
     { x: 2, y: 3 },
 ];
 
-export const TEST_PIXEL = { x: 5, y: 7 };
-export const TEST_ALL_RELATIVE_NEIGHBOURS = [
+export const testPixel = { x: 5, y: 7 };
+export const testAllRelativeNeighbours = [
     { x: 4, y: 6 },
     { x: 5, y: 6 },
     { x: 6, y: 6 },

@@ -7,7 +7,7 @@ import { MatchMakingService } from '@app/services/match-making.service';
 import { GameSessionType } from '@common/game-session-type';
 
 /**
- * @titleInject Inject des données lorsqu'on ouvre un dialogue
+ * @title Injecting data when opening a dialog
  */
 @Component({
     selector: 'app-name-form-dialog',
@@ -28,7 +28,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     ]);
     private readonly routerLink = 'solo-game';
 
-    // eslint-disable-next-line max-params -- paramêtres sont nécessaires
+    // eslint-disable-next-line max-params -- params are needed
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: GameSessionType,
         private dialogRef: MatDialogRef<MatchMakingDialogComponent>,

@@ -29,6 +29,7 @@ export class DrawService {
     altImageComponent: UploadImageSquareComponent;
 
     startAction(coordinate: Coordinate, canvas: ActiveCanvas) {
+        // check if this still works with cheap mouse out of window stuff!
         if (this.activeCanvas !== ActiveCanvas.None) this.cancelAction();
         this.saveStateToStacks(this.mainUndoStack, this.altUndoStack);
         this.activeCanvas = canvas;
@@ -51,14 +52,14 @@ export class DrawService {
     }
 
     performAction(coordinate: Coordinate, activeComponent: UploadImageSquareComponent, shiftPressed: boolean) {
-        // "pure" dessin sur l'avant plan LOCAL du canvas
+        // "pure" drawing on LOCAL foreground canvas
         switch (this.mode) {
             case DrawMode.PENCIL:
                 this.drawLine(coordinate, activeComponent.canvasContext);
                 this.drawLine(coordinate, activeComponent.fgContext);
                 break;
             case DrawMode.RECTANGLE:
-                // Retourne à l'état de départ pour re-render le rectangle ou le carré
+                // Reset a l'etat de depart pour re-render le rectangle ou carré
                 activeComponent.canvasContext.putImageData(this.startCanvasData, 0, 0);
                 activeComponent.fgContext.putImageData(this.startFgData, 0, 0);
                 this.drawRectangle(coordinate, activeComponent.canvasContext, shiftPressed);
@@ -159,7 +160,7 @@ export class DrawService {
             // Taille divisée par 2 pour avoir le rayon
             canvasContext.arc(coord.x, coord.y, this.toolSize / 2, 0, Math.PI * 2);
         });
-        canvasContext.fill(); // Render la page
+        canvasContext.fill(); // Render the path
     }
 
     private drawRectangle(coordinate: Coordinate, canvasContext: CanvasRenderingContext2D, shiftPressed: boolean) {

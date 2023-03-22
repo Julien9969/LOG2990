@@ -33,7 +33,7 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
     }
 
     /**
-     * initialise la liste de 4 jeux par jeux, qui seront utilisé pour créer la page
+     * initializes the list of 4 games by games, that will used to create the pages
      */
     async getGroups(): Promise<void> {
         try {
@@ -45,10 +45,10 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
         }
     }
     /**
-     * Prend le bon URL pour chercher une image associé à un jeu
+     * Gets the right URL to get one specific game's image
      *
-     * @param game le jeu qui a besoin d'une image
-     * @returns le URL de l'image ou '' s'il y a une erreur
+     * @param game the specific game that needs it's image
+     * @returns the image's URL or '' if there was an error
      */
     getImage(game: Game): string {
         try {
@@ -59,9 +59,9 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
     }
 
     /**
-     * Imprime le formulaire qui permet à l'utilisateur de créer un jeu solo
+     * Prints the form that permits the user to create a solo game
      *
-     * @param game le jeu que le joueur veut jouer
+     * @param game game that the player wants to play
      */
     openFormDialog(game: Game, isSolo: boolean): void {
         this.dialog.closeAll();
