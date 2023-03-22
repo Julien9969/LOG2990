@@ -59,7 +59,7 @@ export class SessionService {
      *
      * @param clientId L'identifiant du client
      */
-    findByCliendId(clientId: string): Session {
+    findByClientId(clientId: string): Session {
         for (const session of this.activeSessions) {
             if (session.differencesFoundByPlayer.find((differences) => differences[0] === clientId)) return session;
         }

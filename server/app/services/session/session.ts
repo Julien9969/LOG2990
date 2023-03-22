@@ -31,7 +31,7 @@ export class Session {
      */
     get formatedTimeElapsed(): string {
         const minutes = Math.floor(this.timeElapsed / TIME_CONST.minute);
-        const seconds = this.timeElapsed % TIME_CONST.minute;
+        const seconds = this.timeElapsed % TIME_CONST.secondInMilliseconds;
         return minutes + ':' + seconds.toString().padStart(2, '0');
     }
 
@@ -61,7 +61,6 @@ export class Session {
         let diffNum: number;
         let diffPixelList: Coordinate[] = [];
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
-
         try {
             diffNum = this.differenceValidationService.checkDifference(guess.x, guess.y);
             if (diffNum !== undefined && !this.isDiffAlreadyFound(diffNum))

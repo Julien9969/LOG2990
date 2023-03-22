@@ -5,7 +5,7 @@ import {
     DEFAULT_PENALTY_TIME,
     DEFAULT_REWARD_TIME,
     DIFFERENCE_LISTS_FOLDER,
-    DIFFERENCE_LISTS_PREFIX,
+    DIFFERENCE_LISTS_PREFIX
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageService } from '@app/services/images/image.service';
