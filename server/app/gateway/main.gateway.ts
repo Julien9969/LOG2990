@@ -20,7 +20,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     handleDisconnect(client: Socket) {
         this.logger.log('Client disconnected : ' + client.id);
         try {
-            const session = this.sessionService.findByCliendId(client.id);
+            const session = this.sessionService.findByClientId(client.id);
             if (!session) return;
             this.sessionService.delete(session.id);
             this.logger.log(`Session with client ${client.id} has been deleted`);

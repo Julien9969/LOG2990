@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClientModule, HttpResponse } from '@angular/common/http';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { AudioService } from '@app/services/audio.service';
 import { CommunicationService } from '@app/services/communication.service';
 import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
+import { GuessResult } from '@common/guess-result';
 // import { GuessResult } from '@common/guess-result';
 import { of } from 'rxjs';
 import { PlayImageComponent } from './play-image.component';
@@ -34,7 +37,7 @@ describe('PlayImageComponent', () => {
             'submitCoordinates',
             'retrieveSocketId',
             'sendDifferenceFound',
-            'receiveDifferenceFound',
+            'listenDifferenceFound',
             'connect',
             'playerExited',
             'listenOpponentLeaves',
@@ -109,10 +112,21 @@ describe('PlayImageComponent', () => {
         });
     });
 
-    it('ngOnInit should set error counter to 0', () => {
+    it('ngOnInit should set error counter to 0 and listen to differences found', () => {
         component.errorCounter = 3;
+        inGameServiceSpy.listenDifferenceFound.and.callFake((callback: (guess: GuessResult) => void) => {
+            callback({ isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' });
+        });
+        const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
         component.ngOnInit();
         expect(component.errorCounter).toEqual(0);
+        expect(inGameServiceSpy.listenDifferenceFound).toHaveBeenCalled();
+        expect(updateDiffFoundSpy).toHaveBeenCalledWith({
+            isCorrect: false,
+            differencesByPlayer: [],
+            differencePixelList: [],
+            winnerName: 'winnerName',
+        });
     });
 
     it('ngAfterViewInit should call getContext and loadImage', () => {
@@ -123,6 +137,119 @@ describe('PlayImageComponent', () => {
         expect(imageOperationServiceSpy.setCanvasContext).toHaveBeenCalled();
     });
 
+    describe('sendPosition', () => {
+        it('sendPosition should call the right functions', fakeAsync(() => {
+            const event = new MouseEvent('event');
+            const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
+            inGameServiceSpy.submitCoordinates.and.callFake(async () => {
+                return Promise.resolve({ isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' });
+            });
+            component.sendPosition(event);
+
+            tick(3000);
+
+            expect(mouseServiceSpy.clickProcessing).toHaveBeenCalledWith(event);
+            expect(updateDiffFoundSpy).toHaveBeenCalledWith({
+                isCorrect: false,
+                differencesByPlayer: [],
+                differencePixelList: [],
+                winnerName: 'winnerName',
+            });
+        }));
+        it('sendPosition should catch the error in the promise', fakeAsync(() => {
+            const event = new MouseEvent('event');
+            inGameServiceSpy.submitCoordinates.and.callFake(async () => {
+                throw new Error();
+            });
+            component.sendPosition(event);
+
+            tick(3000);
+
+            expect(mouseServiceSpy.clickProcessing).toHaveBeenCalledWith(event);
+        }));
+    });
+
+    describe('updateDiffFound', () => {
+        it('should the right functions and make errorCounter = 0 when guessResult is correct and the score has changed', () => {
+            const guessResult: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
+            spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
+                return true;
+            });
+            const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
+            component.updateDiffFound(guessResult);
+
+            expect(component.lastDifferenceFound).toEqual(guessResult);
+            expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('success');
+            expect(diffFoundUpdateEmitSpy).toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
+            expect(component.errorCounter).toEqual(0);
+            expect(imageOperationServiceSpy.pixelBlink).toHaveBeenCalledWith(guessResult.differencePixelList);
+        });
+        it('should handle a false guess', () => {
+            const guessResult: GuessResult = { isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
+            spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
+                return true;
+            });
+            const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
+            const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
+            component.updateDiffFound(guessResult);
+
+            expect(component.lastDifferenceFound).not.toEqual(guessResult);
+            expect(audioServiceSpy.playAudio).not.toHaveBeenCalledWith('success');
+            expect(diffFoundUpdateEmitSpy).not.toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
+            expect(imageOperationServiceSpy.pixelBlink).not.toHaveBeenCalledWith(guessResult.differencePixelList);
+            expect(handleErrorGuessSpy).toHaveBeenCalled();
+        });
+        it('should handle a difference already received', () => {
+            const guessResult: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
+            spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
+                return false;
+            });
+            const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
+            const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
+            component.updateDiffFound(guessResult);
+
+            expect(component.lastDifferenceFound).not.toEqual(guessResult);
+            expect(audioServiceSpy.playAudio).not.toHaveBeenCalledWith('success');
+            expect(diffFoundUpdateEmitSpy).not.toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
+            expect(imageOperationServiceSpy.pixelBlink).not.toHaveBeenCalledWith(guessResult.differencePixelList);
+            expect(handleErrorGuessSpy).toHaveBeenCalled();
+        });
+    });
+    describe('hasNbDifferencesChanged', () => {
+        it('should return false when did not changed', () => {
+            component.lastDifferenceFound.differencesByPlayer = [
+                ['socket1', 1],
+                ['socket2', 2],
+            ];
+            const differenceByPlayer: [string, number][] = [
+                ['socket1', 1],
+                ['socket2', 2],
+            ];
+            const result: boolean = component.hasNbDifferencesChanged(differenceByPlayer);
+            expect(result).toEqual(false);
+        });
+        it('should return true when changed', () => {
+            component.lastDifferenceFound.differencesByPlayer = [
+                ['socket1', 1],
+                ['socket2', 2],
+            ];
+            const differenceByPlayer: [string, number][] = [
+                ['socket1', 1],
+                ['socket2', 3],
+            ];
+            const result: boolean = component.hasNbDifferencesChanged(differenceByPlayer);
+            expect(result).toEqual(true);
+        });
+        it('should return true when changed', () => {
+            component.lastDifferenceFound.differencesByPlayer = [['socket1', 1]];
+            const differenceByPlayer: [string, number][] = [
+                ['socket1', 1],
+                ['socket2', 1],
+            ];
+            const result: boolean = component.hasNbDifferencesChanged(differenceByPlayer);
+            expect(result).toEqual(true);
+        });
+    });
     // it('should sendDiffFound emit an event with "data"', fakeAsync(() => {
     //     spyOn(component.diffFound, 'emit');
     //     component.sendDiffFound();

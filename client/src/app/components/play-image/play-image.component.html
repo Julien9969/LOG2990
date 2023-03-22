@@ -1,14 +1,24 @@
-<div id="global-container" class="flex h100" >
+<div id="global-container" class="flex h100">
     <div class="flex-row play-areas">
         <div class="image-container">
             <canvas #canvas1 height="480" width="640" (click)="sendPosition($event)" alt="Image de jeu"></canvas>
-            <div *ngIf="this.errorGuess" class="error" [style.top.px]="errorMsgPosition.y + imageCanvas1.nativeElement.offsetTop" [style.left.px]="errorMsgPosition.x + imageCanvas1.nativeElement.offsetLeft">
+            <div
+                *ngIf="this.errorGuess"
+                class="error"
+                [style.top.px]="errorMsgPosition.y + imageCanvas1.nativeElement.offsetTop"
+                [style.left.px]="errorMsgPosition.x + imageCanvas1.nativeElement.offsetLeft"
+            >
                 Erreur
             </div>
         </div>
         <div class="image-container">
             <canvas #canvas2 height="480" width="640" (click)="sendPosition($event)" alt="Image de différences"></canvas>
-            <div *ngIf="this.errorGuess" class="error" [style.top.px]="errorMsgPosition.y + imageCanvas2.nativeElement.offsetTop" [style.left.px]="errorMsgPosition.x + imageCanvas2.nativeElement.offsetLeft">
+            <div
+                *ngIf="this.errorGuess"
+                class="error"
+                [style.top.px]="errorMsgPosition.y + imageCanvas2.nativeElement.offsetTop"
+                [style.left.px]="errorMsgPosition.x + imageCanvas2.nativeElement.offsetLeft"
+            >
                 Erreur
             </div>
         </div>
