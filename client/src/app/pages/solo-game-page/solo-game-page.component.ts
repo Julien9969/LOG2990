@@ -5,6 +5,7 @@ import { CommunicationService } from '@app/services/communication.service';
 import { InGameService } from '@app/services/in-game.service';
 import { SocketClientService } from '@app/services/socket-client.service';
 import { Game } from '@common/game';
+import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
 
 @Component({
@@ -62,7 +63,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
             this.userSocketId = userSocketId;
         });
         this.socket.listenOpponentLeaves(() => {
-            this.openDialog('opponentLeftGame');
+            this.openDialog(SessionEvents.OpponentLeftGame);
         });
         this.socket.listenPlayerWon((winnerInfo: WinnerInfo) => {
             this.endGameDialog(winnerInfo);
@@ -120,14 +121,14 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
             case 'quit':
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
                 break;
-            case 'opponentLeftGame':
+            case SessionEvents.OpponentLeftGame:
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: ['opponentLeft'] });
         }
     }
 
     ngOnDestroy(): void {
         this.playerExited();
-        this.socketClient.send('leaveRoom');
+        this.socketClient.send(SessionEvents.LeaveRoom);
         this.socket.disconnect();
     }
 }

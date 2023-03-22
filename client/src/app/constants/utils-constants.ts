@@ -33,6 +33,8 @@ export const BLINK_COUNT = 6;
 
 export const BLINK_PERIOD_MS = 250;
 
+export const CHEAT_PERIOD_MS = 125;
+
 export const RGB_RED = { r: 255, g: 0, b: 0, a: 255 };
 
 export const RGB_GREEN = { r: 0, g: 255, b: 0, a: 255 };

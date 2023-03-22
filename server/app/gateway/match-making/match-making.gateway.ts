@@ -1,11 +1,13 @@
 import { MatchMakingEvents } from '@app/gateway/match-making/match-making.gateway.events';
 import { Rooms } from '@app/gateway/match-making/rooms';
+import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common/decorators';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { SessionEvents } from '@common/session.gateway.events';
 
 @WebSocketGateway({ cors: true })
+@Injectable()
 export class MatchmakingGateway implements OnGatewayDisconnect {
     @WebSocketServer() protected server: Server;
     // Salle dans lesquelles les clients attendent un adversaire
@@ -209,6 +211,21 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
             if (socketId !== client.id) {
                 this.connectedClients.get(socketId).leave(roomId);
             }
+        });
+    }
+
+    notifyGameDeleted(gameId: string) {
+        this.waitingRooms.filterRoomsByGameId(gameId).forEach((room) => {
+            this.server.to(room.roomId).emit(MatchMakingEvents.GameDeleted);
+            this.serverRooms.get(room.roomId).forEach((clientId) => {
+                this.connectedClients.get(clientId).leave(room.roomId);
+            });
+        });
+        this.acceptingRooms.filterRoomsByGameId(gameId).forEach((room) => {
+            this.server.to(room.roomId).emit(MatchMakingEvents.GameDeleted);
+            this.serverRooms.get(room.roomId).forEach((clientId) => {
+                this.connectedClients.get(clientId).leave(room.roomId);
+            });
         });
     }
 }

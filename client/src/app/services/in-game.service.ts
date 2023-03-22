@@ -41,7 +41,7 @@ export class InGameService {
 
     async cheatGetAllDifferences(sessionId: number): Promise<Coordinate[][]> {
         return new Promise<Coordinate[][]>((resolve) => {
-            this.socketService.sendAndCallBack('cheatGetAllDifferences', sessionId, (response: Coordinate[][]) => {
+            this.socketService.sendAndCallBack(SessionEvents.CheatGetAllDifferences, sessionId, (response: Coordinate[][]) => {
                 resolve(response);
             });
         });

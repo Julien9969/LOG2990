@@ -3,7 +3,7 @@ import { Message } from '@common/message';
 import { SocketTestHelper } from '@common/socket-test-helper';
 import { ChatService } from './chat.service';
 
-fdescribe('chatService', () => {
+describe('chatService', () => {
     let service: ChatService;
     let socketHelper: SocketTestHelper;
 
