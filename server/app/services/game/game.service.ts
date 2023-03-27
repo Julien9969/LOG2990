@@ -83,14 +83,14 @@ export class GameService {
         if (!game) {
             throw new HttpException(`Le jeu avec le id ${id} n'existe pas`, HttpStatus.NOT_FOUND);
         }
-        this.imageService.deleteImage(game.imageMain);
-        this.imageService.deleteImage(game.imageAlt);
-        fs.unlinkSync(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${game.id}.json`);
         try {
             await this.gameModel.deleteOne({ _id: id });
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        this.imageService.deleteImage(game.imageMain);
+        this.imageService.deleteImage(game.imageAlt);
+        fs.unlinkSync(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${game.id}.json`);
 
         this.matchMakingGateway.notifyGameDeleted(id);
     }

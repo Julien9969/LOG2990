@@ -55,7 +55,7 @@ export class ImageService {
         if (this.imageExists(id)) {
             fs.unlinkSync(this.getPath(id));
         } else {
-            throw new Error('Image non existante.');
+            throw new Error('Image non existante');
         }
     }
 
