@@ -105,41 +105,41 @@ describe('DisjointSet tests', () => {
         });
     });
 
-    describe('extract method', () => {
+    describe('getSetLists method', () => {
         const elemCompareToRef = (elem, reference) => {
             return elem.x === reference.x && elem.y === reference.y;
         };
 
         it('returns elements in arrays by set', () => {
-            const extractedList = commonTestSet.extract();
+            const getSetListsedList = commonTestSet.getSetLists();
 
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub1))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub2))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub3))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub4))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub5))).toBeFalsy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub6))).toBeFalsy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub1))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub2))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub3))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub4))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub5))).toBeFalsy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub6))).toBeFalsy();
 
-            expect(extractedList[1].find((elem) => elemCompareToRef(elem, commonStub1))).toBeFalsy();
-            expect(extractedList[1].find((elem) => elemCompareToRef(elem, commonStub2))).toBeFalsy();
-            expect(extractedList[1].find((elem) => elemCompareToRef(elem, commonStub3))).toBeFalsy();
-            expect(extractedList[1].find((elem) => elemCompareToRef(elem, commonStub4))).toBeFalsy();
-            expect(extractedList[1].find((elem) => elemCompareToRef(elem, commonStub5))).toBeTruthy();
-            expect(extractedList[1].find((elem) => elemCompareToRef(elem, commonStub6))).toBeTruthy();
+            expect(getSetListsedList[1].find((elem) => elemCompareToRef(elem, commonStub1))).toBeFalsy();
+            expect(getSetListsedList[1].find((elem) => elemCompareToRef(elem, commonStub2))).toBeFalsy();
+            expect(getSetListsedList[1].find((elem) => elemCompareToRef(elem, commonStub3))).toBeFalsy();
+            expect(getSetListsedList[1].find((elem) => elemCompareToRef(elem, commonStub4))).toBeFalsy();
+            expect(getSetListsedList[1].find((elem) => elemCompareToRef(elem, commonStub5))).toBeTruthy();
+            expect(getSetListsedList[1].find((elem) => elemCompareToRef(elem, commonStub6))).toBeTruthy();
         });
 
         it('creates a single list when all sets connected', () => {
             commonTestSet.union(commonStub6, commonStub1);
-            const extractedList = commonTestSet.extract();
+            const getSetListsedList = commonTestSet.getSetLists();
 
-            expect(extractedList.length).toEqual(1);
+            expect(getSetListsedList.length).toEqual(1);
 
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub1))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub2))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub3))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub4))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub5))).toBeTruthy();
-            expect(extractedList[0].find((elem) => elemCompareToRef(elem, commonStub6))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub1))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub2))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub3))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub4))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub5))).toBeTruthy();
+            expect(getSetListsedList[0].find((elem) => elemCompareToRef(elem, commonStub6))).toBeTruthy();
         });
     });
 });

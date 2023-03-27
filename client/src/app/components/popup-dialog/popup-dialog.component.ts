@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AudioService } from '@app/services/audio.service';
 
 /**
- * @title Injecting data when opening a dialog
+ * @title Inject des données lorsqu'on ouvre un dialogue
  */
 @Component({
     selector: 'app-popup-dialog',
