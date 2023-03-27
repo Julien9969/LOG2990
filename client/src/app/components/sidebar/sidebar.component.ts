@@ -2,7 +2,6 @@ import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular
 import { FormBuilder } from '@angular/forms';
 import { ChatService } from '@app/services/chat.service';
 import { ImageOperationService } from '@app/services/image-operation.service';
-
 @Component({
     selector: 'app-sidebar',
     templateUrl: './sidebar.component.html',
