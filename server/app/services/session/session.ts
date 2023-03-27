@@ -2,6 +2,7 @@ import { TIME_CONST } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
+import mongoose from 'mongoose';
 
 export class Session {
     gameID: string;
@@ -19,6 +20,7 @@ export class Session {
         if (secondSocketId) {
             this.differencesFoundByPlayer.push([secondSocketId, []]);
         }
+        if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session creation');
         this.gameID = gameID;
         this.differenceValidationService.loadDifferences(this.gameID.toString());
         this.nDifferences = this.differenceValidationService.differenceCoordLists.length;
@@ -31,7 +33,7 @@ export class Session {
      */
     get formatedTimeElapsed(): string {
         const minutes = Math.floor(this.timeElapsed / TIME_CONST.minute);
-        const seconds = this.timeElapsed % TIME_CONST.secondInMilliseconds;
+        const seconds = this.timeElapsed % TIME_CONST.minute;
         return minutes + ':' + seconds.toString().padStart(2, '0');
     }
 

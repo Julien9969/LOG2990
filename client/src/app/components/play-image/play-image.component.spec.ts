@@ -3,11 +3,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClientModule, HttpResponse } from '@angular/common/http';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { AudioService } from '@app/services/audio.service';
-import { CommunicationService } from '@app/services/communication.service';
-import { ImageOperationService } from '@app/services/image-operation.service';
-import { InGameService } from '@app/services/in-game.service';
-import { MouseService } from '@app/services/mouse.service';
+import { AudioService } from '@app/services/audio/audio.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
+import { MouseService } from '@app/services/mouse/mouse.service';
 import { GuessResult } from '@common/guess-result';
 import { of } from 'rxjs';
 import { PlayImageComponent } from './play-image.component';

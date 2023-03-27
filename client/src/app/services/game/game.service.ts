@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GROUP_SIZE } from '@app/constants/utils-constants';
 import { Game } from '@common/game';
-import { CommunicationService } from './communication.service';
+import { CommunicationService } from '../communication/communication.service';
 
 @Injectable({
     providedIn: 'root',

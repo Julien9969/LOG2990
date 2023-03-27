@@ -12,11 +12,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
 import { PlayImageComponent } from '@app/components/play-image/play-image.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication.service';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
-import { SoloGamePageComponent } from './solo-game-page.component';
+import { SoloGamePageComponent } from './game-page.component';
 
 @Component({
     selector: 'app-play-image',

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
+import { Clue } from '@common/Clue';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
@@ -21,6 +22,20 @@ export class InGameService {
         const data: [number, Coordinate] = [sessionID, coordinates];
         return new Promise<GuessResult>((resolve) => {
             this.socketService.sendAndCallBack(SessionEvents.SubmitCoordinates, data, (response: GuessResult) => {
+                resolve(response);
+            });
+        });
+    }
+
+    /**
+     * asks the server for a clue
+     *
+     * @param sessionId
+     * @returns a clue
+     */
+    async retrieveClue(sessionId: number) {
+        return new Promise<Clue>((resolve) => {
+            this.socketService.sendAndCallBack(SessionEvents.AskForClue, sessionId, (response: Clue) => {
                 resolve(response);
             });
         });

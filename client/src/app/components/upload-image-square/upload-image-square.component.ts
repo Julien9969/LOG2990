@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CANVAS_BIT_DEPTH, IMAGE_HEIGHT, IMAGE_WIDTH, UPLOADED_IMAGE_BIT_DEPTH } from '@app/constants/utils-constants';
-import { DrawService } from '@app/services/draw.service';
-import ValidateImageService from '@app/services/validate-image.service';
+import { DrawService } from '@app/services/draw/draw.service';
+import ValidateImageService from '@app/services/validate-server/validate-image.service';
 import { Coordinate } from '@common/coordinate';
 
 @Component({

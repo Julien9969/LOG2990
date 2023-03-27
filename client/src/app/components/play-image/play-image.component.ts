@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { TIME_CONST } from '@app/constants/utils-constants';
-import { AudioService } from '@app/services/audio.service';
-import { CommunicationService } from '@app/services/communication.service';
-import { ImageOperationService } from '@app/services/image-operation.service';
-import { InGameService } from '@app/services/in-game.service';
-import { MouseService } from '@app/services/mouse.service';
+import { AudioService } from '@app/services/audio/audio.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
+import { MouseService } from '@app/services/mouse/mouse.service';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 

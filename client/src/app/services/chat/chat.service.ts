@@ -1,10 +1,10 @@
 import { ElementRef, Injectable } from '@angular/core';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Message } from '@common/message';
 import { SessionEvents } from '@common/session.gateway.events';
 import { SystemMessage } from '@common/systemMessage';
-import { SystemCode } from './constantes.service';
+import { SystemCode } from '../constantes.service';
 @Injectable({
     providedIn: 'root',
 })

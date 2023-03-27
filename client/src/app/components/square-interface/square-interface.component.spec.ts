@@ -10,8 +10,8 @@ import { ErrorDuringLoadingComponent } from '@app/components/error-during-loadin
 import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
 import { SquareInterfaceComponent } from '@app/components/square-interface/square-interface.component';
 import { DELAY_BEFORE_BUTTONS_UPDATE, GAMES_PER_PAGE } from '@app/constants/utils-constants';
-import { CommunicationService } from '@app/services/communication.service';
-import { GameService } from '@app/services/game.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { GameService } from '@app/services/game/game.service';
 import { Game } from '@common/game';
 
 describe('SquareInterfaceComponent', () => {

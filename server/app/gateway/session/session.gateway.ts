@@ -33,6 +33,11 @@ export class SessionGateway {
         return client.id;
     }
 
+    @SubscribeMessage(SessionEvents.AskForClue)
+    handleClueRequest(client: Socket, sessionId: number) {
+        return { isClue: true };
+    }
+
     /**
      * Permet de fermer une session
      *

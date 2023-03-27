@@ -5,8 +5,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NavigationEnd, Router } from '@angular/router';
-import { CommunicationService } from '@app/services/communication.service';
-import { MatchMakingService } from '@app/services/match-making.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { MatchMakingService } from '@app/services/match-making/match-making.service';
 import { of } from 'rxjs';
 import { MatchMakingDialogComponent } from './match-making-dialog.component';
 

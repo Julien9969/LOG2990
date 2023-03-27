@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { SessionEvents } from '@common/session.gateway.events';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { MatchMakingEvents } from '@common/match-making.gateway.events';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { SessionEvents } from '@common/session.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
 
 @Injectable({
