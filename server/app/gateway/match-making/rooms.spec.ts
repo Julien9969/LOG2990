@@ -79,4 +79,11 @@ describe('Rooms', () => {
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         expect(rooms['getDateFromRoomId']('roomId-1-134')).toEqual(new Date(134));
     });
+
+    it('find should return a room from the rooms array', () => {
+        rooms.push({ gameId: 'gameId', roomId: 'roomId-1-134' });
+        rooms.push({ gameId: 'gameId', roomId: 'roomId-3-135' });
+        rooms.push({ gameId: 'gameId2', roomId: 'roomId-1-133' });
+        expect(rooms.find('roomId-1-133')).toEqual({ gameId: 'gameId2', roomId: 'roomId-1-133' });
+    });
 });

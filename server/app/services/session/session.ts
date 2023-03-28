@@ -19,6 +19,7 @@ export class Session {
         if (secondSocketId) {
             this.differencesFoundByPlayer.push([secondSocketId, []]);
         }
+        // if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
         this.gameID = gameID;
         this.differenceValidationService.loadDifferences(this.gameID.toString());
         this.nDifferences = this.differenceValidationService.differenceCoordLists.length;

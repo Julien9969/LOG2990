@@ -6,9 +6,12 @@ import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gatew
 import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { createStubInstance, SinonStubbedInstance, /* , match,*/ stub } from 'sinon';
 import { BroadcastOperator, Server, Socket } from 'socket.io';
+
+jest.mock('mongoose');
 
 describe('MatchmakingGateway', () => {
     let gateway: MatchmakingGateway;
@@ -26,6 +29,12 @@ describe('MatchmakingGateway', () => {
                 {
                     provide: Logger,
                     useValue: logger,
+                },
+                {
+                    provide: getModelToken('Game'),
+                    useValue: {
+                        find: jest.fn(),
+                    },
                 },
             ],
         }).compile();
@@ -474,6 +483,37 @@ describe('MatchmakingGateway', () => {
 
             gateway.handleDisconnect(socket);
         });
+    });
+
+    it('anyGamePlayable should return true if any game is exist', async () => {
+        jest.spyOn(gateway['gameModel'], 'find').mockReturnValue({
+            limit: () => [
+                {
+                    id: '613712f7b7025984b080cea9',
+                },
+            ],
+        } as any);
+        const result = await gateway.anyGamePlayable(socket);
+        expect(gateway['gameModel'].find).toHaveBeenCalled();
+        expect(result).toBeTruthy();
+    });
+
+    it('anyGamePlayable should return false if no game is exist', async () => {
+        jest.spyOn(gateway['gameModel'], 'find').mockReturnValue({
+            limit: () => [],
+        } as any);
+        const result = await gateway.anyGamePlayable(socket);
+        expect(gateway['gameModel'].find).toHaveBeenCalled();
+        expect(result).toBeFalsy();
+    });
+
+    it('anyGamePlayable should return false if an error occured', async () => {
+        jest.spyOn(gateway['gameModel'], 'find').mockImplementation(() => {
+            throw new Error('error');
+        });
+        const result = await gateway.anyGamePlayable(socket);
+        expect(gateway['gameModel'].find).toHaveBeenCalled();
+        expect(result).toBeFalsy();
     });
 
     it('notifyGameDeleted should emit GameDeleted to room that correspond to gameId', () => {

@@ -5,6 +5,9 @@ import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common/decorators';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { GameDocument } from '@app/Schemas/game/game.schema';
 
 @WebSocketGateway({ cors: true })
 @Injectable()
@@ -15,7 +18,7 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     // Salle dans lesquelles on attend que les clients s'accepetent
     private acceptingRooms: Rooms = new Rooms();
 
-    constructor(private readonly logger: Logger) {}
+    constructor(private readonly logger: Logger, @InjectModel('Game') private gameModel: Model<GameDocument>) {}
 
     get serverRooms(): Map<string, Set<string>> {
         return this.server.sockets.adapter.rooms;
@@ -110,7 +113,6 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
 
             this.acceptingRooms.push(gameRooms[0]);
             this.waitingRooms.removeThisRoom(roomId);
-
             this.logger.log(`Client ${client.id} joined room : ${roomId}`);
             this.server.emit(MatchMakingEvents.UpdateRoomView);
         }
@@ -157,6 +159,23 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
             }
         });
         this.mergeRoomsIfPossible(playerInfo.gameId);
+    }
+
+    /**
+     * Vérifie si il existe au moins un jeu qui est jouable
+     *
+     * @param _ le client qui ouvre à cliqué sur temps limité
+     * @returns si il existe au moins un jeu qui est jouable
+     */
+    @SubscribeMessage(MatchMakingEvents.AnyGamePlayable)
+    async anyGamePlayable(client: Socket) {
+        this.logger.log(`Client ${client.id} ask if AnyGamePlayable`);
+        try {
+            const game = await this.gameModel.find({}).limit(1);
+            return game.length !== 0;
+        } catch (err) {
+            return false;
+        }
     }
 
     mergeRoomsIfPossible(gameId: string) {
