@@ -10,7 +10,7 @@
             <button mat-raised-button color="primary" routerLink="/selection-view" class="buttons">Classique</button>
         </div>
         <div>
-            <button mat-raised-button color="primary" class="buttons">Temps Limité</button>
+            <button mat-raised-button color="primary" (click)="openDialog()" class="buttons">Temps Limité</button>
         </div>
         <div>
             <button mat-raised-button color="primary" routerLink="/config" class="buttons">Configuration</button>

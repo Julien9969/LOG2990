@@ -17,6 +17,7 @@ import { DrawBottomBarComponent } from './components/draw-bottom-bar/draw-bottom
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
 import { GameCreationFormComponent } from './components/game-creation-form/game-creation-form.component';
 import { ImageDifferencePopupComponent } from './components/image-difference-popup/image-difference-popup.component';
+import { LimitedTimeSelectionComponent } from './components/limited-time-selection/limited-time-selection.component';
 import { MatchMakingDialogComponent } from './components/match-making-dialog/match-making-dialog.component';
 import { PopupDialogComponent } from './components/popup-dialog/popup-dialog.component';
 import { UploadImageSquareComponent } from './components/upload-image-square/upload-image-square.component';
@@ -49,6 +50,7 @@ import { SoloGamePageComponent } from './pages/solo-game-page/solo-game-page.com
         ConfigurationGameComponent,
         ImageDifferencePopupComponent,
         DrawBottomBarComponent,
+        LimitedTimeSelectionComponent,
     ],
     imports: [
         AppMaterialModule,
@@ -63,7 +65,7 @@ import { SoloGamePageComponent } from './pages/solo-game-page/solo-game-page.com
         MatFormFieldModule,
     ],
     providers: [],
-    entryComponents: [PopupDialogComponent, MatchMakingDialogComponent],
+    entryComponents: [PopupDialogComponent, MatchMakingDialogComponent, LimitedTimeSelectionComponent],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

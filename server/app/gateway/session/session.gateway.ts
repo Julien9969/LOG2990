@@ -58,7 +58,12 @@ export class SessionGateway {
      */
     @SubscribeMessage(SessionEvents.StartSession)
     async startSession(client: Socket, data: StartSessionData) {
-        const { gameId, isSolo } = data;
+        // eslint-disable-next-line prefer-const
+        let { gameId, isSolo } = data;
+        if (gameId === 'limited-time') {
+            gameId = '6418b9f4256cb4da1cbc1a6e';
+        }
+
         this.logger.log(`Client ${client.id} asked for session id`);
         if (isSolo) {
             const sessionId = this.sessionService.createNewSession(gameId, client.id);
@@ -288,5 +293,17 @@ export class SessionGateway {
     sendSystemMessage(client: Socket, systemCode: string) {
         const playerName: string = this.sessionService.getName(client.id);
         this.server.to(this.getGameRoom(client)).emit('systemMessageFromServer', { playerName, systemCode });
+    }
+
+    handleDisconnect(client: Socket) {
+        this.logger.log('Client disconnected : ' + client.id);
+        try {
+            const session = this.sessionService.findByClientId(client.id);
+            if (!session) return;
+            this.sessionService.delete(session.id);
+            this.logger.log(`Session with client ${client.id} has been deleted`);
+        } catch (error) {
+            this.logger.error(error);
+        }
     }
 }

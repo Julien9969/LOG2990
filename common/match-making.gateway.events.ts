@@ -13,4 +13,5 @@ export enum MatchMakingEvents {
     UpdateRoomView = 'updateRoomView',
     RoomCreatedForThisGame = 'roomCreatedForThisGame',
     GameDeleted = 'gameDeleted',
+    AnyGamePlayable = 'anyGamePlayable',
 }
