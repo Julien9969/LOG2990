@@ -19,6 +19,8 @@ export const TIME_CONST = {
     minute: 60,
 };
 
+export const ALLOWED_NB_CLUES = 3;
+
 /**
  * Constantes du système de détéction de différences
  */

@@ -55,6 +55,13 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         $event.returnValue = true; // L'équivalent non déprécié ne produit pas le même résultat
     }
 
+    @HostListener('window:keydown.i', ['$event'])
+    async handleClueRequest() {
+        if (!this.nbCluesLeft) return;
+        const clue = await this.socket.retrieveClue();
+        this.nbCluesLeft = clue.nbCluesLeft;
+    }
+
     async ngOnInit(): Promise<void> {
         if (this.sessionId === undefined || this.gameID === undefined) {
             window.location.replace('/home');
@@ -96,10 +103,6 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
 
     playerExited() {
         this.socket.playerExited(this.sessionId);
-    }
-
-    async handleClueRequest() {
-        alert((await this.socket.retrieveClue(this.sessionId)).isClue);
     }
 
     endGameDialog(winnerInfo: WinnerInfo) {

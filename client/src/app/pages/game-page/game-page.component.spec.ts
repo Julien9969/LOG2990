@@ -42,13 +42,14 @@ export class StubAppSidebarComponent {
     isSolo: boolean;
 }
 
-describe('SoloGamePageComponent', () => {
+describe('GamePageComponent', () => {
     let component: SoloGamePageComponent;
     let fixture: ComponentFixture<SoloGamePageComponent>;
     let dialogSpy: jasmine.SpyObj<MatDialog>;
     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let socketServiceSpy: jasmine.SpyObj<SocketClientService>;
+    // let inGameServiceSpy: jasmine.SpyObj<InGameService>;
 
     beforeEach(async () => {
         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['gameInfoGet', 'customGet']);
@@ -69,6 +70,7 @@ describe('SoloGamePageComponent', () => {
             }),
         );
         socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['send', 'on', 'sendAndCallBack', 'connect', 'isSocketAlive']);
+        // inGameServiceSpy = jasmine.createSpyObj('inGameService', ['retrieveClue']);
 
         playImageComponentSpy = jasmine.createSpyObj('PlayImageComponentMock', ['playAudio']);
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
@@ -81,6 +83,7 @@ describe('SoloGamePageComponent', () => {
                 { provide: PlayImageComponent, useValue: playImageComponentSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: SocketClientService, useValue: socketServiceSpy },
+                // { provide: SocketClientService, useValue: inGameServiceSpy },
             ],
         }).compileComponents();
     });
@@ -105,6 +108,30 @@ describe('SoloGamePageComponent', () => {
         const newComponent = TestBed.createComponent(SoloGamePageComponent);
         expect(newComponent.componentInstance.opponentName).toBeDefined();
     });
+
+    // describe('handleClueRequest', () => {
+    //     beforeEach(() => {
+    //         component.nbCluesLeft = 3;
+    //         inGameServiceSpy.retrieveClue.and.returnValue(
+    //             Promise.resolve({
+    //                 coordinates: [{ x: 0, y: 0 }],
+    //                 nbCluesLeft: 2,
+    //             } as Clue),
+    //         );
+    //     });
+
+    //     it('retrieveClue from inGameService should be called', async () => {
+    //         await component.handleClueRequest();
+    //         expect(inGameServiceSpy.retrieveClue).toHaveBeenCalled();
+    //     });
+
+    //     it('should not call retrieveClue from inGameService if nbCluesLeft = 0', async () => {
+    //         component.nbCluesLeft = 0;
+    //         await component.handleClueRequest();
+    //         expect(inGameServiceSpy.retrieveClue).not.toHaveBeenCalled();
+    //     });
+    // });
+
     describe('onInit', () => {
         it('should call  getGameInfos, ', () => {
             spyOn(component['socket'], 'listenOpponentLeaves').and.callFake(() => {

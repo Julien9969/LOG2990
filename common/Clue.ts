@@ -1,3 +1,6 @@
+import { Coordinate } from "./coordinate";
+
 export interface Clue {
-    isClue: boolean
+    coordinates: Coordinate[],
+    nbCluesLeft: number
 }

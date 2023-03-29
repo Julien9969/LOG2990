@@ -34,8 +34,9 @@ export class SessionGateway {
     }
 
     @SubscribeMessage(SessionEvents.AskForClue)
-    handleClueRequest() {
-        return { isClue: true };
+    handleClueRequest(client: Socket) {
+        const session = this.sessionService.findByClientId(client.id);
+        return session.getClue();
     }
 
     /**

@@ -135,12 +135,6 @@ describe('PlayImageComponent', () => {
         expect(component.loadImage).toHaveBeenCalledTimes(1);
     });
 
-    it('handleCheat should call imageOperationService.handleCheat', async () => {
-        imageOperationServiceSpy.handleCheat.and.returnValue(Promise.resolve());
-        await component.handleCheat();
-        expect(imageOperationServiceSpy.handleCheat).toHaveBeenCalled();
-    });
-
     describe('sendPosition', () => {
         it('sendPosition should call the right functions', fakeAsync(() => {
             const event = new MouseEvent('event');
