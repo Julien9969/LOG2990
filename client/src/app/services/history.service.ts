@@ -23,7 +23,7 @@ export class HistoryService {
     }
 
     initHistory(): void {
-        this.currentGame = { startDateTime: '', gameId: '', duration: '', gameMode: '', playerOne: '', playerTwo: '' };
+        this.currentGame = { startDateTime: 't', gameId: 't', duration: 't', gameMode: 't', playerOne: 't', playerTwo: 't' };
         this.setStartDateTime();
     }
 

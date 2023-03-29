@@ -14,6 +14,7 @@ export class HistoryController {
 
     @Post()
     async addToHistory(@Body() newHistoryEntry: GameHistory): Promise<GameHistory> {
+        console.log('newHistoryEntry');
         if (!newHistoryEntry || !newHistoryEntry.gameId || !newHistoryEntry.playerOne || !newHistoryEntry.gameMode) {
             throw new HttpException('Données manquantes.', HttpStatus.BAD_REQUEST);
         }
