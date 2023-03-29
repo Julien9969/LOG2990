@@ -64,7 +64,7 @@ describe('LimitedTimeSelectionComponent', () => {
 
     it('OnInit should call socketService.send with a callback that set templateName to noGame if the parameter was false', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        socketClientSpy.send.and.callFake((eventName, callback: any) => {
+        socketClientSpy.send.and.callFake((eventName: string, callback: any) => {
             callback(false);
         });
         component.getIfGameExist();
