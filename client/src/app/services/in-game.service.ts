@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SocketClientService } from '@app/services/socket-client.service';
 import { Coordinate } from '@common/coordinate';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
@@ -118,6 +119,28 @@ export class InGameService {
     listenPlayerWon(callback: (winnerInfo: WinnerInfo) => void) {
         this.socketService.on(SessionEvents.PlayerWon, (winnerInfo: WinnerInfo) => {
             callback(winnerInfo);
+        });
+    }
+
+    /**
+     * listen to the server for when a game in limited time ends
+     *
+     * @param callback the callback function that handles a game ending
+     */
+    listenGameEnded(callback: (timerFinished: boolean) => void) {
+        this.socketService.on(SessionEvents.EndedGame, (timerFinished: boolean) => {
+            callback(timerFinished);
+        });
+    }
+
+    /**
+     * listen to the server for a new game in limited time games
+     *
+     * @param callback the callback function that handles a new game
+     */
+    listenNewGame(callback: (newGame: Game) => void) {
+        this.socketService.on(SessionEvents.NewGame, (newGame: Game) => {
+            callback(newGame);
         });
     }
 }

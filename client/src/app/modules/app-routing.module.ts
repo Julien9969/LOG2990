@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ConfigurationGameComponent } from '@app/pages/configuration-game-page/configuration-game-page.component';
 import { GameCreationPageComponent } from '@app/pages/game-creation-page/game-creation-page.component';
 import { GameSelectionPageComponent } from '@app/pages/game-selection-page/game-selection-page.component';
+import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { SoloGamePageComponent } from '@app/pages/solo-game-page/solo-game-page.component';
 
@@ -11,6 +12,7 @@ const routes: Routes = [
     { path: 'home', component: MainPageComponent },
     { path: 'selection-view', component: GameSelectionPageComponent },
     { path: 'solo-game', component: SoloGamePageComponent },
+    { path: 'limited-time-game', component: LimitedTimeGamePageComponent },
     { path: 'game-creation', component: GameCreationPageComponent },
     { path: 'config', component: ConfigurationGameComponent },
     { path: '**', redirectTo: '/home' },

@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, Inject, OnInit, Vie
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { INPUT_VALIDATION, DELAY_FOCUS } from '@app/constants/utils-constants';
+import { DELAY_FOCUS, INPUT_VALIDATION } from '@app/constants/utils-constants';
 import { MatchMakingService } from '@app/services/match-making.service';
 import { GameSessionType } from '@common/game-session-type';
 
@@ -27,7 +27,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         Validators.minLength(INPUT_VALIDATION.min),
         Validators.pattern('[a-zA-Z0-9]*'),
     ]);
-    private readonly routerLink = 'solo-game';
+    private routerLink: string;
 
     // eslint-disable-next-line max-params -- paramêtres sont nécessaires
     constructor(
@@ -38,6 +38,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     ) {
         this.dialogInfos = { template: 'nameForm', message: '' };
         this.gameInfo = data;
+        this.routerLink = this.gameInfo.id === 'limited-time' ? 'limited-time-game' : 'solo-game';
     }
 
     get window() {

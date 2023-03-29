@@ -12,6 +12,7 @@ import { SquareInterfaceComponent } from '@app/components/square-interface/squar
 import { AppRoutingModule } from '@app/modules/app-routing.module';
 import { AppMaterialModule } from '@app/modules/material.module';
 import { AppComponent } from '@app/pages/app/app.component';
+import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { DrawBottomBarComponent } from './components/draw-bottom-bar/draw-bottom-bar.component';
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
@@ -25,7 +26,6 @@ import { ConfigurationGameComponent } from './pages/configuration-game-page/conf
 import { GameCreationPageComponent } from './pages/game-creation-page/game-creation-page.component';
 import { GameSelectionPageComponent } from './pages/game-selection-page/game-selection-page.component';
 import { SoloGamePageComponent } from './pages/solo-game-page/solo-game-page.component';
-
 /**
  * Main module that is used in main.ts.
  * All automatically generated components will appear in this module.
@@ -51,6 +51,7 @@ import { SoloGamePageComponent } from './pages/solo-game-page/solo-game-page.com
         ImageDifferencePopupComponent,
         DrawBottomBarComponent,
         LimitedTimeSelectionComponent,
+        LimitedTimeGamePageComponent,
     ],
     imports: [
         AppMaterialModule,
