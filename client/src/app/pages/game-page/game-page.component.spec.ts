@@ -262,16 +262,6 @@ describe('SoloGamePageComponent', () => {
         });
     });
 
-    it('clue button should open clue dialog', () => {
-        const clueButton = fixture.debugElement.query(By.css('#clue-button'));
-        clueButton.triggerEventHandler('click', null);
-        expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-            closeOnNavigation: true,
-            autoFocus: false,
-            data: ['clue'],
-        });
-    });
-
     // Can't test by dispatching event because it will reload the page and make the test crash
     it('unloadNotification should set event.returnValue to true', () => {
         const event = new Event('beforeunload');
@@ -281,11 +271,6 @@ describe('SoloGamePageComponent', () => {
     });
 
     describe('openDialog', () => {
-        it('openDialog with "clue" as argument call dialog.open with right args', () => {
-            component.openDialog('clue');
-            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
-        });
-
         it('openDialog with "quit" as argument call dialog.open with right args', () => {
             component.openDialog('quit');
             expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });

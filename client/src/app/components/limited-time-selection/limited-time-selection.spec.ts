@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { NavigationEnd, Router } from '@angular/router';
 import { LimitedTimeSelectionComponent } from '@app/components/limited-time-selection/limited-time-selection.component';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { of } from 'rxjs';
 
 class MockRouter {
