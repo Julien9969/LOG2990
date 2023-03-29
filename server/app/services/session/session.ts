@@ -61,8 +61,10 @@ export class Session {
      *
      * @return la liste de pixel correspondant à l'indice (pixels qui changerons de couleur sur l'écran)
      */
-    getClue(): Clue {
+    async getClue(penalty: number): Promise<Clue | undefined> {
+        if (this.nbCluesRequested >= 3) return;
         this.nbCluesRequested++;
+        this.timeElapsed += penalty;
         const clue: Clue = {
             coordinates: [{ x: 0, y: 0 } as Coordinate],
             nbCluesLeft: ALLOWED_NB_CLUES - this.nbCluesRequested,

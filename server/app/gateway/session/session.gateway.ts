@@ -33,10 +33,18 @@ export class SessionGateway {
         return client.id;
     }
 
+    /**
+     * Génère un indice pour le joueur qui en fait la demande
+     * (s'il lui reste des indices)
+     *
+     * @param client socket du client qui demande l'indice
+     * @return l'indice
+     */
     @SubscribeMessage(SessionEvents.AskForClue)
-    handleClueRequest(client: Socket) {
+    async handleClueRequest(client: Socket) {
         const session = this.sessionService.findByClientId(client.id);
-        return session.getClue();
+        const game = await this.gameService.findById(session.gameID);
+        return session.getClue(game.penalty);
     }
 
     /**
