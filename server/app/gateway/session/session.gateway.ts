@@ -1,5 +1,6 @@
 import { SECOND_IN_MILLISECONDS } from '@app/gateway/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
+import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
 import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
@@ -108,14 +109,11 @@ export class SessionGateway {
     @SubscribeMessage(SessionEvents.SubmitCoordinatesSoloGame)
     handleCoordinatesSubmissionSolo(client: Socket, data: [number, Coordinate]) {
         const [sessionId, coordinates] = data;
-        const session = this.sessionService.findBySessionId(sessionId);
         let result: GuessResult;
-        this.logger.log(`Client ${client.id} submitted coordinates`);
-        if (!session) {
-            this.logger.log(`Client ${client.id} submitted coordinates but session is invalid`);
-            return;
-        }
+        let session: Session;
+
         try {
+            session = this.getSession(sessionId);
             result = session.tryGuess(coordinates, client.id);
             if (result.isCorrect) {
                 this.sendSystemMessage(client, 'guess_good');
@@ -126,21 +124,18 @@ export class SessionGateway {
             }
             return result;
         } catch (error) {
-            this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid`);
+            this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid or session is invalid`);
         }
     }
 
     @SubscribeMessage(SessionEvents.SubmitCoordinatesMultiGame)
     handleCoordinatesSubmissionMulti(client: Socket, data: [number, Coordinate]) {
         const [sessionId, coordinates] = data;
-        const session = this.sessionService.findBySessionId(sessionId);
         let result: GuessResult;
-        this.logger.log(`Client ${client.id} submitted coordinates`);
-        if (!session) {
-            this.logger.log(`Client ${client.id} submitted coordinates but session is invalid`);
-            return;
-        }
+        let session: Session;
+
         try {
+            session = this.getSession(sessionId);
             result = session.tryGuess(coordinates, client.id);
             if (result.isCorrect) {
                 this.notifyPlayersOfDiffFound(client, result);
@@ -152,7 +147,7 @@ export class SessionGateway {
                 client.emit(SessionEvents.DifferenceFound, result);
             }
         } catch (error) {
-            this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid`);
+            this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid or session is invalid`);
         }
     }
 
@@ -339,5 +334,12 @@ export class SessionGateway {
                 this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, newGame);
             }
         });
+    }
+    getSession(sessionId: number): Session {
+        const session = this.sessionService.findBySessionId(sessionId);
+        if (!session) {
+            throw new Error();
+        }
+        return session;
     }
 }
