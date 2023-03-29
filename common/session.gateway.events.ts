@@ -4,7 +4,8 @@ export enum SessionEvents {
     GetSession = 'getSession',
     CloseSession = 'closeSession',
     StartSession = 'startSession',
-    SubmitCoordinates = 'submitCoordinates',
+    SubmitCoordinatesSoloGame = 'submitCoordinatesSolo',
+    SubmitCoordinatesMultiGame = 'submitCoordinatesMulti',
     PlayerLeft = 'playerLeft',
     LeaveRoom = 'leaveRoom',
     TimerUpdate = 'timerUpdate',
@@ -17,4 +18,6 @@ export enum SessionEvents {
     CheatGetAllDifferences = 'cheatGetAllDifferences',
     GiveName = 'giveName',
     GameDeleted = "gameDeleted",
+    EndedGame = "endedGame",
+    NewGame = "newGame"
 }
