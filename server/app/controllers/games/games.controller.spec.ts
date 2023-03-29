@@ -2,7 +2,7 @@
 import { GameService } from '@app/services/game/game.service';
 import { stubGame, stubGameCreationBody, stubGameFileInput } from '@app/services/game/game.service.spec.const';
 import { Game } from '@common/game';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { createStubInstance, SinonStubbedInstance } from 'sinon';
 import { GamesController } from './games.controller';
@@ -11,9 +11,11 @@ import { exampleGame } from './games.controller.spec.const';
 describe('GameController tests', () => {
     let controller: GamesController;
     let gameService: SinonStubbedInstance<GameService>;
+    let logger: Logger;
 
     beforeEach(async () => {
         gameService = createStubInstance(GameService);
+        logger = createStubInstance(Logger);
         const module: TestingModule = await Test.createTestingModule({
             controllers: [GamesController],
             providers: [
@@ -21,9 +23,15 @@ describe('GameController tests', () => {
                     provide: GameService,
                     useValue: gameService,
                 },
+                {
+                    provide: Logger,
+                    useValue: logger,
+                },
             ],
         }).compile();
         controller = module.get<GamesController>(GamesController);
+
+        jest.spyOn(controller['logger'], 'error').mockImplementation(() => {});
     });
 
     it('should be defined', () => {
