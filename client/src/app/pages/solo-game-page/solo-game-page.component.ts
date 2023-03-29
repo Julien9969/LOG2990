@@ -51,9 +51,12 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     }
 
     @HostListener('window:beforeunload', ['$event'])
-    unloadNotification($event: Event) {
-        // eslint-disable-next-line deprecation/deprecation
-        $event.returnValue = true; // L'équivalent non déprécié ne produit pas le même résultat
+    unloadNotification(event: BeforeUnloadEvent) {
+        event.preventDefault();
+        if (this.nDiffFoundMainPlayer !== this.gameInfos.differenceCount) {
+            this.historyService.playerQuit(this.time, this.isSolo);
+        }
+        event.returnValue = false;
     }
 
     async ngOnInit(): Promise<void> {
