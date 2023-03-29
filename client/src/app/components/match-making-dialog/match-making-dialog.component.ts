@@ -1,8 +1,8 @@
-import { AfterViewInit, Component, HostListener, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { INPUT_VALIDATION } from '@app/constants/utils-constants';
+import { DELAY_FOCUS, INPUT_VALIDATION } from '@app/constants/utils-constants';
 import { MatchMakingService } from '@app/services/match-making/match-making.service';
 import { GameSessionType } from '@common/game-session-type';
 
@@ -15,6 +15,7 @@ import { GameSessionType } from '@common/game-session-type';
     styleUrls: ['./match-making-dialog.component.scss'],
 })
 export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
+    @ViewChild('box') box: ElementRef<HTMLInputElement>;
     playerName: string;
     opponentName: string;
     gameInfo: GameSessionType;
@@ -63,6 +64,9 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     ngAfterViewInit(): void {
         this.commonMatchMakingFeatures();
+        setTimeout(() => {
+            this.box.nativeElement.focus();
+        }, DELAY_FOCUS);
     }
 
     async joinGame(): Promise<void> {
@@ -124,6 +128,9 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         });
 
         this.matchMaking.opponentJoined((opponentName: string) => {
+            if (this.gameInfo.id === 'limited-time') {
+                this.acceptOpponent();
+            }
             this.opponentName = opponentName;
             this.dialogInfos.template = 'acceptPairing';
         });

@@ -1,3 +1,4 @@
+import { ElementRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -72,6 +73,7 @@ describe('MatchMakingDialogComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(MatchMakingDialogComponent);
         component = fixture.componentInstance;
+        component.box = new ElementRef<HTMLInputElement>(document.createElement('input'));
         fixture.detectChanges();
     });
 
@@ -261,6 +263,16 @@ describe('MatchMakingDialogComponent', () => {
             matchMakingSpy.opponentJoined.calls.mostRecent().args[0](playerName);
             expect(component.opponentName).toEqual(playerName);
             expect(component.dialogInfos.template).toEqual('acceptPairing');
+        });
+
+        it('should call matchMaking.acceptOpponent in the callback if the gameId is limited-time', () => {
+            const playerName = 'Player 1';
+            spyOn(component, 'acceptOpponent');
+            component.gameInfo.id = 'limited-time';
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.opponentJoined).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.opponentJoined.calls.mostRecent().args[0](playerName);
+            expect(component.acceptOpponent).toHaveBeenCalled();
         });
 
         it('should call matchMaking.opponentLeft with a callback that dialogInfo to waitingRoom', () => {

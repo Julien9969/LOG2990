@@ -1,32 +1,3 @@
-<!-- <div mat-dialog-content>
-    <ng-container #container *ngTemplateOutlet="templateName === 'quit' ? quit : templateName === 'clue' ? clue : endGame"></ng-container>
-</div>
-
-<div #quit>
-    <h1 mat-dialog-title>Voulez-vous vraiment quitter ?</h1>
-    <div class="button-row">
-        <button mat-button (click)="playerQuit()" routerLink="/home" aria-label="OUI">OUI</button>
-        <button mat-button aria-label="NON">NON</button>
-    </div>
-</div>
-
-<div #clue>
-    <h1 mat-dialog-title>Voulez-vous utilisez un indice ?</h1>
-    <h2>Indice restants : {{ getClueNumber() }}</h2>
-    <div class="button-row">
-        <button mat-button matDialogClose aria-label="OUI">OUI</button>
-        <button mat-button matDialogClose aria-label="NON">NON</button>
-    </div>
-</div>
-
-<div #endGame>
-    <h1 mat-dialog-title>Bravo !</h1>
-    <h2>Vous avez trouvé toutes les différences !</h2>
-    <div class="button-row">
-        <button mat-button matDialogClose routerLink="/home" aria-label="OUI">Retourner à l'accueil</button>
-    </div>
-</div> -->
-
 <ng-container [ngSwitch]="templateName">
     <div *ngSwitchCase="'quit'">
         <h1 mat-dialog-title>Voulez-vous vraiment quitter ?</h1>

@@ -65,6 +65,8 @@ export const ALLOWED_RADIUS = [0, 3, NINE_PIXELS, FIFTEEN_PIXELS];
 
 export const DEFAULT_RADIUS = 3;
 
+export const DELAY_FOCUS = 100;
+
 // for validate-image.service
 
 export const IMAGE_WIDTH = 640;
