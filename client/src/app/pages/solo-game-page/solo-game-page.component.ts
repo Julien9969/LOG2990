@@ -53,7 +53,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     @HostListener('window:beforeunload', ['$event'])
     unloadNotification(event: BeforeUnloadEvent) {
         event.preventDefault();
-        if (this.nDiffFoundMainPlayer !== this.gameInfos.differenceCount) {
+        if (this.isSolo && this.nDiffFoundMainPlayer !== this.gameInfos.differenceCount) {
             this.historyService.playerQuit(this.time, this.isSolo);
         }
         event.returnValue = false;
