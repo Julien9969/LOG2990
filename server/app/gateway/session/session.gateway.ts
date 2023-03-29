@@ -3,6 +3,7 @@ import { GameService } from '@app/services/game/game.service';
 import { SessionService } from '@app/services/session/session.service';
 import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
@@ -104,8 +105,8 @@ export class SessionGateway {
      * @param data contient le sessionId et la coordonnée soumise
      * @returns le résultat s'il n'y a qu'un joueur dans la salle
      */
-    @SubscribeMessage(SessionEvents.SubmitCoordinates)
-    handleCoordinatesSubmission(client: Socket, data: [number, Coordinate]) {
+    @SubscribeMessage(SessionEvents.SubmitCoordinatesSoloGame)
+    handleCoordinatesSubmissionSolo(client: Socket, data: [number, Coordinate]) {
         const [sessionId, coordinates] = data;
         const session = this.sessionService.findBySessionId(sessionId);
         let result: GuessResult;
@@ -116,25 +117,37 @@ export class SessionGateway {
         }
         try {
             result = session.tryGuess(coordinates, client.id);
-            if (session.isSolo) {
-                if (!result.isCorrect) {
-                    this.logger.log(`Client ${client.id} submitted a wrong guess`);
-                    this.sendSystemMessage(client, 'guess_bad');
-                } else {
-                    this.sendSystemMessage(client, 'guess_good');
-                    if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
-                }
-
-                return result;
+            if (result.isCorrect) {
+                this.sendSystemMessage(client, 'guess_good');
+                if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
+            } else {
+                this.logger.log(`Client ${client.id} submitted a wrong guess`);
+                this.sendSystemMessage(client, 'guess_bad');
             }
+            return result;
+        } catch (error) {
+            this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid`);
+        }
+    }
+
+    @SubscribeMessage(SessionEvents.SubmitCoordinatesMultiGame)
+    handleCoordinatesSubmissionMulti(client: Socket, data: [number, Coordinate]) {
+        const [sessionId, coordinates] = data;
+        const session = this.sessionService.findBySessionId(sessionId);
+        let result: GuessResult;
+        this.logger.log(`Client ${client.id} submitted coordinates`);
+        if (!session) {
+            this.logger.log(`Client ${client.id} submitted coordinates but session is invalid`);
+            return;
+        }
+        try {
+            result = session.tryGuess(coordinates, client.id);
             if (result.isCorrect) {
                 this.notifyPlayersOfDiffFound(client, result);
                 this.sendSystemMessage(client, 'guess_good');
 
                 if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
             } else {
-                this.sendSystemMessage(client, 'guess_bad');
-
                 this.logger.log(`Client ${client.id} submitted a wrong guess`);
                 client.emit(SessionEvents.DifferenceFound, result);
             }
@@ -142,6 +155,7 @@ export class SessionGateway {
             this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid`);
         }
     }
+
     /**
      * Récuperer la liste des différences non trouvées dans une session
      *
@@ -295,6 +309,16 @@ export class SessionGateway {
         this.server.to(this.getGameRoom(client)).emit('systemMessageFromServer', { playerName, systemCode });
     }
 
+    limitedTimeGameEnded(client: Socket, timer?: boolean) {
+        client.emit(SessionEvents.EndedGame, timer);
+        client.rooms.forEach((roomId) => {
+            if (roomId.startsWith('gameRoom')) {
+                this.logger.log('EndedGame has been sent: ' + client.id);
+                this.server.to(roomId).emit(SessionEvents.EndedGame, timer);
+            }
+        });
+    }
+
     handleDisconnect(client: Socket) {
         this.logger.log('Client disconnected : ' + client.id);
         try {
@@ -305,5 +329,15 @@ export class SessionGateway {
         } catch (error) {
             this.logger.error(error);
         }
+    }
+
+    sendNewGame(client: Socket, newGame: Game) {
+        client.emit(SessionEvents.NewGame, newGame);
+        client.rooms.forEach((roomId) => {
+            if (roomId.startsWith('gameRoom')) {
+                this.logger.log(`Room ${roomId} is receiving a new game`);
+                this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, newGame);
+            }
+        });
     }
 }

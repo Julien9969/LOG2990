@@ -1,13 +1,13 @@
-import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { Rooms } from '@app/gateway/match-making/rooms';
+import { GameDocument } from '@app/Schemas/game/game.schema';
+import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common/decorators';
-import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
 import { InjectModel } from '@nestjs/mongoose';
+import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Model } from 'mongoose';
-import { GameDocument } from '@app/Schemas/game/game.schema';
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({ cors: true })
 @Injectable()
