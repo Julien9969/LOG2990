@@ -34,7 +34,7 @@ export class SessionGateway {
     }
 
     @SubscribeMessage(SessionEvents.AskForClue)
-    handleClueRequest(client: Socket, sessionId: number) {
+    handleClueRequest() {
         return { isClue: true };
     }
 
