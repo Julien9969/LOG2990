@@ -1,0 +1,16 @@
+<div class="content">
+    <div class="title">
+      <div>Historique</div>
+    </div>
+    <div class="historyList">
+        <div class="historyList-content">
+      <div *ngFor="let line of gamesHistory">
+        <p [innerHTML]="line.startDateTime + ' ' + ' ' + line.duration + ' ' + line.playerOne + ' ' + line.playerTwo">
+      </div>
+    </div>
+    </div>
+    <mat-dialog-actions class="button">
+        <button mat-button matDialogClose aria-label="OUI">Fermer</button>
+    </mat-dialog-actions>
+  </div>
+  

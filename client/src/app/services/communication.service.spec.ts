@@ -6,9 +6,10 @@ import { PATH_TO_VALID_IMAGE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication.service';
 import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
+import { GameHistory } from '@common/game-history';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 
-describe('CommunicationService', () => {
+fdescribe('CommunicationService', () => {
     let httpMock: HttpTestingController;
     let service: CommunicationService;
     let baseUrl: string;
@@ -318,6 +319,42 @@ describe('CommunicationService', () => {
         const expectedUrl = `${baseUrl}/images/${id}`;
         const url = service.getImageURL(id);
         expect(url).toEqual(expectedUrl);
+    });
+
+    it('postNewHistoryEntry should post a new history entry', () => {
+        const historyEntry: GameHistory = {
+            gameId: '1',
+            gameMode: 'solo',
+            playerOne: 'player1',
+            playerTwo: 'player2',
+            startDateTime: '12/12/12',
+            duration: '0.1',
+        };
+        const expectedUrl = `${baseUrl}/history/`;
+        service.postNewHistoryEntry(historyEntry);
+        const req = httpMock.expectOne(expectedUrl);
+        expect(req.request.method).toEqual('POST');
+        req.flush(null, { status: 200, statusText: 'Ok' });
+    });
+
+    it('getHistory should return a list of history entries', () => {
+        const expectedHistory: GameHistory[] = [
+            {
+                gameId: '1',
+                gameMode: 'solo',
+                playerOne: 'player1',
+                playerTwo: 'player2',
+                startDateTime: '12/12/12',
+                duration: '0.1',
+            },
+        ];
+        const expectedUrl = `${baseUrl}/history/1`;
+        service.getHistory('1').then((history) => {
+            expect(history).toEqual(expectedHistory);
+        });
+        const req = httpMock.expectOne(expectedUrl);
+        expect(req.request.method).toEqual('GET');
+        req.flush(expectedHistory);
     });
 
     describe('instanceOfImageComparisonResult', () => {

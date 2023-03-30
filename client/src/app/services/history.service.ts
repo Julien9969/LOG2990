@@ -14,10 +14,6 @@ export class HistoryService {
         this.currentGame.gameId = gameId;
     }
 
-    postHistory(): void {
-        this.communicationService.postNewHistoryEntry(this.currentGame);
-    }
-
     async getHistory(id: string): Promise<GameHistory[]> {
         return await this.communicationService.getHistory(id);
     }
@@ -52,6 +48,10 @@ export class HistoryService {
             this.currentGame.playerOne = '<s>' + this.currentGame.playerOne + '</s>';
         }
         this.postHistory();
+    }
+
+    private postHistory(): void {
+        this.communicationService.postNewHistoryEntry(this.currentGame);
     }
 
     private setStartDateTime(): void {
