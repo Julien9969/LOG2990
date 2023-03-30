@@ -18,6 +18,14 @@ export class HistoryController {
         if (!newHistoryEntry || !newHistoryEntry.gameId || !newHistoryEntry.playerOne || !newHistoryEntry.gameMode) {
             throw new HttpException('Données manquantes.', HttpStatus.BAD_REQUEST);
         }
+        this.history.findOneAndUpdate(
+            { gameId: newHistoryEntry.gameId, startDateTime: newHistoryEntry.startDateTime, playerOne: newHistoryEntry.playerOne },
+            newHistoryEntry,
+            {
+                upsert: true,
+            },
+        );
+
         return this.history.create(newHistoryEntry);
     }
 

@@ -22,6 +22,10 @@ export class HistoryService {
         return await this.communicationService.getHistory(id);
     }
 
+    deleteHistory(gameId: string): void {
+        this.communicationService.deleteHistory(gameId);
+    }
+
     initHistory(): void {
         this.currentGame = { startDateTime: '', gameId: '', duration: '', gameMode: '', playerOne: '', playerTwo: '' };
         this.setStartDateTime();
