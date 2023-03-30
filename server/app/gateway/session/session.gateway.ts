@@ -223,6 +223,18 @@ export class SessionGateway {
         client.disconnect();
     }
 
+    @SubscribeMessage(SessionEvents.NewGame)
+    async sendNewGame(client: Socket) {
+        const newGame = await this.gameService.findAll()[0];
+        client.emit(SessionEvents.NewGame, newGame);
+        client.rooms.forEach((roomId) => {
+            if (roomId.startsWith('gameRoom')) {
+                this.logger.log(`Room ${roomId} is receiving a new game`);
+                this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, newGame);
+            }
+        });
+    }
+
     /**
      * Commence le timer pour une session donnée, stocke l'id du timer dans la session
      * et envoie le temps (toutes les secondes) aux joueurs dans la session
@@ -355,16 +367,6 @@ export class SessionGateway {
         }
     }
 
-    async sendNewGame(client: Socket) {
-        const newGame = await this.gameService.findAll()[0];
-        client.emit(SessionEvents.NewGame, newGame);
-        client.rooms.forEach((roomId) => {
-            if (roomId.startsWith('gameRoom')) {
-                this.logger.log(`Room ${roomId} is receiving a new game`);
-                this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, newGame);
-            }
-        });
-    }
     getSession(sessionId: number): Session {
         const session = this.sessionService.findBySessionId(sessionId);
         if (!session) {

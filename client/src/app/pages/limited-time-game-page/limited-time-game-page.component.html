@@ -8,9 +8,8 @@
             </mat-toolbar>
         </div>
         <div id="game-container">
-            <app-play-image (diffFoundUpdate)="handleDiffFoundUpdate($event)" [sessionID]="sessionId">
-                <!-- [imageMainId]="gameInfos.imageMain"
-                [imageAltId]="gameInfos.imageAlt" -->
+            <app-play-image (diffFoundUpdate)="handleDiffFoundUpdate($event)" [sessionID]="sessionId" [isTimeLimited]="true">
+                [imageMainId]="gameInfos.imageMain" [imageAltId]="gameInfos.imageAlt"
             </app-play-image>
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="isSolo"></app-sidebar>
         </div>

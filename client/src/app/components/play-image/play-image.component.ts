@@ -6,6 +6,7 @@ import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { Coordinate } from '@common/coordinate';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 
 @Component({
@@ -20,6 +21,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     @Input() sessionID!: number;
     @Input() imageMainId!: number;
     @Input() imageAltId!: number;
+    @Input() isTimeLimited: boolean = false;
 
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
@@ -73,18 +75,20 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     async ngAfterViewInit(): Promise<void> {
-        await this.loadImage(this.canvasContext1, this.imageMainId);
-        await this.loadImage(this.canvasContext2, this.imageAltId);
-        this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
+        if (this.isTimeLimited) {
+            this.requestNewImages();
+        } else {
+            await this.loadImage(this.canvasContext1, this.imageMainId);
+            await this.loadImage(this.canvasContext2, this.imageAltId);
+            this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
+        }
     }
 
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
-        if (this.lastDifferenceFound.differencesByPlayer.length !== 2) {
-            this.submitSoloCoordinates();
-        } else {
-            this.submitMultiCoordinates();
-        }
+        if (this.isTimeLimited) this.submitLimitedTimeCoordinates();
+        else if (this.lastDifferenceFound.differencesByPlayer.length !== 2) this.submitSoloCoordinates();
+        else this.submitMultiCoordinates();
     }
 
     submitSoloCoordinates() {
@@ -102,6 +106,10 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
     }
 
+    submitLimitedTimeCoordinates() {
+        this.socket.submitCoordinatesLimitedTime(this.sessionID, this.mouseService.mousePosition);
+    }
+
     /**
      * Met a jours les scores lorsque l'utilisateur locale trouve une différence
      *
@@ -114,9 +122,25 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
             this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
             this.errorCounter = 0;
             this.imageOperationService.pixelBlink(guessResult.differencePixelList);
+            if (this.isTimeLimited) this.requestNewImages();
         } else {
             this.handleErrorGuess();
         }
+    }
+
+    async requestNewImages(): Promise<void> {
+        this.socket
+            .requestNewGame()
+            .then((response: Game) => {
+                this.imageMainId = response.imageMain;
+                this.imageAltId = response.imageAlt;
+                this.loadImage(this.canvasContext1, this.imageMainId);
+                this.loadImage(this.canvasContext2, this.imageAltId);
+                this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
+            })
+            .catch((e) => {
+                alert(e.message);
+            });
     }
 
     handleErrorGuess(): void {

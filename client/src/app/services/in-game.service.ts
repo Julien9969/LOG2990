@@ -39,6 +39,17 @@ export class InGameService {
     }
 
     /**
+     * validates the coordinates from the guess of the player for a limited time games
+     *
+     * @param sessionID the id of the session where the player is playing
+     * @param coordinates the coordinates of the guess
+     */
+    async submitCoordinatesLimitedTime(sessionID: number, coordinates: Coordinate): Promise<void> {
+        const data: [number, Coordinate] = [sessionID, coordinates];
+        this.socketService.send(SessionEvents.SubmitCoordinatesLimitedTime, data);
+    }
+
+    /**
      * retrieves the socket id of the client from the server
      *
      * @return the socket id of the client
@@ -54,6 +65,16 @@ export class InGameService {
     async cheatGetAllDifferences(sessionId: number): Promise<Coordinate[][]> {
         return new Promise<Coordinate[][]>((resolve) => {
             this.socketService.sendAndCallBack(SessionEvents.CheatGetAllDifferences, sessionId, (response: Coordinate[][]) => {
+                resolve(response);
+            });
+        });
+    }
+
+    async requestNewGame(): Promise<Game> {
+        const data = 'a enlever';
+        return new Promise<Game>((resolve) => {
+            this.socketService.sendAndCallBack(SessionEvents.NewGame, data, (response: Game) => {
+                console.log(`this is the main image id: ${response.imageMain}`);
                 resolve(response);
             });
         });

@@ -86,7 +86,6 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication.service';
 import { InGameService } from '@app/services/in-game.service';
 import { SocketClientService } from '@app/services/socket-client.service';
 import { Game } from '@common/game';
@@ -106,7 +105,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     isSolo: boolean;
 
     sessionId: number;
-    gameID: string;
+    // gameID: string;
     gameInfos: Game;
 
     nDiffFound: number = 0;
@@ -116,7 +115,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
         private readonly dialog: MatDialog,
-        private readonly communicationService: CommunicationService,
+        // private readonly communicationService: CommunicationService,
         private readonly socket: InGameService,
         private readonly socketClient: SocketClientService,
     ) {
@@ -128,7 +127,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         }
         this.playerName = window.history.state.playerName;
         this.sessionId = window.history.state.sessionId;
-        this.gameID = window.history.state.gameID;
+        // this.gameID = window.history.state.gameID;
     }
 
     @HostListener('window:beforeunload', ['$event'])
@@ -138,7 +137,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     }
 
     async ngOnInit(): Promise<void> {
-        if (this.sessionId === undefined || this.gameID === undefined) {
+        if (this.sessionId === undefined) {
             window.location.replace('/home');
         }
         this.getGameInfos();
@@ -156,17 +155,20 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         });
         this.socket.listenProvideName(this.playerName);
         this.socket.listenNewGame((game: Game) => {
+            console.log('received a new game');
             this.gameInfos = game;
         });
     }
 
     getGameInfos(): void {
-        this.communicationService.gameInfoGet(this.gameID).subscribe({
-            next: (response) => {
-                this.gameInfos = response as Game;
-                this.isLoaded = true;
-            },
-        });
+        this.socket
+            .requestNewGame()
+            .then((response: Game) => {
+                this.gameInfos = response;
+            })
+            .catch((e) => {
+                alert(e.message);
+            });
     }
 
     handleDiffFoundUpdate(diffFoundByPlayer: [string, number][]) {

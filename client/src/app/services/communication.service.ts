@@ -118,6 +118,7 @@ export class CommunicationService {
      * @returns l'url de l'image
      */
     getImageURL(id: number) {
+        console.log('id of the image:', id);
         return `${this.baseUrl}/images/${id}`;
     }
 
