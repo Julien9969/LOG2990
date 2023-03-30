@@ -1,0 +1,41 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.title {
+    font-size: 150%;
+    margin-bottom: 10%;
+}
+
+.historyList {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.historyList-content {
+    height: 400px;
+    width: 600px;
+    overflow: auto;
+}
+
+.button {
+    margin: 5%;
+    background-color: rgb(213, 219, 216);
+    font-size: 140%;
+}
+
+p {
+    border-top: solid 1px rgb(165, 165, 165);
+    margin: 5%;
+    margin-right: 4%;
+    margin-left: 4%;
+    padding: 1%;
+    justify-content: center;
+}

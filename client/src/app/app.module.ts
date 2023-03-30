@@ -16,6 +16,7 @@ import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { DrawBottomBarComponent } from './components/draw-bottom-bar/draw-bottom-bar.component';
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
 import { GameCreationFormComponent } from './components/game-creation-form/game-creation-form.component';
+import { HistoryPopupComponent } from './components/history-popup/history-popup.component';
 import { ImageDifferencePopupComponent } from './components/image-difference-popup/image-difference-popup.component';
 import { LimitedTimeSelectionComponent } from './components/limited-time-selection/limited-time-selection.component';
 import { MatchMakingDialogComponent } from './components/match-making-dialog/match-making-dialog.component';
@@ -45,6 +46,7 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         PopupDialogComponent,
         ErrorDuringLoadingComponent,
         MatchMakingDialogComponent,
+        HistoryPopupComponent,
         PlayImageComponent,
         GameCreationPageComponent,
         ConfigurationGameComponent,
@@ -65,7 +67,7 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         MatFormFieldModule,
     ],
     providers: [],
-    entryComponents: [PopupDialogComponent, MatchMakingDialogComponent, LimitedTimeSelectionComponent],
+    entryComponents: [PopupDialogComponent, MatchMakingDialogComponent, LimitedTimeSelectionComponent, HistoryPopupComponent],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

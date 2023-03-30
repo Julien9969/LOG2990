@@ -12,8 +12,9 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
 import { PlayImageComponent } from '@app/components/play-image/play-image.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication/communication.service';
-import { SocketClientService } from '@app/services/socket-client/socket-client.service';
+import { CommunicationService } from '@app/services/communication.service';
+import { HistoryService } from '@app/services/history.service';
+import { SocketClientService } from '@app/services/socket-client.service';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
 import { SoloGamePageComponent } from './game-page.component';
@@ -49,6 +50,7 @@ describe('SoloGamePageComponent', () => {
     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let socketServiceSpy: jasmine.SpyObj<SocketClientService>;
+    let historyServiceSpy: jasmine.SpyObj<HistoryService>;
 
     beforeEach(async () => {
         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['gameInfoGet', 'customGet']);
@@ -70,6 +72,8 @@ describe('SoloGamePageComponent', () => {
         );
         socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['send', 'on', 'sendAndCallBack', 'connect', 'isSocketAlive']);
 
+        historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
+
         playImageComponentSpy = jasmine.createSpyObj('PlayImageComponentMock', ['playAudio']);
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
@@ -81,6 +85,7 @@ describe('SoloGamePageComponent', () => {
                 { provide: PlayImageComponent, useValue: playImageComponentSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: SocketClientService, useValue: socketServiceSpy },
+                { provide: HistoryService, useValue: historyServiceSpy },
             ],
         }).compileComponents();
     });
@@ -263,11 +268,19 @@ describe('SoloGamePageComponent', () => {
     });
 
     // Can't test by dispatching event because it will reload the page and make the test crash
-    it('unloadNotification should set event.returnValue to true', () => {
+    it('unloadHandler should set event.returnValue to true', () => {
         const event = new Event('beforeunload');
-        component.unloadNotification(event);
+        component.unloadHandler(event);
         // eslint-disable-next-line deprecation/deprecation
         expect(event.returnValue).toEqual(true);
+    });
+
+    it('unloadHandler should call historyService.playerQuit is in solo and game not over', () => {
+        const event = new Event('beforeunload');
+        component.isSolo = true;
+        // component.nDiffFoundMainPlayer = 0;
+        component.unloadHandler(event);
+        expect(historyServiceSpy.playerQuit).toHaveBeenCalled();
     });
 
     describe('openDialog', () => {
