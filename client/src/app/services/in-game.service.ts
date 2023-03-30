@@ -13,18 +13,29 @@ export class InGameService {
     constructor(public socketService: SocketClientService) {}
 
     /**
-     * validates the coordinates from the guess of the player
+     * validates the coordinates from the guess of the player for a solo game
      *
      * @param sessionID the id of the session where the player is playing
      * @param coordinates the coordinates of the guess
      */
-    async submitCoordinates(sessionID: number, coordinates: Coordinate): Promise<GuessResult> {
+    async submitCoordinatesSolo(sessionID: number, coordinates: Coordinate): Promise<GuessResult> {
         const data: [number, Coordinate] = [sessionID, coordinates];
         return new Promise<GuessResult>((resolve) => {
-            this.socketService.sendAndCallBack(SessionEvents.SubmitCoordinates, data, (response: GuessResult) => {
+            this.socketService.sendAndCallBack(SessionEvents.SubmitCoordinatesSoloGame, data, (response: GuessResult) => {
                 resolve(response);
             });
         });
+    }
+
+    /**
+     * validates the coordinates from the guess of the player for a multi game
+     *
+     * @param sessionID the id of the session where the player is playing
+     * @param coordinates the coordinates of the guess
+     */
+    async submitCoordinatesMulti(sessionID: number, coordinates: Coordinate): Promise<void> {
+        const data: [number, Coordinate] = [sessionID, coordinates];
+        this.socketService.send(SessionEvents.SubmitCoordinatesMultiGame, data);
     }
 
     /**

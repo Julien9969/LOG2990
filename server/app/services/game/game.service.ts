@@ -8,7 +8,7 @@ import {
     DIFFERENCE_LISTS_FOLDER,
     // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
     // eslint-disable-next-line prettier/prettier
-    DIFFERENCE_LISTS_PREFIX
+    DIFFERENCE_LISTS_PREFIX,
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageService } from '@app/services/images/image.service';

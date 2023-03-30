@@ -1,10 +1,10 @@
+/* eslint-disable max-lines */
 import { SECOND_IN_MILLISECONDS } from '@app/gateway/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
 import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
-import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
@@ -146,6 +146,35 @@ export class SessionGateway {
                 this.logger.log(`Client ${client.id} submitted a wrong guess`);
                 client.emit(SessionEvents.DifferenceFound, result);
             }
+        } catch (error) {
+            this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid or session is invalid`);
+        }
+    }
+
+    @SubscribeMessage(SessionEvents.SubmitCoordinatesLimitedTime)
+    handleCoordinatesSubmission(client: Socket, data: [number, Coordinate]) {
+        const [sessionId, coordinates] = data;
+        let result: GuessResult;
+        let session: Session;
+
+        try {
+            session = this.getSession(sessionId);
+            result = session.tryGuess(coordinates, client.id);
+            if (result.isCorrect) {
+                this.logger.log(`Client ${client.id} found a difference`);
+                this.notifyPlayersOfDiffFound(client, result);
+                this.sendSystemMessage(client, 'guess_good');
+                client.rooms.forEach((roomId) => {
+                    if (roomId.startsWith('gameRoom')) {
+                        this.server.to(roomId).except(client.id).emit(SessionEvents.DifferenceFound, result);
+                        this.logger.log(`Client ${client.id} emited that he found a difference to the room: ${roomId}`);
+                    }
+                });
+                this.sendNewGame(client);
+            } else {
+                this.logger.log(`Client ${client.id} submitted a wrong guess`);
+            }
+            client.emit(SessionEvents.DifferenceFound, result);
         } catch (error) {
             this.logger.log(`Client ${client.id} submitted coordinates but coordinates are invalid or session is invalid`);
         }
@@ -326,7 +355,8 @@ export class SessionGateway {
         }
     }
 
-    sendNewGame(client: Socket, newGame: Game) {
+    async sendNewGame(client: Socket) {
+        const newGame = await this.gameService.findAll()[0];
         client.emit(SessionEvents.NewGame, newGame);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {

@@ -19,5 +19,6 @@ export enum SessionEvents {
     GiveName = 'giveName',
     GameDeleted = "gameDeleted",
     EndedGame = "endedGame",
-    NewGame = "newGame"
+    NewGame = "newGame",
+    SubmitCoordinatesLimitedTime = "submitCoordinatesLimitedTime"
 }

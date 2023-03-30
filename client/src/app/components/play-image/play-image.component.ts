@@ -80,14 +80,26 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
 
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
+        if (this.lastDifferenceFound.differencesByPlayer.length !== 2) {
+            this.submitSoloCoordinates();
+        } else {
+            this.submitMultiCoordinates();
+        }
+    }
+
+    submitSoloCoordinates() {
         this.socket
-            .submitCoordinates(this.sessionID, this.mouseService.mousePosition)
+            .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
             .then((response: GuessResult) => {
                 this.updateDiffFound(response);
             })
             .catch((e) => {
                 alert(e.message);
             });
+    }
+
+    submitMultiCoordinates() {
+        this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
     }
 
     /**
