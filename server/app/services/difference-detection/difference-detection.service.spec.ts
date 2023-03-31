@@ -93,23 +93,6 @@ describe('DifferenceDetection algorithms', () => {
         expect(service.getDifferenceCount()).toEqual(3);
     });
 
-    // it('computeRawDiffs correctly computes difference percentage', async () => {
-    //     service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
-    //     service.altImage = await Jimp.read(TEST_EMPTY_IMAGE);
-    //     service['computeRawDifferences']();
-    //     expect(service.diffProportion).toEqual(0);
-
-    //     service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
-    //     service.altImage = await Jimp.read(TEST_25_PERCENT_IMAGE);
-    //     service['computeRawDifferences']();
-    //     expect(service.diffProportion).toEqual(0.25);
-
-    //     service.mainImage = await Jimp.read(TEST_EMPTY_IMAGE);
-    //     service.altImage = await Jimp.read(TEST_50_PERCENT_IMAGE);
-    //     service['computeRawDifferences']();
-    //     expect(service.diffProportion).toEqual(0.5);
-    // });
-
     it('extendRawDifferences calls getExtensionNeighbours for each raw difference', async () => {
         const testImage = await Jimp.read(TEST_2_DIFF_IMAGE);
         const rawDiffImg = testImage.greyscale().contrast(1);
@@ -335,18 +318,6 @@ describe('DifferenceDetection setup and saving', () => {
         expect(getSetListsDifferenceListsSpy).toHaveBeenCalled();
         expect(fsWriteFileSpy).toHaveBeenCalled();
     });
-
-    // it('SaveDifferenceLists throws an error when writeFile fails', () => {
-    //     jest.spyOn(fs, 'writeFileSync').mockImplementation(async () => {
-    //         return new Promise((resolve, reject) => {
-    //             reject();
-    //         });
-    //     });
-
-    //     expect(async () => {
-    //         await service.compareImagePaths('', '');
-    //     }).rejects.toThrow();
-    // });
 });
 
 describe('DifferenceDetection utility functions', () => {

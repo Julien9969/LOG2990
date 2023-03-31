@@ -246,12 +246,12 @@ export class SessionGateway {
         session.stopTimer();
 
         client.emit(SessionEvents.ProvideName);
-        client.on(SessionEvents.PlayerName, (playerName: string) => {
+        client.on(SessionEvents.PlayerName, async (playerName: string) => {
             winnerName = playerName;
             const winnerInfo: WinnerInfo = { name: playerName, socketId: client.id };
             const finishedGame: FinishedGame = { winner: winnerName, time: seconds, solo: isSolo } as FinishedGame;
             try {
-                this.gameService.addToScoreboard(gameId, finishedGame);
+                await this.gameService.addToScoreboard(gameId, finishedGame);
             } catch (error) {
                 this.logger.error('error while adding to scoreboard : game is deleted');
             }
@@ -279,15 +279,6 @@ export class SessionGateway {
             }
         });
         return correctRoom;
-    }
-
-    getRoomId(client: Socket): string {
-        client.rooms.forEach((roomId) => {
-            if (roomId.startsWith('gameRoom')) {
-                return roomId;
-            }
-        });
-        return;
     }
 
     sendSystemMessage(client: Socket, systemCode: string) {
