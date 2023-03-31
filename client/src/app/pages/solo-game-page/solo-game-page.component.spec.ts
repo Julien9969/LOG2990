@@ -169,6 +169,11 @@ describe('SoloGamePageComponent', () => {
             expect(listenTimerUpdateSpy).toHaveBeenCalled();
             expect(component.time).toEqual('35:12');
         });
+        it('should call initHistory', () => {
+            spyOn(component, 'initHistory' as any).and.callFake(() => {});
+            component.ngOnInit();
+            expect(component['initHistory']).toHaveBeenCalled();
+        });
     });
 
     describe('handleDiffFoundUpdate', () => {
@@ -235,6 +240,16 @@ describe('SoloGamePageComponent', () => {
                 autoFocus: false,
                 data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`],
             });
+        });
+
+        it('should call history.playerWon if client is winner', () => {
+            const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
+            component.userSocketId = 'socketId';
+            component.time = '9:14';
+            component.isSolo = true;
+
+            component.endGameDialog(winnerInfo);
+            expect(historyServiceSpy.playerWon).toHaveBeenCalledWith('9:14');
         });
     });
 
@@ -313,6 +328,14 @@ describe('SoloGamePageComponent', () => {
             });
         });
     });
+
+    it('initHistory should call historyService.initHistory , setPlayer and set gameMode', () => {
+        component['initHistory']();
+        expect(historyServiceSpy.initHistory).toHaveBeenCalled();
+        expect(historyServiceSpy.setPlayers).toHaveBeenCalled();
+        expect(historyServiceSpy.setGameMode).toHaveBeenCalled();
+    });
+
     it('ngOnDestroy should call socketClientService with leaveRoom', () => {
         socketServiceSpy.send.and.callFake(<T>() => {});
         component.ngOnDestroy();

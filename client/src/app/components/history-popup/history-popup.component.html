@@ -1,17 +1,18 @@
 <div class="content">
-    <div class="title">
-      <div>Historique</div>
+    <div class="top-row">
+      <!-- <button class="close-button" mat-button matDialogClose aria-label="OUI">Fermer</button> -->
+      <div class="title">Historique</div>
+      <button class="close-button" mat-button matDialogClose aria-label="OUI">Fermer</button>
     </div>
     <div class="historyList">
-        <div class="historyList-content">
-      <div *ngFor="let line of gamesHistory">
-        <p [innerHTML]="'Début : ' + line.startDateTime + ',    durée : ' + line.duration + ',    joueur 1 : ' + line.playerOne + (line.playerTwo ? ',    joueur 2 : ' + line.playerTwo : '')">
+      <div class="historyList-content">
+        <div *ngFor="let line of gamesHistory">
+          <p [innerHTML]="'Début : ' + line.startDateTime + '     durée : ' + line.duration + '     mode de jeux : ' + line.gameMode + '     joueur 1 : ' + line.playerOne + (line.playerTwo ? '     joueur 2 : ' + line.playerTwo : '')">
+        </div>
       </div>
     </div>
-    </div>
     <mat-dialog-actions class="button">
-        <button mat-button matDialogClose aria-label="OUI">Fermer</button>
-        <button mat-button matDialogClose aria-label="OUI">Supprimer Historique</button>
+        <button mat-button matDialogClose (click)="historyService.deleteHistory(gameId)" aria-label="OUI">Supprimer Historique</button>
     </mat-dialog-actions>
   </div>
   
