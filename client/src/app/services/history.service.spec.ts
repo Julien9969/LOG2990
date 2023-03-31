@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HistoryService } from '@app/services/history.service';
 import { CommunicationService } from './communication.service';
 
-fdescribe('HistoryService', () => {
+describe('HistoryService', () => {
     let service: HistoryService;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let dateSpy: jasmine.SpyObj<Date>;

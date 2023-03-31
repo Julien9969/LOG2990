@@ -7,7 +7,11 @@
     <div class="historyList">
       <div class="historyList-content">
         <div *ngFor="let line of gamesHistory">
-          <p [innerHTML]="'Début : ' + line.startDateTime + '     durée : ' + line.duration + '     mode de jeux : ' + line.gameMode + '     joueur 1 : ' + line.playerOne + (line.playerTwo ? '     joueur 2 : ' + line.playerTwo : '')">
+          <p [innerHTML]="'Début : ' + line.startDateTime +
+           '     durée : ' + line.duration +
+            '     mode de jeux : ' + line.gameMode +
+             '     joueur 1 : ' + line.playerOne +
+              (line.playerTwo ? '     joueur 2 : ' + line.playerTwo : '')">
         </div>
       </div>
     </div>
