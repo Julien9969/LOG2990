@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, no-restricted-imports, max-lines, max-len  */
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { GameDocument } from '@app/Schemas/game/game.schema';
+import { FinishedGame } from '@common/finishedGame';
+import { Game } from '@common/game';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -19,6 +21,16 @@ describe('Game Service tests', () => {
     let gameModel: Model<GameDocument>;
     let imageService: ImageService;
     let matchMakingGateway: MatchmakingGateway;
+    const stubUpdate = {
+        exec: () => {},
+    };
+    const stubGameModel = {
+        find: jest.fn(),
+        findOne: jest.fn().mockReturnValue(stubGame),
+        create: jest.fn().mockReturnValue(stubGame),
+        deleteOne: jest.fn().mockReturnValue(stubGame),
+        updateOne: jest.fn().mockReturnValue(stubUpdate),
+    };
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -26,12 +38,7 @@ describe('Game Service tests', () => {
                 GameService,
                 {
                     provide: getModelToken('Game'),
-                    useValue: {
-                        find: jest.fn(),
-                        findOne: jest.fn().mockReturnValue(stubGame),
-                        create: jest.fn().mockReturnValue(stubGame),
-                        deleteOne: jest.fn().mockReturnValue(stubGame),
-                    },
+                    useValue: stubGameModel,
                 },
                 ImageService,
                 {
@@ -164,6 +171,17 @@ describe('Game Service tests', () => {
             }
             expect(status).toEqual(HttpStatus.NOT_FOUND);
         });
+
+        it('throws an internal server error when database fails', () => {
+            jest.spyOn(gameService, 'findById').mockImplementation(async () => Promise.resolve(stubGame));
+            jest.spyOn(imageService, 'deleteImage').mockImplementation(() => {});
+            jest.spyOn(fs, 'unlinkSync').mockImplementation(() => {});
+            jest.spyOn(gameModel, 'deleteOne').mockImplementation(() => {
+                throw new Error();
+            });
+
+            expect(gameService.delete('0')).rejects.toThrow();
+        });
     });
 
     describe('findById', () => {
@@ -179,6 +197,14 @@ describe('Game Service tests', () => {
             jest.spyOn(gameModel, 'findOne').mockReturnValueOnce(undefined);
             const game = await gameService.findById('0');
             expect(game).toBeFalsy();
+        });
+
+        it('throws an internal server error when database fails', () => {
+            jest.spyOn(gameModel, 'findOne').mockImplementation(() => {
+                throw new Error();
+            });
+
+            expect(gameService.findById('0')).rejects.toThrow();
         });
     });
 
@@ -241,6 +267,147 @@ describe('Game Service tests', () => {
         it('should throw an error when id is not valid', () => {
             isValidIdSpy.mockReturnValue(false);
             expect(() => gameService['verifyGameId']('0')).toThrow();
+        });
+    });
+
+    describe('scoreboard methods', () => {
+        let testGame: Game;
+        beforeEach(() => {
+            testGame = {
+                ...stubGame,
+                scoreBoardSolo: [
+                    ['Bowser', 150],
+                    ['Peach', 250],
+                    ['Mario', 780],
+                ],
+                scoreBoardMulti: [
+                    ['BowserFamily', 150],
+                    ['PeachFamily', 250],
+                    ['MarioFamily', 780],
+                ],
+            };
+        });
+
+        it('getSoloScoreboard returns solo game scoreboard', async () => {
+            jest.spyOn(gameService, 'findById').mockImplementation(async () => {
+                return testGame;
+            });
+            const scoreBoard = await gameService.getSoloScoreboard('id');
+            expect(scoreBoard).toEqual(testGame.scoreBoardSolo);
+        });
+
+        it('getSoloScoreboard returns null when no game', async () => {
+            jest.spyOn(gameService, 'findById').mockImplementation(async () => {
+                return undefined;
+            });
+            const scoreBoard = await gameService.getSoloScoreboard('id');
+            expect(scoreBoard).toEqual(null);
+        });
+
+        it('getMultiScoreboard returns multi game scoreboard', async () => {
+            jest.spyOn(gameService, 'findById').mockImplementation(async () => {
+                return testGame;
+            });
+            const scoreBoard = await gameService.getMultiScoreboard('id');
+            expect(scoreBoard).toEqual(testGame.scoreBoardMulti);
+        });
+
+        it('getMultiScoreboard returns null when no game', async () => {
+            jest.spyOn(gameService, 'findById').mockImplementation(async () => {
+                return undefined;
+            });
+            const scoreBoard = await gameService.getMultiScoreboard('id');
+            expect(scoreBoard).toEqual(null);
+        });
+
+        describe('addToScoreboard', () => {
+            let getSoloScoreSpy: jest.SpyInstance;
+            let getMultiScoreSpy: jest.SpyInstance;
+            let pushSoloSpy: jest.SpyInstance;
+            let pushMultiSpy: jest.SpyInstance;
+
+            const stubFinishedGameSolo: FinishedGame = {
+                winner: 'winner',
+                solo: true,
+                time: 10,
+            };
+            const stubFinishedGameMulti: FinishedGame = {
+                winner: 'winner-multi',
+                solo: false,
+                time: 10,
+            };
+
+            beforeEach(() => {
+                getSoloScoreSpy = jest.spyOn(gameService, 'getSoloScoreboard').mockImplementation(async () => {
+                    return testGame.scoreBoardSolo;
+                });
+
+                getMultiScoreSpy = jest.spyOn(gameService, 'getMultiScoreboard').mockImplementation(async () => {
+                    return testGame.scoreBoardMulti;
+                });
+
+                pushSoloSpy = jest.spyOn(testGame.scoreBoardSolo, 'push');
+                pushMultiSpy = jest.spyOn(testGame.scoreBoardMulti, 'push');
+            });
+
+            it('addToScoreboard does not update database if no scoreboard found', () => {
+                getSoloScoreSpy.mockImplementationOnce(async () => {
+                    return undefined;
+                });
+                const updateSpy = jest.spyOn(gameModel, 'updateOne');
+                gameService.addToScoreboard('id', stubFinishedGameSolo);
+
+                expect(updateSpy).not.toBeCalled();
+            });
+
+            it('addToScoreboard leaves score unchanged if unbeaten', () => {
+                stubFinishedGameSolo.time = 900;
+                gameService.addToScoreboard('id', stubFinishedGameSolo);
+
+                expect(pushSoloSpy).not.toBeCalled();
+                expect(pushMultiSpy).not.toBeCalled();
+            });
+
+            it('addToScoreboard inserts player to solo score when new solo high score', async () => {
+                jest.spyOn(gameService, 'findById').mockImplementation(async () => {
+                    return testGame;
+                });
+                stubFinishedGameSolo.time = 1;
+
+                await gameService.addToScoreboard('id', stubFinishedGameSolo);
+
+                expect(getSoloScoreSpy).toBeCalled();
+                expect(getMultiScoreSpy).not.toBeCalled();
+            });
+
+            it('addToScoreboard inserts player to multi score when new multi high score', () => {
+                jest.spyOn(gameService, 'findById').mockImplementation(async () => {
+                    return testGame;
+                });
+                stubFinishedGameMulti.time = 1;
+                gameService.addToScoreboard('id', stubFinishedGameMulti);
+
+                expect(getSoloScoreSpy).not.toBeCalled();
+                expect(getMultiScoreSpy).toBeCalled();
+            });
+
+            it('throws an internal server error when database fails', () => {
+                jest.spyOn(gameModel, 'updateOne').mockImplementation(() => {
+                    throw new Error();
+                });
+
+                expect(gameService.addToScoreboard('id', stubFinishedGameMulti)).rejects.toThrow();
+            });
+        });
+    });
+
+    describe('saveGameInDatabase', () => {
+        it('throws an internal server error when database fails', () => {
+            jest.spyOn(gameModel, 'create').mockImplementation(async () => {
+                throw new Error();
+            });
+
+            expect(gameService['saveGameInDatabase'](undefined, undefined)).rejects.toThrow();
         });
     });
 });
