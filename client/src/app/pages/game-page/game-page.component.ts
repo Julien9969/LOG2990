@@ -105,6 +105,10 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         this.socket.playerExited(this.sessionId);
     }
 
+    async handleClueRequest() {
+        alert((await this.socket.retrieveClue(this.sessionId)).isClue);
+    }
+
     endGameDialog(winnerInfo: WinnerInfo) {
         let message = '';
         if (winnerInfo.socketId === this.userSocketId) {

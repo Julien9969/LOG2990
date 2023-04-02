@@ -13,10 +13,10 @@ export class InGameService {
     constructor(public socketService: SocketClientService) {}
 
     /**
-     * validates the coordinates from the guess of the player
+     * Valide les coordonnées de la tentative du joueur
      *
-     * @param sessionID the id of the session where the player is playing
-     * @param coordinates the coordinates of the guess
+     * @param sessionID L'identifiant de session dans laquelle je joueur se trouve
+     * @param coordinates les coordonnées de la tentative
      */
     async submitCoordinates(sessionID: number, coordinates: Coordinate): Promise<GuessResult> {
         const data: [number, Coordinate] = [sessionID, coordinates];
@@ -28,23 +28,23 @@ export class InGameService {
     }
 
     /**
-     * asks the server for a clue
+     * Demande au serveur pour un indice
      *
      * @param sessionId
-     * @returns a clue
+     * @returns l'indice
      */
-    async retrieveClue() {
+    async retrieveClue(sessionId: number) {
         return new Promise<Clue>((resolve) => {
-            this.socketService.sendAndCallBack(SessionEvents.AskForClue, undefined, (response: Clue) => {
+            this.socketService.sendAndCallBack(SessionEvents.AskForClue, sessionId, (response: Clue) => {
                 resolve(response);
             });
         });
     }
 
     /**
-     * retrieves the socket id of the client from the server
+     * Récupère du serveur l'identifiant de socket du client
      *
-     * @return the socket id of the client
+     * @return l'identifiant de socket du client
      */
     async retrieveSocketId(): Promise<string> {
         return new Promise<string>((resolve) => {
@@ -63,7 +63,7 @@ export class InGameService {
     }
 
     /**
-     * destroys the websocket connection with the server if it exists
+     * Détruit la connection websocket avec le serveur
      */
     disconnect() {
         if (this.socketService.isSocketAlive()) {
@@ -72,18 +72,18 @@ export class InGameService {
     }
 
     /**
-     * alerts the server that the player has left the game
+     * Alerte le serveur qu'un joueur a quitté la partie
      *
-     * @param sessionId the id of the session where the player is playing
+     * @param sessionId l'identifiant de la session dans laquelle le joueur se trouvait
      */
     playerExited(sessionId: number) {
         this.socketService.send(SessionEvents.PlayerLeft, sessionId);
     }
 
     /**
-     * listen to the server for any difference found (by the opponent or the player)
+     * Écoute le serveur pour savoir lorsque l'adversaire trouve une différence
      *
-     * @param callback the callback function that handles the difference found
+     * @param callback la fonction de retour qui s'occupe des différences trouvées
      */
     listenDifferenceFound(callback: (differenceFound: GuessResult) => void) {
         this.socketService.on(SessionEvents.DifferenceFound, (differenceFound: GuessResult) => {
@@ -92,9 +92,9 @@ export class InGameService {
     }
 
     /**
-     * listen to the server for when the opponent has left the game
+     * Écoute le serveur pour savoir lorsque l'adversaire quitte la partie
      *
-     * @param callback the callback function that handles the opponent leaving session
+     * @param callback la fonction de retour qui s'occupe de lorsque l'adversaire quitte
      */
     listenOpponentLeaves(callback: () => void) {
         this.socketService.on(SessionEvents.OpponentLeftGame, () => {
@@ -104,9 +104,9 @@ export class InGameService {
     }
 
     /**
-     * listen to the server to provide the name of the player to the server when asked
+     * Écoute le serveur pour produire le nom du joueur lorsque demandé
      *
-     * @param clientName the name of the player
+     * @param clientName Le nom du joueur
      */
     listenProvideName(clientName: string) {
         this.socketService.on(SessionEvents.ProvideName, () => {
@@ -115,9 +115,9 @@ export class InGameService {
     }
 
     /**
-     * listen to the server for when the session timer has been updated
+     * Écoute le serveur pour savoir lorsque la minuterie est mise à jours
      *
-     * @param callback the callback function that handles the timer update
+     * @param callback la fonction de retour qui s'occupe de la mise à jours de la minuterie
      */
     listenTimerUpdate(callback: (time: string) => void) {
         this.socketService.on(SessionEvents.TimerUpdate, (time: string) => {
@@ -126,9 +126,9 @@ export class InGameService {
     }
 
     /**
-     * listen to the server for when a player wins
+     * Écoute le serveur pour savoir lorsqu'un joueur gagne la partie
      *
-     * @param callback the callback function that handles a player winning
+     * @param callback la fonction de retour qui s'occupe de lorsqu'un joueur gagne la partie
      */
     listenPlayerWon(callback: (winnerInfo: WinnerInfo) => void) {
         this.socketService.on(SessionEvents.PlayerWon, (winnerInfo: WinnerInfo) => {

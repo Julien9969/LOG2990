@@ -33,6 +33,11 @@ export class SessionGateway {
         return client.id;
     }
 
+    @SubscribeMessage(SessionEvents.AskForClue)
+    handleClueRequest() {
+        return { isClue: true };
+    }
+
     /**
      * Génère un indice pour le joueur qui en fait la demande
      * (s'il lui reste des indices)
