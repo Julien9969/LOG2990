@@ -178,6 +178,11 @@ export class GameService {
         }
     }
 
+    /**
+     * Valide et modifie les constantes de jeu en persistance
+     * 
+     * @param gameConstsInput Les valeurs modifiees de constantes de jeu
+     */
     updateConstants(gameConstsInput: GameConstantsInput) {
         const gameConsts : GameConstants = {...this.globalGameConstants};
         
