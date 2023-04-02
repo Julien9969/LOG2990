@@ -1,6 +1,7 @@
-import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { GameDocument } from '@app/Schemas/game/game.schema';
 import { HistoryDocument } from '@app/Schemas/history/history.schema';
+import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
+import { GameConstants } from '@app/interfaces/game-constants';
 import {
     DEFAULT_GAME_LEADERBOARD,
     DEFAULT_GAME_TIME,
@@ -9,12 +10,21 @@ import {
     DIFFERENCE_LISTS_FOLDER,
     // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
     // eslint-disable-next-line prettier/prettier
-    DIFFERENCE_LISTS_PREFIX
+    DIFFERENCE_LISTS_PREFIX,
+    GAME_CONSTS_PATH,
+    MAX_GAME_TIME,
+    MAX_PENALTY_TIME,
+    MAX_REWARD_TIME,
+    MIN_GAME_TIME,
+    MIN_PENALTY_TIME,
+    MIN_REWARD_TIME
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageService } from '@app/services/images/image.service';
+import { Utils } from '@app/services/utils/utils.service';
 import { FinishedGame } from '@common/finishedGame';
 import { Game, UnsavedGame } from '@common/game';
+import { GameConstantsInput } from '@common/game-constants-input';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { InputGame } from '@common/input-game';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
@@ -25,13 +35,18 @@ import mongoose, { Model } from 'mongoose';
 @Injectable()
 export class GameService {
     prototype: unknown;
+    
+    private globalGameConstants : GameConstants;
+    
     // eslint-disable-next-line max-params -- Nécessaire pour le fonctionnement
     constructor(
         @InjectModel('Game') private gameModel: Model<GameDocument>,
         @InjectModel('GameHistory') private history: Model<HistoryDocument>,
         private readonly imageService: ImageService,
         private readonly matchMakingGateway: MatchmakingGateway,
-    ) {}
+    ) {
+        this.loadGameConstants();
+    }
 
     /**
      * @returns La liste de tous les jeux
@@ -67,9 +82,6 @@ export class GameService {
             differenceCount: result.differenceCount,
             scoreBoardSolo: DEFAULT_GAME_LEADERBOARD,
             scoreBoardMulti: DEFAULT_GAME_LEADERBOARD,
-            time: DEFAULT_GAME_TIME,
-            penalty: DEFAULT_PENALTY_TIME,
-            reward: DEFAULT_REWARD_TIME,
         };
 
         return this.saveGameInDatabase(newGame, diffDetectionService);
@@ -164,6 +176,53 @@ export class GameService {
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    updateConstants(gameConstsInput: GameConstantsInput) {
+        const gameConsts : GameConstants = {...this.globalGameConstants};
+        
+        // Comparaison a undefined puisque les parametres sont optionnels
+        if(gameConstsInput.time !== undefined)
+            gameConsts.time = Utils.convertToInt(gameConstsInput.time);
+        if(gameConstsInput.penalty !== undefined)
+            gameConsts.penalty = Utils.convertToInt(gameConstsInput.penalty);
+        if(gameConstsInput.reward !== undefined)
+            gameConsts.reward = Utils.convertToInt(gameConstsInput.reward);
+
+        if(this.validateGameConstants(gameConsts)) {
+            this.globalGameConstants = gameConsts;
+            this.saveGameConstants()
+        } else {
+            throw new Error('Constantes de jeu invalides');
+        }
+    }
+
+    private loadGameConstants() {        
+        try {
+            const constantsRead = fs.readFileSync(GAME_CONSTS_PATH).toString();
+            this.globalGameConstants = JSON.parse(constantsRead);
+        } catch(err) {
+            this.globalGameConstants = {
+                time: DEFAULT_GAME_TIME,
+                reward: DEFAULT_REWARD_TIME,
+                penalty: DEFAULT_PENALTY_TIME,
+            }
+        }
+    }
+
+    private saveGameConstants() {
+        const constantsContent = JSON.stringify(this.globalGameConstants);
+        try {
+            fs.writeFileSync(GAME_CONSTS_PATH, constantsContent);
+        } catch (err) {
+            throw new Error('Erreur lors de la sauvegarde des constantes de jeu');
+        }
+    }
+    
+    private validateGameConstants(gameConsts: GameConstants) : boolean {
+        return  gameConsts.time >= MIN_GAME_TIME && gameConsts.time <= MAX_GAME_TIME &&
+                gameConsts.penalty >= MIN_PENALTY_TIME && gameConsts.penalty <= MAX_PENALTY_TIME &&
+                gameConsts.reward >= MIN_REWARD_TIME && gameConsts.reward <= MAX_REWARD_TIME
     }
 
     private verifyGameId(id: string): void {
