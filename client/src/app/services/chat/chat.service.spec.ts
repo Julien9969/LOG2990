@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Message } from '@common/message';
 import { ChatService } from './chat.service';
-import { SocketClientService } from './socket-client.service';
 
 describe('chatService', () => {
     let service: ChatService;

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogRef, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { AudioService } from '@app/services/audio.service';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { AudioService } from '@app/services/audio/audio.service';
 import { PopupDialogComponent } from './popup-dialog.component';
 
 describe('PopupDialogComponent', () => {

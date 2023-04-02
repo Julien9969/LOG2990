@@ -2,8 +2,8 @@ import { AfterViewInit, Component, ElementRef, HostListener, Inject, OnInit, Vie
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { INPUT_VALIDATION, DELAY_FOCUS } from '@app/constants/utils-constants';
-import { MatchMakingService } from '@app/services/match-making.service';
+import { DELAY_FOCUS, INPUT_VALIDATION } from '@app/constants/utils-constants';
+import { MatchMakingService } from '@app/services/match-making/match-making.service';
 import { GameSessionType } from '@common/game-session-type';
 
 /**

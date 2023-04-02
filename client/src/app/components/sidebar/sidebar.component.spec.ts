@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SidebarComponent } from '@app/components/sidebar/sidebar.component';
-import { ChatService } from '@app/services/chat.service';
+import { ChatService } from '@app/services/chat/chat.service';
 
 describe('SidebarComponent', () => {
     let component: SidebarComponent;

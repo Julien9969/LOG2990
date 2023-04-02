@@ -21,9 +21,9 @@ import {
     TIME_BEFORE_REDIRECT
 } from '@app/constants/utils-constants';
 import { ActiveCanvas } from '@app/interfaces/active-canvas';
-import { CommunicationService } from '@app/services/communication.service';
-import { DrawService } from '@app/services/draw.service';
-import ValidateImageService from '@app/services/validate-image.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { DrawService } from '@app/services/draw/draw.service';
+import ValidateImageService from '@app/services/validate-server/validate-image.service';
 import { Coordinate } from '@common/coordinate';
 
 @Component({

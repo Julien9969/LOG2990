@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { AudioService } from '@app/services/audio.service';
+import { AudioService } from '@app/services/audio/audio.service';
 
 /**
  * @title Inject des données lorsqu'on ouvre un dialogue

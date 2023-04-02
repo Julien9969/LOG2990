@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { DrawMode } from '@app/interfaces/draw-mode';
-import { DrawService } from '@app/services/draw.service';
+import { DrawService } from '@app/services/draw/draw.service';
 
 @Component({
     selector: 'app-draw-bottom-bar',

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CHEAT_PERIOD_MS, CANVAS, RGB_RED, RGB_GREEN } from '@app/constants/utils-constants';
-import { InGameService } from '@app/services/in-game.service';
+import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
+import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 
 @Injectable({

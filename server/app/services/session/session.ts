@@ -32,7 +32,7 @@ export class Session {
      */
     get formatedTimeElapsed(): string {
         const minutes = Math.floor(this.timeElapsed / TIME_CONST.minute);
-        const seconds = this.timeElapsed % TIME_CONST.secondInMilliseconds;
+        const seconds = this.timeElapsed % TIME_CONST.minute;
         return minutes + ':' + seconds.toString().padStart(2, '0');
     }
 

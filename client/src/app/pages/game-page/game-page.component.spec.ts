@@ -12,11 +12,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
 import { PlayImageComponent } from '@app/components/play-image/play-image.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication.service';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
-import { SoloGamePageComponent } from './solo-game-page.component';
+import { SoloGamePageComponent } from './game-page.component';
 
 @Component({
     selector: 'app-play-image',
@@ -262,16 +262,6 @@ describe('SoloGamePageComponent', () => {
         });
     });
 
-    it('clue button should open clue dialog', () => {
-        const clueButton = fixture.debugElement.query(By.css('#clue-button'));
-        clueButton.triggerEventHandler('click', null);
-        expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-            closeOnNavigation: true,
-            autoFocus: false,
-            data: ['clue'],
-        });
-    });
-
     // Can't test by dispatching event because it will reload the page and make the test crash
     it('unloadNotification should set event.returnValue to true', () => {
         const event = new Event('beforeunload');
@@ -281,11 +271,6 @@ describe('SoloGamePageComponent', () => {
     });
 
     describe('openDialog', () => {
-        it('openDialog with "clue" as argument call dialog.open with right args', () => {
-            component.openDialog('clue');
-            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
-        });
-
         it('openDialog with "quit" as argument call dialog.open with right args', () => {
             component.openDialog('quit');
             expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
