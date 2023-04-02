@@ -1,17 +1,17 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication.service';
-import { InGameService } from '@app/services/in-game.service';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
 
 @Component({
     selector: 'app-solo-game-page',
-    templateUrl: './solo-game-page.component.html',
-    styleUrls: ['./solo-game-page.component.scss'],
+    templateUrl: './game-page.component.html',
+    styleUrls: ['./game-page.component.scss'],
 })
 export class SoloGamePageComponent implements OnInit, OnDestroy {
     userSocketId: string;
@@ -29,6 +29,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     nDiffFoundOpponent: number = 0;
 
     time: string = '0:00';
+    nbCluesLeft = 3;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
@@ -97,6 +98,10 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         this.socket.playerExited(this.sessionId);
     }
 
+    async handleClueRequest() {
+        alert((await this.socket.retrieveClue(this.sessionId)).isClue);
+    }
+
     endGameDialog(winnerInfo: WinnerInfo) {
         let message = '';
         if (winnerInfo.socketId === this.userSocketId) {
@@ -115,9 +120,6 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         this.dialog.closeAll();
 
         switch (dialogTypes) {
-            case 'clue':
-                this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
-                break;
             case 'quit':
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
                 break;

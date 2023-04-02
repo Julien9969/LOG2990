@@ -8,15 +8,6 @@
         </div>
     </div>
 
-    <div *ngSwitchCase="'clue'">
-        <h1 mat-dialog-title>Voulez-vous utilisez un indice ?</h1>
-        <h2>Indice restants : {{ getClueNumber() }}</h2>
-        <div class="button-row">
-            <button mat-button matDialogClose aria-label="OUI">OUI</button>
-            <button mat-button matDialogClose aria-label="NON">NON</button>
-        </div>
-    </div>
-
     <div *ngSwitchCase="'endGame'">
         <h1 mat-dialog-title>La partie est finie</h1>
         <h2>{{ data[1] }}!</h2>

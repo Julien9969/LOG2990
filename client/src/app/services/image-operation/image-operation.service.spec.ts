@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { fakeAsync, TestBed } from '@angular/core/testing';
 import { CanvasTestHelper } from '@app/classes/canvas-test-helper';
-import { InGameService } from '@app/services/in-game.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 import { ImageOperationService } from './image-operation.service';
 

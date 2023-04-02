@@ -3,7 +3,7 @@ import { GameService } from '@app/services/game/game.service';
 import { Utils } from '@app/services/utils/utils.service';
 import { Game } from '@common/game';
 import { InputGame } from '@common/input-game';
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Param, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 /**
@@ -11,7 +11,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
  */
 @Controller('games')
 export class GamesController {
-    constructor(private readonly gameService: GameService) {}
+    constructor(private readonly gameService: GameService, private readonly logger: Logger) {}
 
     /**
      * Crée un nouveau jeu avec les informations fournies
@@ -83,6 +83,10 @@ export class GamesController {
      */
     @Delete(':id')
     async deleteById(@Param('id') id: string) {
-        await this.gameService.delete(id);
+        try {
+            await this.gameService.delete(id);
+        } catch (e: unknown) {
+            if (e instanceof Error) this.logger.error(e.message);
+        }
     }
 }

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { Socket } from 'socket.io-client';
 import { SocketTestHelper } from '@common/socket-test-helper';
+import { Socket } from 'socket.io-client';
 import { SocketClientService } from './socket-client.service';
 
 describe('SocketClientService', () => {

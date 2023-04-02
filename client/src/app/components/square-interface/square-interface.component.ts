@@ -3,8 +3,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { ErrorDuringLoadingComponent } from '@app/components/error-during-loading/error-during-loading.component';
 import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
 import { DELAY_BEFORE_BUTTONS_UPDATE, GAMES_PER_PAGE } from '@app/constants/utils-constants';
-import { GameService } from '@app/services/game.service';
-import { MatchMakingService } from '@app/services/match-making.service';
+import { GameService } from '@app/services/game/game.service';
+import { MatchMakingService } from '@app/services/match-making/match-making.service';
 import { Game } from '@common/game';
 
 @Component({

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { NavigationEnd, Router } from '@angular/router';
 import { LimitedTimeSelectionComponent } from '@app/components/limited-time-selection/limited-time-selection.component';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { of } from 'rxjs';
 
 class MockRouter {
@@ -64,7 +64,7 @@ describe('LimitedTimeSelectionComponent', () => {
 
     it('OnInit should call socketService.send with a callback that set templateName to noGame if the parameter was false', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        socketClientSpy.send.and.callFake((eventName, callback: any) => {
+        socketClientSpy.send.and.callFake((eventName: string, callback: any) => {
             callback(false);
         });
         component.getIfGameExist();

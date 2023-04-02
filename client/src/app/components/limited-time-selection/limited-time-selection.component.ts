@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { SocketClientService } from '@app/services/socket-client.service';
-import { MatchMakingEvents } from '@common/match-making.gateway.events';
-import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
 import { Router } from '@angular/router';
+import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
+import { MatchMakingEvents } from '@common/match-making.gateway.events';
 
 /**
  * @title Inject des données lorsqu'on ouvre un dialogue

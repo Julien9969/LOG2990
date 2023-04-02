@@ -17,4 +17,5 @@ export enum SessionEvents {
     CheatGetAllDifferences = 'cheatGetAllDifferences',
     GiveName = 'giveName',
     GameDeleted = "gameDeleted",
+    AskForClue = "askForClue",
 }

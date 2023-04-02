@@ -3,7 +3,7 @@ import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/ht
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { PATH_TO_VALID_IMAGE } from '@app/constants/utils-constants';
-import { CommunicationService } from '@app/services/communication.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
 import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
 import { ImageComparisonResult } from '@common/image-comparison-result';
