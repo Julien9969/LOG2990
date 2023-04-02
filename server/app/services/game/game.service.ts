@@ -17,7 +17,7 @@ import {
     MAX_REWARD_TIME,
     MIN_GAME_TIME,
     MIN_PENALTY_TIME,
-    MIN_REWARD_TIME
+    MIN_REWARD_TIME,
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageService } from '@app/services/images/image.service';
@@ -180,38 +180,35 @@ export class GameService {
 
     /**
      * Valide et modifie les constantes de jeu en persistance
-     * 
+     *
      * @param gameConstsInput Les valeurs modifiees de constantes de jeu
      */
     updateConstants(gameConstsInput: GameConstantsInput) {
-        const gameConsts : GameConstants = {...this.globalGameConstants};
-        
-        // Comparaison a undefined puisque les parametres sont optionnels
-        if(gameConstsInput.time !== undefined)
-            gameConsts.time = Utils.convertToInt(gameConstsInput.time);
-        if(gameConstsInput.penalty !== undefined)
-            gameConsts.penalty = Utils.convertToInt(gameConstsInput.penalty);
-        if(gameConstsInput.reward !== undefined)
-            gameConsts.reward = Utils.convertToInt(gameConstsInput.reward);
+        const gameConsts: GameConstants = { ...this.globalGameConstants };
 
-        if(this.validateGameConstants(gameConsts)) {
+        // Comparaison a undefined puisque les parametres sont optionnels
+        if (gameConstsInput.time !== undefined) gameConsts.time = Utils.convertToInt(gameConstsInput.time);
+        if (gameConstsInput.penalty !== undefined) gameConsts.penalty = Utils.convertToInt(gameConstsInput.penalty);
+        if (gameConstsInput.reward !== undefined) gameConsts.reward = Utils.convertToInt(gameConstsInput.reward);
+
+        if (this.validateGameConstants(gameConsts)) {
             this.globalGameConstants = gameConsts;
-            this.saveGameConstants()
+            this.saveGameConstants();
         } else {
             throw new Error('Constantes de jeu invalides');
         }
     }
 
-    private loadGameConstants() {        
+    private loadGameConstants() {
         try {
             const constantsRead = fs.readFileSync(GAME_CONSTS_PATH).toString();
             this.globalGameConstants = JSON.parse(constantsRead);
-        } catch(err) {
+        } catch (err) {
             this.globalGameConstants = {
                 time: DEFAULT_GAME_TIME,
                 reward: DEFAULT_REWARD_TIME,
                 penalty: DEFAULT_PENALTY_TIME,
-            }
+            };
         }
     }
 
@@ -223,11 +220,16 @@ export class GameService {
             throw new Error('Erreur lors de la sauvegarde des constantes de jeu');
         }
     }
-    
-    private validateGameConstants(gameConsts: GameConstants) : boolean {
-        return  gameConsts.time >= MIN_GAME_TIME && gameConsts.time <= MAX_GAME_TIME &&
-                gameConsts.penalty >= MIN_PENALTY_TIME && gameConsts.penalty <= MAX_PENALTY_TIME &&
-                gameConsts.reward >= MIN_REWARD_TIME && gameConsts.reward <= MAX_REWARD_TIME
+
+    private validateGameConstants(gameConsts: GameConstants): boolean {
+        return (
+            gameConsts.time >= MIN_GAME_TIME &&
+            gameConsts.time <= MAX_GAME_TIME &&
+            gameConsts.penalty >= MIN_PENALTY_TIME &&
+            gameConsts.penalty <= MAX_PENALTY_TIME &&
+            gameConsts.reward >= MIN_REWARD_TIME &&
+            gameConsts.reward <= MAX_REWARD_TIME
+        );
     }
 
     private verifyGameId(id: string): void {

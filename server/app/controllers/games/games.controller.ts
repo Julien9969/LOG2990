@@ -93,15 +93,15 @@ export class GamesController {
 
     /**
      * Modifie les constantes de jeu globales (temps d'une partie en temps limité, pénalité d'indice et bonus de différence trouvée)
-     * 
+     *
      * @param gameConstsInput Les valeurs modifiees de constantes de jeu
      */
     @Patch('constants')
     async configureConstants(@Body() gameConstsInput: GameConstantsInput) {
-        if(!gameConstsInput) {
+        if (!gameConstsInput) {
             throw new HttpException('Il manque un corps dans la requete', HttpStatus.BAD_REQUEST);
         }
-        
+
         try {
             this.gameService.updateConstants(gameConstsInput);
         } catch (err) {
