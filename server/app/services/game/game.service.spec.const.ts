@@ -51,9 +51,6 @@ export const stubGame: Game = {
     isValid: true,
     scoreBoardSolo: undefined,
     scoreBoardMulti: undefined,
-    penalty: 5,
-    reward: undefined,
-    time: undefined,
 };
 export const stubGameWithScore: Game = {
     id: '0',
@@ -70,9 +67,6 @@ export const stubGameWithScore: Game = {
         ['Mario', 780],
     ],
     scoreBoardMulti: undefined,
-    penalty: undefined,
-    reward: undefined,
-    time: undefined,
 };
 export const gameListStub: Game[] = [
     {
