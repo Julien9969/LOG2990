@@ -161,7 +161,6 @@ export class SessionGateway {
             session = this.getSession(sessionId);
             result = session.tryGuess(coordinates, client.id);
             if (result.isCorrect) {
-                this.logger.log(`Client ${client.id} found a difference`);
                 this.notifyPlayersOfDiffFound(client, result);
                 this.sendSystemMessage(client, 'guess_good');
                 client.rooms.forEach((roomId) => {
