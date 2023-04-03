@@ -24,6 +24,7 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
     }
 
     ngAfterViewInit() {
+        this.chatService.chatContainer = this.chatContainer;
         this.chatService.giveNameToServer(this.playerName);
     }
 
@@ -51,5 +52,9 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
             }
         }
         this.messageForm.reset();
+    }
+
+    scrollToBottom() {
+        // this.formElement.nativeElement.scrollTop = this.formElement.nativeElement.scrollHeight;
     }
 }

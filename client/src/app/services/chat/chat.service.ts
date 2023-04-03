@@ -9,6 +9,7 @@ import { SystemMessage } from '@common/systemMessage';
     providedIn: 'root',
 })
 export class ChatService {
+    chatContainer: ElementRef<HTMLDivElement>;
     messageList: Message[];
     clientId: string;
 
@@ -59,10 +60,15 @@ export class ChatService {
 
     receiveMessage(message: Message) {
         this.messageList.push(message);
+        this.scrollToBottom();
+    }
+    scrollToBottom() {
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
     }
 
     async listenForSystemMessage() {
         this.socketService.on(ChatEvents.SystemMessageFromServer, (systemMessage: SystemMessage) => {
+            console.log('newMessage');
             this.receiveMessage(this.createSystemMessage(systemMessage.systemCode, systemMessage.playerName));
         });
     }
