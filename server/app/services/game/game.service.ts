@@ -161,6 +161,18 @@ export class GameService {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    /**
+     * @returns un jeux aleatoire
+     */
+    async getRandomGame(): Promise<Game> {
+        const allGames: Game[] = await this.gameModel.find();
+        const randomNumber = Math.floor(Math.random() * allGames.length);
+        const chosenGame: Game = allGames[randomNumber];
+        console.log(randomNumber);
+        console.log(allGames.length);
+        console.log(chosenGame.imageMain);
+        return chosenGame;
+    }
 
     private verifyGameId(id: string): void {
         if (!mongoose.isValidObjectId(id)) {

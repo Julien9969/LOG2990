@@ -224,14 +224,22 @@ export class SessionGateway {
 
     @SubscribeMessage(SessionEvents.NewGame)
     async sendNewGame(client: Socket) {
-        const newGame = await this.gameService.findAll()[0];
-        client.emit(SessionEvents.NewGame, newGame);
-        client.rooms.forEach((roomId) => {
-            if (roomId.startsWith('gameRoom')) {
-                this.logger.log(`Room ${roomId} is receiving a new game`);
-                this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, newGame);
-            }
-        });
+        // const allGames: Promise<Game[]> = this.gameService.findAll();
+        // const newGame: Game = allGames[0];
+
+        const chosenGame = await this.gameService.getRandomGame();
+        await this.logger.log(`client ${client.id} is receiving a new game`);
+        await this.logger.log(`this is the main image id: ${chosenGame.imageMain}`);
+
+        // return await this.gameService.findAll();
+        return chosenGame;
+        // client.emit(SessionEvents.NewGame, newGame);
+        // client.rooms.forEach((roomId) => {
+        //     if (roomId.startsWith('gameRoom')) {
+        //         this.logger.log(`Room ${roomId} is receiving a new game`);
+        //         this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, newGame);
+        //     }
+        // });
     }
 
     /**

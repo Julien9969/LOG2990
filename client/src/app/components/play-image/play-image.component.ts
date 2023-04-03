@@ -76,7 +76,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
 
     async ngAfterViewInit(): Promise<void> {
         if (this.isTimeLimited) {
-            this.requestNewImages();
+            await this.requestNewImages();
         } else {
             await this.loadImage(this.canvasContext1, this.imageMainId);
             await this.loadImage(this.canvasContext2, this.imageAltId);
@@ -129,9 +129,11 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     async requestNewImages(): Promise<void> {
+        console.log('requestedNewImages()');
         this.socket
             .requestNewGame()
             .then((response: Game) => {
+                console.log('receivedNewGame from server, its imageMainId is', this.imageMainId);
                 this.imageMainId = response.imageMain;
                 this.imageAltId = response.imageAlt;
                 this.loadImage(this.canvasContext1, this.imageMainId);

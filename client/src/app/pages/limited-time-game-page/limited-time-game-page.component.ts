@@ -154,10 +154,10 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
             this.time = time;
         });
         this.socket.listenProvideName(this.playerName);
-        this.socket.listenNewGame((game: Game) => {
-            console.log('received a new game');
-            this.gameInfos = game;
-        });
+        // this.socket.listenNewGame((game: Game) => {
+        //     console.log('received a new game');
+        //     this.gameInfos = game;
+        // });
     }
 
     getGameInfos(): void {
