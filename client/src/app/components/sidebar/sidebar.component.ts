@@ -23,11 +23,11 @@ export class SidebarComponent implements AfterViewInit {
     });
 
     constructor(private formBuilder: FormBuilder, public chatService: ChatService, public imageOperationService: ImageOperationService) {
-        this.chatService.formElement = this.formElement;
         this.chatService.start();
     }
 
     ngAfterViewInit() {
+        this.chatService.chatContainer = this.chatContainer;
         this.chatService.giveNameToServer(this.playerName);
     }
     formatedTime(time: number): string {
@@ -53,6 +53,6 @@ export class SidebarComponent implements AfterViewInit {
     }
 
     scrollToBottom() {
-        this.formElement.nativeElement.scrollIntoView();
+        // this.formElement.nativeElement.scrollTop = this.formElement.nativeElement.scrollHeight;
     }
 }
