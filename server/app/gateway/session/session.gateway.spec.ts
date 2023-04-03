@@ -19,6 +19,7 @@ import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { SessionGateway } from './session.gateway';
 import { secondStubSocket, stubGameId, stubSession, stubSocket } from './session.gateway.spec.const';
+import { Game } from '@common/game';
 
 describe('SessionGateway', () => {
     let gateway: SessionGateway;
@@ -494,7 +495,7 @@ describe('SessionGateway', () => {
             let addToScoreboardSpy: jest.SpyInstance;
 
             beforeEach(() => {
-                addToScoreboardSpy = jest.spyOn(gameService, 'addToScoreboard').mockImplementation(async () => {});
+                addToScoreboardSpy = jest.spyOn(gameService, 'addToScoreboard').mockReturnValue(Promise.resolve(1));
 
                 // Lancement du calback a chaque appel, simule une reponse du client
                 clientOnSpy = jest.spyOn(stubSocket, 'on').mockImplementation((event, callback) => {
@@ -511,6 +512,15 @@ describe('SessionGateway', () => {
 
                 expect(addToScoreboardSpy).toBeCalled();
                 expect(logErrorSpy).toBeCalled();
+            });
+
+            it('should emit a message to all client if addToScoreboard return not 0', async () => {
+                jest.spyOn(gameService, 'addToScoreboard').mockReturnValue(Promise.resolve(1));
+                const findGameSpy = jest.spyOn(gameService, 'findById').mockReturnValue(Promise.resolve({ name: 'test' } as Game));
+                await gateway.playerWon(stubSocket, stubGameId, true);
+
+                expect(findGameSpy).toBeCalled();
+                expect(serverEmitSpy).toBeCalled();
             });
 
             it('should emit winner info to client when solo game and add winner info to scoreboard', async () => {
@@ -630,5 +640,31 @@ describe('SessionGateway', () => {
             expect(serverTo).toBeCalledWith(stubSocket.rooms[0]);
             expect(serverEmitSpy).toBeCalledWith('systemMessageFromServer', { playerName: stubName, systemCode: stubSystemCode });
         });
+    });
+
+    it('handleDisconnect should call sessionService.delete if session exist', () => {
+        const deleteSpy = jest.spyOn(sessionService, 'delete').mockImplementation(() => {});
+        jest.spyOn(sessionService, 'findByClientId').mockReturnValue(stubSession);
+        gateway.handleDisconnect(stubSocket);
+
+        expect(deleteSpy).toBeCalledWith(stubSession.id);
+    });
+
+    it('handleDisconnect should not call sessionService.delete if session does not exist', () => {
+        const deleteSpy = jest.spyOn(sessionService, 'delete').mockImplementation(() => {});
+        jest.spyOn(sessionService, 'findByClientId').mockReturnValue(undefined);
+        gateway.handleDisconnect(stubSocket);
+
+        expect(deleteSpy).not.toBeCalled();
+    });
+
+    it('handleDisconnect should not call sessionService.delete if error occured', () => {
+        const deleteSpy = jest.spyOn(sessionService, 'delete').mockImplementation(() => {});
+        jest.spyOn(sessionService, 'findByClientId').mockImplementation(() => {
+            throw new Error();
+        });
+        gateway.handleDisconnect(stubSocket);
+
+        expect(deleteSpy).not.toBeCalled();
     });
 });
