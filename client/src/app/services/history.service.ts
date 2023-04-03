@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CommunicationService } from '@app/services/communication.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
 import { GameHistory } from '@common/game-history';
 
 @Injectable({
@@ -16,6 +16,10 @@ export class HistoryService {
 
     async getHistory(id: string): Promise<GameHistory[]> {
         return await this.communicationService.getHistory(id);
+    }
+
+    deleteHistory(gameId: string): void {
+        this.communicationService.deleteHistory(gameId);
     }
 
     initHistory(): void {

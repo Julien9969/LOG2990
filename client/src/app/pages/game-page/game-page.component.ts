@@ -1,20 +1,20 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
 import { HistoryService } from '@app/services/history.service';
-import { InGameService } from '@app/services/in-game.service';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
 
 @Component({
-    selector: 'app-solo-game-page',
+    selector: 'app-game-page',
     templateUrl: './game-page.component.html',
     styleUrls: ['./game-page.component.scss'],
 })
-export class SoloGamePageComponent implements OnInit, OnDestroy {
+export class GamePageComponent implements OnInit, OnDestroy {
     userSocketId: string;
 
     playerName: string;

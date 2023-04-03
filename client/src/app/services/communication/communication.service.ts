@@ -136,6 +136,11 @@ export class CommunicationService {
         return await firstValueFrom(observer);
     }
 
+    async deleteHistory(gameId: string) {
+        const observer = this.http.delete(`${this.baseUrl}/history/${gameId}`, { observe: 'response' });
+        return await firstValueFrom(observer);
+    }
+
     /**
      * envoie une requête au serveur pour comparer les différences entre 2 images déjà sauvegardées sur le serveur
      *

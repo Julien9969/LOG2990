@@ -9,7 +9,7 @@ import { Game } from '@common/game';
 import { GameHistory } from '@common/game-history';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 
-fdescribe('CommunicationService', () => {
+describe('CommunicationService', () => {
     let httpMock: HttpTestingController;
     let service: CommunicationService;
     let baseUrl: string;
@@ -355,6 +355,14 @@ fdescribe('CommunicationService', () => {
         const req = httpMock.expectOne(expectedUrl);
         expect(req.request.method).toEqual('GET');
         req.flush(expectedHistory);
+    });
+
+    it('deleteHistory should delete a history entry', () => {
+        const expectedUrl = `${baseUrl}/history/1`;
+        service.deleteHistory('1');
+        const req = httpMock.expectOne(expectedUrl);
+        expect(req.request.method).toEqual('DELETE');
+        req.flush(null, { status: 200, statusText: 'Ok' });
     });
 
     describe('instanceOfImageComparisonResult', () => {

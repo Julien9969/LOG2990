@@ -15,7 +15,7 @@ export class HistoryPopupComponent implements OnInit {
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: string,
         public dialogRef: MatDialogRef<HistoryPopupComponent>,
-        private readonly historyService: HistoryService,
+        public historyService: HistoryService,
     ) {
         this.gameId = data;
     }
