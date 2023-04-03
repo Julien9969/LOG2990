@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 import { SECOND_IN_MILLISECONDS } from '@app/gateway/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
+import { ClassicSession } from '@app/services/session/classic-session';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
 import { Coordinate } from '@common/coordinate';
@@ -58,7 +59,7 @@ export class SessionGateway {
      * @param client Le client qui a fait la demande d'un identifiant (id) de session
      * @param gameId L'identifiant du jeu que le client veut jouer
      */
-    @SubscribeMessage(SessionEvents.StartSession)
+    @SubscribeMessage(SessionEvents.StartClassicSession)
     async startSession(client: Socket, data: StartSessionData) {
         // eslint-disable-next-line prefer-const
         let { gameId, isSolo } = data;
@@ -68,7 +69,7 @@ export class SessionGateway {
 
         this.logger.log(`Client ${client.id} asked for session id`);
         if (isSolo) {
-            const sessionId = this.sessionService.createNewSession(gameId, client.id);
+            const sessionId = this.sessionService.createNewClassicSession(gameId, client.id);
             this.startSessionTimer(client, sessionId);
             this.logger.log(`solo session ${sessionId} was created by ${client.id}`);
             return sessionId;
@@ -78,7 +79,7 @@ export class SessionGateway {
                 const clientsInRoom = await this.server.in(roomId).allSockets();
                 if (clientsInRoom.size === 2) {
                     const [firstClientId, secondClientId] = clientsInRoom;
-                    const sessionId = this.sessionService.createNewSession(gameId, firstClientId, secondClientId);
+                    const sessionId = this.sessionService.createNewClassicSession(gameId, firstClientId, secondClientId);
                     this.startSessionTimer(client, sessionId);
                     this.server.to(roomId).emit(SessionEvents.SessionId, sessionId);
                     this.logger.log(`multiplayer session ${sessionId} was created by client ${client.id}`);
@@ -188,7 +189,7 @@ export class SessionGateway {
      */
     @SubscribeMessage(SessionEvents.CheatGetAllDifferences)
     cheatGetAllDifferences(_: Socket, sessionId: number) {
-        const session = this.sessionService.findBySessionId(sessionId);
+        const session: ClassicSession = this.sessionService.findBySessionId(sessionId) as ClassicSession;
 
         if (session) {
             return session.getNotFoundDifferences();
@@ -255,15 +256,15 @@ export class SessionGateway {
         if (session) {
             if (session.isSolo) {
                 session.timerId = setInterval(() => {
-                    session.timeElapsed++;
-                    client.emit(SessionEvents.TimerUpdate, session.formatedTimeElapsed);
+                    session.time++;
+                    client.emit(SessionEvents.TimerUpdate, session.formatedTime);
                 }, SECOND_IN_MILLISECONDS);
             } else {
                 client.rooms.forEach((roomId) => {
                     if (roomId.startsWith('gameRoom')) {
                         session.timerId = setInterval(() => {
-                            session.timeElapsed++;
-                            this.server.to(roomId).emit(SessionEvents.TimerUpdate, session.formatedTimeElapsed);
+                            session.time++;
+                            this.server.to(roomId).emit(SessionEvents.TimerUpdate, session.formatedTime);
                         }, SECOND_IN_MILLISECONDS);
                     }
                 });
@@ -298,7 +299,7 @@ export class SessionGateway {
     async playerWon(client: Socket, sessionId: number, isSolo: boolean) {
         let winnerName: string;
         const session = this.sessionService.findBySessionId(sessionId);
-        const seconds = session.timeElapsed;
+        const seconds = session.time;
         const gameId = session.gameID;
         session.stopTimer();
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { SessionEvents } from '@common/session.gateway.events';
-import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { SocketClientService } from '@app/services/socket-client.service';
+import { MatchMakingEvents } from '@common/match-making.gateway.events';
+import { SessionEvents } from '@common/session.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
 
 @Injectable({
@@ -94,12 +94,20 @@ export class MatchMakingService {
 
     startMultiSession(gameId: string) {
         const data: StartSessionData = { gameId, isSolo: false };
-        this.socketService.send(SessionEvents.StartSession, data);
+        this.socketService.send(SessionEvents.StartClassicSession, data);
     }
 
     startSoloSession(gameId: string, callback: (sessionId: number) => void) {
         const data: StartSessionData = { gameId, isSolo: true };
-        this.socketService.sendAndCallBack(SessionEvents.StartSession, data, callback);
+        this.socketService.sendAndCallBack(SessionEvents.StartClassicSession, data, callback);
+    }
+
+    startSoloLimitedTimeSession(callback: (sessionId: number) => void) {
+        // const data: StartSessionData = { gameId, isSolo: true };
+        this.socketService.sendAndCallBack(SessionEvents.StartLimitedTimeSession, true, callback);
+    }
+    startMultiLimitedTimeSession() {
+        this.socketService.send(SessionEvents.StartLimitedTimeSession, false);
     }
 
     updateRoomView(callback: () => void) {

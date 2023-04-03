@@ -1,7 +1,9 @@
 import { SESSION_ID_CAP } from '@app/services/constants/services.const';
 import { GameService } from '@app/services/game/game.service';
 import { Session } from '@app/services/session/session';
+import { Player } from '@common/player';
 import { Injectable } from '@nestjs/common';
+import { ClassicSession } from './classic-session';
 import { LimitedTimeSession } from './time-limited-session';
 
 @Injectable()
@@ -28,11 +30,10 @@ export class SessionService {
      * @param id L'identifiant du jeu voulu
      * @returns L'identifiant de la session créée
      */
-    createNewLimitedTimeSession(id: string, firstSocketId: string, secondSocketId: string = undefined): number {
-        let newSession: LimitedTimeSession;
-        if (secondSocketId) newSession = new LimitedTimeSession(id, this.gameService, firstSocketId, secondSocketId);
-        else newSession = new LimitedTimeSession(id, this.gameService, firstSocketId);
-        return this.addToList(newSession);
+    createNewLimitedTimeSession(id: string, socketIdOne: string, socketIdTwo: string = undefined): number {
+        const players: Player[] = [{ name: 'unknown', socketId: socketIdOne, differencesFound: [] }];
+        if (socketIdTwo) players.push({ name: 'unknown', socketId: socketIdTwo, differencesFound: [] });
+        return this.addToList(new LimitedTimeSession(id, this.gameService, players));
     }
 
     /**
@@ -41,11 +42,10 @@ export class SessionService {
      * @param id L'identifiant du jeu voulu
      * @returns L'identifiant de la session créée
      */
-    createNewSession(id: string, firstSocketId: string, secondSocketId: string = undefined): number {
-        let newSession: Session;
-        if (secondSocketId) newSession = new Session(id, this.gameService, firstSocketId, secondSocketId);
-        else newSession = new Session(id, this.gameService, firstSocketId);
-        return this.addToList(newSession);
+    createNewClassicSession(id: string, socketIdOne: string, socketIdTwo: string = undefined): number {
+        const players: Player[] = [{ name: 'unknown', socketId: socketIdOne, differencesFound: [] }];
+        if (socketIdTwo) players.push({ name: 'unknown', socketId: socketIdTwo, differencesFound: [] });
+        return this.addToList(new ClassicSession(id, players));
     }
 
     /**
@@ -80,7 +80,7 @@ export class SessionService {
      */
     findByClientId(clientId: string): Session {
         for (const session of this.activeSessions) {
-            if (session.differencesFoundByPlayer.find((differences) => differences[0] === clientId)) return session;
+            if (session.players.find((player: Player) => player.socketId === clientId)) return session;
         }
     }
     /**

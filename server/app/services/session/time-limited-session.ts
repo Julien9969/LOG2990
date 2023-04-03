@@ -4,8 +4,10 @@ import { GameService } from '@app/services/game/game.service';
 import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
+import { Player } from '@common/player';
+import { Session } from './session';
 
-export class LimitedTimeSession {
+export class LimitedTimeSession implements Session {
     gameID: string;
     id: number;
     nGuesses: number = 0;
@@ -16,12 +18,12 @@ export class LimitedTimeSession {
     playedGames: Game[] = [];
     gameService: GameService;
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
-    player: string[] = [];
+    players: Player[] = [];
 
-    constructor(gameID: number, gameService: GameService, firstSocketId: string, secondSocketId?: string) {
+    constructor(gameID: string, gameService: GameService, players: Player[]) {
         this.gameService = gameService;
-        this.player.push(firstSocketId);
-        if (secondSocketId) this.player.push(secondSocketId);
+        this.players = players;
+
         // if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
         this.decideNewGame();
     }
@@ -43,7 +45,7 @@ export class LimitedTimeSession {
      * @returns le nombre de joueurs dans la session
      */
     get isSolo(): boolean {
-        return this.player.length === 1;
+        return this.players.length === 1;
     }
 
     /**
@@ -59,8 +61,7 @@ export class LimitedTimeSession {
      * @param guess La coordonnée de l'essai
      * @returns Le résultat de l'essai
      */
-    tryGuess(guess: Coordinate): GuessResult {
-        const diffPixelList: Coordinate[] = [];
+    tryGuess(guess: Coordinate, socketId: string): GuessResult {
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
 
         const isCorrect = this.differenceValidationService.validateGuess(guess) !== undefined;
@@ -68,8 +69,9 @@ export class LimitedTimeSession {
         if (isCorrect) {
             this.decideNewGame();
         } else this.nPenalties++;
+        console.log('TO DO: enlever ce log inutile', socketId);
 
-        return this.buildGuessResult(isCorrect, diffPixelList);
+        return this.buildGuessResult(isCorrect, []);
     }
 
     /**

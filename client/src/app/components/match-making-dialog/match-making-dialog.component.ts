@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DELAY_FOCUS, INPUT_VALIDATION } from '@app/constants/utils-constants';
 import { MatchMakingService } from '@app/services/match-making.service';
@@ -49,11 +49,9 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     handleKeyDown(event: KeyboardEvent) {
         event.preventDefault();
         if (this.nameFormControl.valid) {
-            if (this.gameInfo.isSolo) {
-                this.navigateToSoloGame();
-            } else {
-                this.joinGame();
-            }
+            if (this.gameInfo.isSolo) this.navigateToSoloGame();
+            else if (this.gameInfo.id === 'limited-time') this.navigateToLimitedTimeGame();
+            else this.joinGame();
         }
     }
 
@@ -92,7 +90,8 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     async acceptOpponent(): Promise<void> {
         if (await this.matchMaking.acceptOpponent(this.playerName)) {
-            this.matchMaking.startMultiSession(this.gameInfo.id);
+            if (this.gameInfo.id === 'limited-time') this.matchMaking.startMultiLimitedTimeSession();
+            else this.matchMaking.startMultiSession(this.gameInfo.id);
         } else {
             this.dialogInfos.template = 'waitingRoom';
             this.dialogInfos.message = "l'adversaire précendent a quitté la recherche";
@@ -117,6 +116,14 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     navigateToSoloGame(): void {
         this.matchMaking.startSoloSession(this.gameInfo.id, (newSessionId: number) => {
+            this.router.navigateByUrl(this.routerLink, {
+                state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
+            });
+        });
+    }
+
+    navigateToLimitedTimeGame(): void {
+        this.matchMaking.startSoloLimitedTimeSession((newSessionId: number) => {
             this.router.navigateByUrl(this.routerLink, {
                 state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
             });
