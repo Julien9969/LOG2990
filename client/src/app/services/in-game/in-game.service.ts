@@ -33,9 +33,9 @@ export class InGameService {
      * @param sessionId
      * @returns l'indice
      */
-    async retrieveClue(sessionId: number) {
+    async retrieveClue() {
         return new Promise<Clue>((resolve) => {
-            this.socketService.sendAndCallBack(SessionEvents.AskForClue, sessionId, (response: Clue) => {
+            this.socketService.sendAndCallBack(SessionEvents.AskForClue, undefined, (response: Clue) => {
                 resolve(response);
             });
         });

@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { TestBed } from '@angular/core/testing';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
+import { Clue } from '@common/Clue';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { SocketTestHelper } from '@common/socket-test-helper';
@@ -49,6 +50,23 @@ describe('InGameService', () => {
         expect(sendAndCallbackSpy).toHaveBeenCalled();
         expect(sendAndCallbackSpy).toHaveBeenCalledWith(SessionEvents.SubmitCoordinates, [sessionId, coordinate], jasmine.any(Function));
         expect(response).toEqual(expectedResponse);
+    });
+
+    it('retrieveClue should send get the right callback', async () => {
+        const expectedResponse = {
+            coordinates: [{ x: 0, y: 0 }],
+            nbCluesLeft: 2,
+        } as Clue;
+
+        const sendAndCallbackSpy = spyOn(service['socketService'], 'sendAndCallBack');
+        sendAndCallbackSpy.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
+            callback(expectedResponse);
+        });
+
+        const clue = await service.retrieveClue();
+        expect(sendAndCallbackSpy).toHaveBeenCalled();
+        expect(sendAndCallbackSpy).toHaveBeenCalledWith(SessionEvents.AskForClue, undefined, jasmine.any(Function));
+        expect(clue).toEqual(expectedResponse);
     });
 
     it('retrieveSocketId should send get the right callback', async () => {
