@@ -6,7 +6,6 @@ import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { Coordinate } from '@common/coordinate';
-import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 
 @Component({
@@ -76,7 +75,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
 
     async ngAfterViewInit(): Promise<void> {
         if (this.isTimeLimited) {
-            await this.requestNewImages();
+            await this.requestNewGame();
         } else {
             await this.loadImage(this.canvasContext1, this.imageMainId);
             await this.loadImage(this.canvasContext2, this.imageAltId);
@@ -121,28 +120,27 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
             this.audioService.playAudio('success');
             this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
             this.errorCounter = 0;
-            this.imageOperationService.pixelBlink(guessResult.differencePixelList);
-            if (this.isTimeLimited) this.requestNewImages();
+            if (this.isTimeLimited) this.requestNewGame();
+            else this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
             this.handleErrorGuess();
         }
     }
 
-    async requestNewImages(): Promise<void> {
-        console.log('requestedNewImages()');
-        this.socket
-            .requestNewGame()
-            .then((response: Game) => {
-                console.log('receivedNewGame from server, its imageMainId is', this.imageMainId);
-                this.imageMainId = response.imageMain;
-                this.imageAltId = response.imageAlt;
-                this.loadImage(this.canvasContext1, this.imageMainId);
-                this.loadImage(this.canvasContext2, this.imageAltId);
-                this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
-            })
-            .catch((e) => {
-                alert(e.message);
-            });
+    async requestNewGame(): Promise<void> {
+        try {
+            console.log('requestedNewImages()');
+            const newGame = await this.socket.requestNewGame();
+            console.log('receivedNewGame from server, its imageMainId is', this.imageMainId);
+            this.imageMainId = newGame.imageMain;
+            this.imageAltId = newGame.imageAlt;
+            await this.loadImage(this.canvasContext1, this.imageMainId);
+            await this.loadImage(this.canvasContext2, this.imageAltId);
+            this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            alert(error.message);
+        }
     }
 
     handleErrorGuess(): void {
@@ -174,6 +172,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     drawImageOnCanvas(canvasContext: CanvasRenderingContext2D, img: HTMLImageElement): void {
+        console.log('we are drawing a new image');
         canvasContext.drawImage(img, 0, 0);
     }
 

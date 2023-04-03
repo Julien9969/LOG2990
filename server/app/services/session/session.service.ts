@@ -1,11 +1,15 @@
 import { SESSION_ID_CAP } from '@app/services/constants/services.const';
+import { GameService } from '@app/services/game/game.service';
 import { Session } from '@app/services/session/session';
 import { Injectable } from '@nestjs/common';
+import { LimitedTimeSession } from './time-limited-session';
 
 @Injectable()
 export class SessionService {
     activeSessions: Session[] = [];
     socketIdToName = {};
+
+    constructor(private readonly gameService: GameService) {}
 
     getName(socketId: string): string {
         return this.socketIdToName[socketId];
@@ -24,10 +28,23 @@ export class SessionService {
      * @param id L'identifiant du jeu voulu
      * @returns L'identifiant de la session créée
      */
+    createNewLimitedTimeSession(id: string, firstSocketId: string, secondSocketId: string = undefined): number {
+        let newSession: LimitedTimeSession;
+        if (secondSocketId) newSession = new LimitedTimeSession(id, this.gameService, firstSocketId, secondSocketId);
+        else newSession = new LimitedTimeSession(id, this.gameService, firstSocketId);
+        return this.addToList(newSession);
+    }
+
+    /**
+     * Crée une session d'un certain jeu
+     *
+     * @param id L'identifiant du jeu voulu
+     * @returns L'identifiant de la session créée
+     */
     createNewSession(id: string, firstSocketId: string, secondSocketId: string = undefined): number {
         let newSession: Session;
-        if (secondSocketId) newSession = new Session(id, firstSocketId, secondSocketId);
-        else newSession = new Session(id, firstSocketId);
+        if (secondSocketId) newSession = new Session(id, this.gameService, firstSocketId, secondSocketId);
+        else newSession = new Session(id, this.gameService, firstSocketId);
         return this.addToList(newSession);
     }
 

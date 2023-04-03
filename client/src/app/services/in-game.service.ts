@@ -74,8 +74,8 @@ export class InGameService {
         const data = 'a enlever';
         return new Promise<Game>((resolve) => {
             this.socketService.sendAndCallBack(SessionEvents.NewGame, data, (response: Game) => {
-                console.log(`this is the main image id: ${response.imageMain}`);
                 resolve(response);
+                console.log(`this is the new Games main image id: ${response.imageMain}`);
             });
         });
     }
