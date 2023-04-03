@@ -5,6 +5,8 @@ import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
+import { Game } from '@common/game';
+import { ChatEvents } from '@common/chat.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
 import { WinnerInfo } from '@common/winner-info';
 import { Logger } from '@nestjs/common';
@@ -265,7 +267,15 @@ export class SessionGateway {
             const winnerInfo: WinnerInfo = { name: playerName, socketId: client.id };
             const finishedGame: FinishedGame = { winner: winnerName, time: seconds, solo: isSolo } as FinishedGame;
             try {
-                await this.gameService.addToScoreboard(gameId, finishedGame);
+                const positionInScoreBoard = await this.gameService.addToScoreboard(gameId, finishedGame);
+                if (positionInScoreBoard) {
+                    await this.gameService.findById(gameId).then((game: Game) => {
+                        const hightScoreMessage = `${new Date().toTimeString().split(' ')[0]} - 
+                                ${winnerName} obtient la ${positionInScoreBoard} place dans les meilleurs temps du jeu ${game.name} en 
+                            ${session.isSolo ? 'solo' : 'multijoueur'}`;
+                        this.server.emit(ChatEvents.BroadcastNewHighScore, hightScoreMessage);
+                    });
+                }
             } catch (error) {
                 this.logger.error('error while adding to scoreboard : game is deleted');
             }

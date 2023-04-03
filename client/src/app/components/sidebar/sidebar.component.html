@@ -5,7 +5,8 @@
             class="message"
             [ngClass]="{
                 systemMessage: message.isFromSystem,
-                otherUserMessage: !message.isFromSystem && !chatService.isFromMe(message)
+                otherUserMessage: !message.isFromSystem && !chatService.isFromMe(message),
+                classementEvent: message.author === 'Classement'
             }"
         >
             <div class="datetime">

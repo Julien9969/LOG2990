@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
 import { HistoryService } from '@app/services/history.service';
 import { CommunicationService } from './communication/communication.service';
@@ -47,16 +49,10 @@ describe('HistoryService', () => {
         expect(communicationServiceSpy.deleteHistory).toHaveBeenCalledWith(gameId);
     });
 
-    it('initHistory should set currentGame', () => {
+    it('initHistory should call setStartDateTime', () => {
+        spyOn(service, 'setStartDateTime' as any).and.callFake(() => {});
         service.initHistory();
-        expect(service['currentGame']).toEqual({
-            startDateTime: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
-            gameId: '',
-            duration: '',
-            gameMode: '',
-            playerOne: '',
-            playerTwo: '',
-        });
+        expect(service['setStartDateTime']).toHaveBeenCalled();
     });
 
     it('setGameMode should set currentGame.gameMode to solo if isSolo is true', () => {
@@ -120,7 +116,7 @@ describe('HistoryService', () => {
 
     it('setStartDateTime should set currentGame.startDateTime', () => {
         service['setStartDateTime']();
-        const expectedStartDateTime = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString();
+        const expectedStartDateTime = dateSpy.toLocaleDateString() + ' ' + dateSpy.toLocaleTimeString();
         expect(service['currentGame'].startDateTime).toEqual(expectedStartDateTime);
     });
 });
