@@ -1,8 +1,8 @@
+import { GameConstantsInput } from '@app/interfaces/game-constants-input';
 import { GameImageInput } from '@app/interfaces/game-image-input';
 import { GameService } from '@app/services/game/game.service';
 import { Utils } from '@app/services/utils/utils.service';
 import { Game } from '@common/game';
-import { GameConstantsInput } from '@common/game-constants-input';
 import { InputGame } from '@common/input-game';
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Param, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';

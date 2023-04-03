@@ -1,7 +1,7 @@
 import { GameDocument } from '@app/Schemas/game/game.schema';
 import { HistoryDocument } from '@app/Schemas/history/history.schema';
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
-import { GameConstants } from '@app/interfaces/game-constants';
+import { GameConstantsInput } from '@app/interfaces/game-constants-input';
 import {
     DEFAULT_GAME_LEADERBOARD,
     DEFAULT_GAME_TIME,
@@ -24,7 +24,7 @@ import { ImageService } from '@app/services/images/image.service';
 import { Utils } from '@app/services/utils/utils.service';
 import { FinishedGame } from '@common/finishedGame';
 import { Game, UnsavedGame } from '@common/game';
-import { GameConstantsInput } from '@common/game-constants-input';
+import { GameConstants } from '@common/game-constants';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { InputGame } from '@common/input-game';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
