@@ -13,7 +13,6 @@ import { DELAY_BEFORE_BUTTONS_UPDATE, GAMES_PER_PAGE } from '@app/constants/util
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { GameService } from '@app/services/game/game.service';
 import { Game } from '@common/game';
-import { HistoryPopupComponent } from '@app/components/history-popup/history-popup.component';
 
 describe('SquareInterfaceComponent', () => {
     let component: SquareInterfaceComponent;
@@ -113,13 +112,6 @@ describe('SquareInterfaceComponent', () => {
             autoFocus: false,
             data: { id: testGame.id, isSolo: true },
         });
-    });
-
-    it('openHistoryDialog should call closeAll and open with the right parameters', () => {
-        component.openHistoryDialog('testGame');
-        expect(component['dialog'].closeAll).toHaveBeenCalled();
-        expect(component['dialog'].open).toHaveBeenCalledWith(HistoryPopupComponent,
-            { closeOnNavigation: true, disableClose: true, autoFocus: false, data: 'testGame' });
     });
 
     it('baseMatchMakingFeatures should call matchMaking.updateRoomView with a callback that call reachableGames', () => {

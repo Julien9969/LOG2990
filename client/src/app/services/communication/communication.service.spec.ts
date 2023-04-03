@@ -348,8 +348,8 @@ describe('CommunicationService', () => {
                 duration: '0.1',
             },
         ];
-        const expectedUrl = `${baseUrl}/history/1`;
-        service.getHistory('1').then((history) => {
+        const expectedUrl = `${baseUrl}/history`;
+        service.getHistory().then((history) => {
             expect(history).toEqual(expectedHistory);
         });
         const req = httpMock.expectOne(expectedUrl);
@@ -358,8 +358,8 @@ describe('CommunicationService', () => {
     });
 
     it('deleteHistory should delete a history entry', () => {
-        const expectedUrl = `${baseUrl}/history/1`;
-        service.deleteHistory('1');
+        const expectedUrl = `${baseUrl}/history`;
+        service.deleteHistory();
         const req = httpMock.expectOne(expectedUrl);
         expect(req.request.method).toEqual('DELETE');
         req.flush(null, { status: 200, statusText: 'Ok' });

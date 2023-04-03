@@ -1,5 +1,5 @@
 import { HistoryDocument } from '@app/Schemas/history/history.schema';
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Post } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GameHistory } from '@common/game-history';
@@ -23,13 +23,17 @@ export class HistoryController {
             throw new HttpException('Données manquantes.', HttpStatus.BAD_REQUEST);
         }
 
-        return await this.history.findOneAndUpdate(
-            { gameId: newHistoryEntry.gameId, startDateTime: newHistoryEntry.startDateTime, gameMode: newHistoryEntry.gameMode },
-            newHistoryEntry,
-            {
-                upsert: true,
-            },
-        );
+        try {
+            return await this.history.findOneAndUpdate(
+                { gameId: newHistoryEntry.gameId, startDateTime: newHistoryEntry.startDateTime, gameMode: newHistoryEntry.gameMode },
+                newHistoryEntry,
+                {
+                    upsert: true,
+                },
+            );
+        } catch (error) {
+            throw new HttpException("Erreur lors de l'ajout de l'historique.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -38,12 +42,13 @@ export class HistoryController {
      * @param id id de la partie dont on veut l'historique
      * @returns la liste des entrées d'historique de la partie
      */
-    @Get(':id')
-    async getHistory(@Param('id') id: string): Promise<GameHistory[]> {
-        if (!id) {
-            throw new HttpException('Pas id maquant', HttpStatus.BAD_REQUEST);
+    @Get()
+    async getHistory(): Promise<GameHistory[]> {
+        try {
+            return await this.history.find({});
+        } catch (error) {
+            throw new HttpException("Erreur lors de la récupération de l'historique.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return await this.history.find({ gameId: id });
     }
 
     /**
@@ -51,11 +56,12 @@ export class HistoryController {
      *
      * @param gameID id de la partie dont on veut supprimer l'historique
      */
-    @Delete(':id')
-    async deleteHistory(@Param('id') gameID: string) {
-        if (!gameID) {
-            throw new HttpException('Pas id maquant', HttpStatus.BAD_REQUEST);
+    @Delete()
+    async deleteHistory() {
+        try {
+            await this.history.deleteMany({});
+        } catch (error) {
+            throw new HttpException("Erreur lors de la suppression de l'historique.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        await this.history.deleteMany({ gameId: gameID });
     }
 }

@@ -37,9 +37,8 @@ describe('HistoryService', () => {
     });
 
     it('getHistory should call communicationService.getHistory', async () => {
-        const id = '42';
-        const result = await Promise.resolve(service.getHistory(id));
-        expect(communicationServiceSpy.getHistory).toHaveBeenCalledWith(id);
+        const result = await Promise.resolve(service.getHistory());
+        expect(communicationServiceSpy.getHistory).toHaveBeenCalledWith();
         expect(result).toEqual([]);
     });
 
@@ -115,6 +114,7 @@ describe('HistoryService', () => {
     });
 
     it('setStartDateTime should set currentGame.startDateTime', () => {
+        service['date'] = dateSpy;
         service['setStartDateTime']();
         const expectedStartDateTime = dateSpy.toLocaleDateString() + ' ' + dateSpy.toLocaleTimeString();
         expect(service['currentGame'].startDateTime).toEqual(expectedStartDateTime);
