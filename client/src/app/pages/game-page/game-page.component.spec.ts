@@ -292,7 +292,6 @@ describe('SoloGamePageComponent', () => {
     it('unloadHandler should call historyService.playerQuit is in solo and game not over', () => {
         const event = new Event('beforeunload');
         component.isSolo = true;
-        // component.nDiffFoundMainPlayer = 0;
         component.unloadHandler(event);
         expect(historyServiceSpy.playerQuit).toHaveBeenCalled();
     });
