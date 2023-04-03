@@ -47,6 +47,14 @@ describe('Game Service tests', () => {
                         notifyGameDeleted: jest.fn().mockImplementation(() => {}),
                     },
                 },
+                {
+                    provide: getModelToken('GameHistory'),
+                    useValue: {
+                        find: jest.fn(),
+                        findOneAndUpdate: jest.fn(),
+                        deleteMany: jest.fn(),
+                    },
+                },
             ],
         }).compile();
 
