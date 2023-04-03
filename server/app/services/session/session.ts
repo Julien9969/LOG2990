@@ -1,6 +1,6 @@
 import { ALLOWED_NB_CLUES, TIME_CONST } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
-import { Clue } from '@common/Clue';
+import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 

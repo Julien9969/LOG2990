@@ -17,7 +17,7 @@ import { CommunicationService } from '@app/services/communication/communication.
 import { HistoryService } from '@app/services/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
-import { Clue } from '@common/Clue';
+import { Clue } from '@common/clue';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
 import { GamePageComponent } from './game-page.component';

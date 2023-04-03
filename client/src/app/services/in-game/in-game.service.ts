@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
-import { Clue } from '@common/Clue';
+import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';

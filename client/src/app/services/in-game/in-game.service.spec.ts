@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { TestBed } from '@angular/core/testing';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
-import { Clue } from '@common/Clue';
+import { Clue } from '@common/clue';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { SocketTestHelper } from '@common/socket-test-helper';

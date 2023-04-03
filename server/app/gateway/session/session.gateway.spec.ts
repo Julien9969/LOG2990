@@ -8,7 +8,7 @@ import { GameService } from '@app/services/game/game.service';
 import { stubGame } from '@app/services/game/game.service.spec.const';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
-import { Clue } from '@common/Clue';
+import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';

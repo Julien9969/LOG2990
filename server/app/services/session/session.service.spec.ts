@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines, no-restricted-imports, max-len */
-import { instanceOfClue } from '@common/Clue';
+import { instanceOfClue } from '@common/clue';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { DifferenceValidationService } from '../difference-validation/difference-validation.service';
