@@ -169,7 +169,7 @@ describe('SoloGamePageComponent', () => {
             expect(listenTimerUpdateSpy).toHaveBeenCalled();
             expect(component.time).toEqual('35:12');
         });
-        fit('should call initHistory', () => {
+        it('should call initHistory', () => {
             component.ngOnInit();
             expect(historyServiceSpy.initHistory).toHaveBeenCalled();
         });

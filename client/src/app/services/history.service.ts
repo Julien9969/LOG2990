@@ -7,8 +7,7 @@ import { GameHistory } from '@common/game-history';
 })
 export class HistoryService {
     private currentGame: GameHistory;
-
-    constructor(private readonly communicationService: CommunicationService) {}
+    constructor(private readonly communicationService: CommunicationService, private date: Date) {}
 
     set gameId(gameId: string) {
         this.currentGame.gameId = gameId;
@@ -59,7 +58,6 @@ export class HistoryService {
     }
 
     private setStartDateTime(): void {
-        const date = new Date();
-        this.currentGame.startDateTime = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        this.currentGame.startDateTime = this.date.toLocaleDateString() + ' ' + this.date.toLocaleTimeString();
     }
 }

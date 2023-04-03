@@ -21,6 +21,7 @@ export class ChatService {
         this.listenForMessage();
         this.listenForSystemMessage();
         this.listenForId();
+        this.listenForNewHighScore();
     }
 
     giveNameToServer(playerName: string) {
@@ -76,6 +77,19 @@ export class ChatService {
     async listenForId() {
         this.socketService.on(ChatEvents.GiveClientID, (receivedId: string) => {
             this.clientId = receivedId;
+        });
+    }
+
+    async listenForNewHighScore() {
+        this.socketService.on(ChatEvents.BroadcastNewHighScore, (message: string) => {
+            this.receiveMessage({
+                time: new Date().getTime(),
+                author: 'Classement',
+                isFromSystem: false,
+                socketId: 'unknown',
+                sessionID: -1,
+                message,
+            });
         });
     }
 }
