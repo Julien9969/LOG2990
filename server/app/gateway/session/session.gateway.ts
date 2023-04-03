@@ -176,7 +176,7 @@ export class SessionGateway {
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 this.logger.log(`Client ${client.id} emited that he left the game to ${roomId}`);
-                this.sendSystemMessage(client, 'userDisconnected');
+                // this.sendSystemMessage(client, 'userDisconnected');
                 this.server.to(roomId).except(client.id).emit(SessionEvents.OpponentLeftGame);
                 this.sendSystemMessage(client, 'userDisconnected');
                 this.server.socketsLeave(roomId);
