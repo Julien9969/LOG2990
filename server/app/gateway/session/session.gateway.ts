@@ -298,7 +298,7 @@ export class SessionGateway {
 
     sendSystemMessage(client: Socket, systemCode: string) {
         const playerName: string = this.sessionService.getName(client.id);
-        this.server.to(this.getGameRoom(client)).emit('systemMessageFromServer', { playerName, systemCode });
+        this.server.to(this.getGameRoom(client)).emit(ChatEvents.SystemMessageFromServer, { playerName, systemCode });
     }
 
     handleDisconnect(client: Socket) {
