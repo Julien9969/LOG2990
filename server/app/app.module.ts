@@ -13,7 +13,6 @@ import { SessionGateway } from '@app/gateway/session/session.gateway';
 import { ChatGateway } from '@app/gateway/chat/chat.gateway';
 import { historySchema } from '@app/Schemas/history/history.schema';
 import { HistoryController } from './controllers/history/history.controller';
-// import { HistoryService } from '@app/services/history/history.service';
 
 @Module({
     imports: [
