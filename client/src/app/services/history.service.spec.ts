@@ -43,9 +43,8 @@ describe('HistoryService', () => {
     });
 
     it('deleteHistory should call communicationService.deleteHistory', () => {
-        const gameId = '42';
-        service.deleteHistory(gameId);
-        expect(communicationServiceSpy.deleteHistory).toHaveBeenCalledWith(gameId);
+        service.deleteHistory();
+        expect(communicationServiceSpy.deleteHistory).toHaveBeenCalledWith();
     });
 
     it('initHistory should call setStartDateTime', () => {
