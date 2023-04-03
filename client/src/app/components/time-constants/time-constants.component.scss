@@ -1,0 +1,12 @@
+#time-infos {
+    display: flex;
+    width: 60vh;
+    .info {
+        display: flex;
+        margin-right: 3vh;
+        font-size: 1.5vh;
+    }
+    p {
+        margin-right: 1vw;
+    }
+}

@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
-import { TimeConstantsDisplay } from './app-time-constants-display';
+import { TimeConstantsComponent } from './time-constants.component';
 
 describe('UploadImageSquareComponent', () => {
-    let component: TimeConstantsDisplay;
-    let fixture: ComponentFixture<TimeConstantsDisplay>;
+    let component: TimeConstantsComponent;
+    let fixture: ComponentFixture<TimeConstantsComponent>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [TimeConstantsDisplay],
+            declarations: [TimeConstantsComponent],
             imports: [MatIconModule],
         }).compileComponents();
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(TimeConstantsDisplay);
+        fixture = TestBed.createComponent(TimeConstantsComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
