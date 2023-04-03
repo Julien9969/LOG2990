@@ -1,5 +1,6 @@
-import { TIME_CONST } from '@app/services/constants/services.const';
+import { ALLOWED_NB_CLUES, TIME_CONST } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
+import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 
@@ -13,6 +14,8 @@ export class Session {
     differencesFoundByPlayer: [userSocketId: string, differencesFound: number[]][] = [];
     timeElapsed: number = 0;
     timerId: NodeJS.Timeout;
+
+    nbCluesRequested: number = 0;
 
     constructor(gameID: string, firstSocketId: string, secondSocketId?: string) {
         this.differencesFoundByPlayer.push([firstSocketId, []]);
@@ -50,6 +53,23 @@ export class Session {
      */
     stopTimer() {
         clearInterval(this.timerId);
+    }
+
+    /**
+     * Offre un indice sous la forme d'une liste de pixels
+     * dans laquelle une des différences non-trouvé s'y trouve
+     *
+     * @return la liste de pixel correspondant à l'indice (pixels qui changerons de couleur sur l'écran)
+     */
+    async getClue(penalty: number): Promise<Clue | void> {
+        if (this.nbCluesRequested >= 3) return;
+        this.nbCluesRequested++;
+        this.timeElapsed += penalty;
+        const clue: Clue = {
+            coordinates: [{ x: 0, y: 0 } as Coordinate],
+            nbCluesLeft: ALLOWED_NB_CLUES - this.nbCluesRequested,
+        };
+        return clue;
     }
 
     /**

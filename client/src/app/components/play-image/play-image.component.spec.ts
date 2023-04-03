@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClientModule, HttpResponse } from '@angular/common/http';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
@@ -98,6 +98,12 @@ describe('PlayImageComponent', () => {
         expect(component).toBeTruthy();
     });
 
+    it('handleCheat should call imageOperationService.handleCheat', async () => {
+        imageOperationServiceSpy.handleCheat.and.returnValue(Promise.resolve());
+        await component.handleCheat();
+        expect(imageOperationServiceSpy.handleCheat).toHaveBeenCalled();
+    });
+
     describe('get', () => {
         it('mouse should return mouseService', () => {
             expect(component.mouse).toEqual(mouseServiceSpy);
@@ -133,12 +139,6 @@ describe('PlayImageComponent', () => {
         spyOn(component, 'loadImage');
         component.ngAfterViewInit();
         expect(component.loadImage).toHaveBeenCalledTimes(1);
-    });
-
-    it('handleCheat should call imageOperationService.handleCheat', async () => {
-        imageOperationServiceSpy.handleCheat.and.returnValue(Promise.resolve());
-        await component.handleCheat();
-        expect(imageOperationServiceSpy.handleCheat).toHaveBeenCalled();
     });
 
     describe('sendPosition', () => {
