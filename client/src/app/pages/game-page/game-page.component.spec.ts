@@ -169,10 +169,9 @@ describe('SoloGamePageComponent', () => {
             expect(listenTimerUpdateSpy).toHaveBeenCalled();
             expect(component.time).toEqual('35:12');
         });
-        it('should call initHistory', () => {
-            spyOn(component, 'initHistory' as any).and.callFake(() => {});
+        fit('should call initHistory', () => {
             component.ngOnInit();
-            expect(component['initHistory']).toHaveBeenCalled();
+            expect(historyServiceSpy.initHistory).toHaveBeenCalled();
         });
     });
 
