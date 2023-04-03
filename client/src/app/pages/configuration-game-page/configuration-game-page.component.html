@@ -2,17 +2,21 @@
     <div class="squares">
         <div>
             <mat-toolbar id="top" color="primary">
-                <div>Modifiez un jeu</div>
-                <div id="quit-button">
-                    <button mat-button routerLink="/main">
-                        <mat-icon>home</mat-icon>
-                        Quitter
-                    </button>
+                <div id="topbar-links">
+                    <p>Modifiez un jeu</p>
+                    <div id="quit-button">
+                        <button mat-button routerLink="/main">
+                            <mat-icon>home</mat-icon>
+                            Quitter
+                        </button>
+                    </div>
+                    <div id="">
+                        <button mat-button routerLink="/game-creation"><mat-icon>build</mat-icon>Créer un jeu</button>
+                    </div>
                 </div>
-                <div id="">
-                    <button mat-button routerLink="/game-creation"><mat-icon>build</mat-icon>Créer un jeu</button>
-                </div>
-                <app-time-constants-display></app-time-constants-display>
+                <span></span>
+                <app-time-constants></app-time-constants>
+                <span></span>
             </mat-toolbar>
             <app-square-interface [configPage]="true"></app-square-interface>
         </div>

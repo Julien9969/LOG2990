@@ -1,4 +1,11 @@
 #top {
+    padding-top: 2vh;
     position: fixed;
-    height: 5vh;
+    height: 6vh;
+    justify-content: space-between;
+}
+
+#topbar-links {
+    display: flex;
+    flex-direction: row;
 }
