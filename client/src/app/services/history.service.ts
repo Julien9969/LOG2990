@@ -7,18 +7,19 @@ import { GameHistory } from '@common/game-history';
 })
 export class HistoryService {
     private currentGame: GameHistory;
-    constructor(private readonly communicationService: CommunicationService, private date: Date) {}
+    private date: Date = new Date();
+    constructor(private readonly communicationService: CommunicationService) {}
 
     set gameId(gameId: string) {
         this.currentGame.gameId = gameId;
     }
 
-    async getHistory(id: string): Promise<GameHistory[]> {
-        return await this.communicationService.getHistory(id);
+    async getHistory(): Promise<GameHistory[]> {
+        return await this.communicationService.getHistory();
     }
 
-    deleteHistory(gameId: string): void {
-        this.communicationService.deleteHistory(gameId);
+    deleteHistory(): void {
+        this.communicationService.deleteHistory();
     }
 
     initHistory(): void {

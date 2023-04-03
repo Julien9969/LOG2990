@@ -12,6 +12,9 @@
                 <div id="">
                     <button mat-button routerLink="/game-creation"><mat-icon>build</mat-icon>Créer un jeu</button>
                 </div>
+                <div>
+                    <button mat-raised-button color="primary" (click)="openHistoryDialog()">Historique</button>
+                </div>
             </mat-toolbar>
             <app-square-interface [configPage]="true"></app-square-interface>
         </div>
