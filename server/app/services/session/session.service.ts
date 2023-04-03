@@ -57,7 +57,7 @@ export class SessionService {
     }
 
     /**
-     * Supprime toutes les sessions d'un client
+     * Cherche une session en cours
      *
      * @param clientId L'identifiant du client
      */
