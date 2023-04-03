@@ -21,11 +21,6 @@ export class ChatGateway {
         this.server.to(gameRoom).emit(ChatEvents.MessageFromServer, message);
     }
 
-    broadcastNewHighScore(message: Message): void {
-        message.isFromSystem = true;
-        this.server.emit(ChatEvents.MessageFromServer, message);
-    }
-
     getGameRoom(client: Socket): string {
         let correctRoom = client.id;
         client.rooms.forEach((room: string) => {
