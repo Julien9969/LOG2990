@@ -10,14 +10,18 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { SessionGateway } from '@app/gateway/session/session.gateway';
-import { ChatGateway } from './gateway/chat/chat.gateway';
+import { ChatGateway } from '@app/gateway/chat/chat.gateway';
+import { historySchema } from '@app/Schemas/history/history.schema';
+import { HistoryController } from './controllers/history/history.controller';
+
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forFeature([{ name: 'Game', schema: gameSchema }]),
+        MongooseModule.forFeature([{ name: 'GameHistory', schema: historySchema }]),
         MongooseModule.forRoot(process.env.DATABASE_CONNECTION_STRING),
     ],
-    controllers: [GamesController, ImageController],
+    controllers: [GamesController, ImageController, HistoryController],
     providers: [GameService, ImageService, SessionService, Logger, MatchmakingGateway, SessionGateway, ChatGateway],
 })
 export class AppModule {}

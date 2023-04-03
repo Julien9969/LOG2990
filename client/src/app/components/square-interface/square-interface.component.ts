@@ -6,6 +6,7 @@ import { DELAY_BEFORE_BUTTONS_UPDATE, GAMES_PER_PAGE } from '@app/constants/util
 import { GameService } from '@app/services/game/game.service';
 import { MatchMakingService } from '@app/services/match-making/match-making.service';
 import { Game } from '@common/game';
+import { HistoryPopupComponent } from '@app/components/history-popup/history-popup.component';
 
 @Component({
     selector: 'app-square-interface',
@@ -67,6 +68,11 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
         this.dialog.closeAll();
         const gameInfo = { id: game.id, isSolo };
         this.dialog.open(MatchMakingDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: gameInfo });
+    }
+
+    openHistoryDialog(gameId: string): void {
+        this.dialog.closeAll();
+        this.dialog.open(HistoryPopupComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: gameId });
     }
 
     async reachableGames(): Promise<void> {

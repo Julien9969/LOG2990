@@ -1,5 +1,6 @@
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { GameDocument } from '@app/Schemas/game/game.schema';
+import { HistoryDocument } from '@app/Schemas/history/history.schema';
 import {
     DEFAULT_GAME_LEADERBOARD,
     DEFAULT_GAME_TIME,
@@ -24,8 +25,10 @@ import mongoose, { Model } from 'mongoose';
 @Injectable()
 export class GameService {
     prototype: unknown;
+    // eslint-disable-next-line max-params -- Nécessaire pour le fonctionnement
     constructor(
         @InjectModel('Game') private gameModel: Model<GameDocument>,
+        @InjectModel('GameHistory') private history: Model<HistoryDocument>,
         private readonly imageService: ImageService,
         private readonly matchMakingGateway: MatchmakingGateway,
     ) {}
@@ -85,6 +88,7 @@ export class GameService {
         }
         try {
             await this.gameModel.deleteOne({ _id: id });
+            await this.history.deleteMany({ gameId: id });
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }

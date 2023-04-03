@@ -9,7 +9,7 @@ import { MatchMakingEvents } from '@common/match-making.gateway.events';
  * @title Inject des données lorsqu'on ouvre un dialogue
  */
 @Component({
-    selector: 'app-popup-dialog',
+    selector: 'app-limited-time-selection',
     templateUrl: './limited-time-selection.component.html',
     styleUrls: ['./limited-time-selection.component.scss'],
 })
