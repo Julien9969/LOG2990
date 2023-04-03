@@ -3,6 +3,8 @@
     position: fixed;
     height: 6vh;
     justify-content: space-between;
+    overflow: visible;
+    z-index: 1;
 }
 
 #topbar-links {

@@ -7,6 +7,63 @@
         font-size: 1.5vh;
     }
     p {
-        margin-right: 1vw;
+        margin-right: 1.5vw;
     }
+}
+
+#constants-edit {
+    background-color: rgb(00, 120, 212);
+    padding: 2%;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-around;
+    margin: auto;
+    margin-top: 15px;
+}
+
+button {
+    background-color: rgb(213, 219, 216);
+    font-size: 100%;
+    padding: 2%;
+}
+
+#title {
+    font-size: 150%;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#message {
+    font-size: 100%;
+    font-weight: bold;
+    margin-bottom: 5px;
+    justify-content: center;
+}
+
+input {
+    align-items: center;
+    font-size: 120%;
+    padding: 2%;
+    font-weight: bolder;
+}
+
+.constants-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 300px;
+    width: 100%;
+}
+
+.full-width {
+    width: 100%;
+    margin: 2vh 0;
 }
