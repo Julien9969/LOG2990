@@ -9,8 +9,8 @@ import { SystemMessage } from '@common/systemMessage';
     providedIn: 'root',
 })
 export class ChatService {
-    chatContainer: ElementRef<HTMLDivElement>;
     messageList: Message[];
+    formElement: ElementRef<HTMLFormElement>;
     clientId: string;
 
     constructor(public socketService: SocketClientService) {
@@ -63,12 +63,11 @@ export class ChatService {
         this.scrollToBottom();
     }
     scrollToBottom() {
-        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+        this.formElement.nativeElement.scrollIntoView();
     }
 
     async listenForSystemMessage() {
         this.socketService.on(ChatEvents.SystemMessageFromServer, (systemMessage: SystemMessage) => {
-            console.log('newMessage');
             this.receiveMessage(this.createSystemMessage(systemMessage.systemCode, systemMessage.playerName));
         });
     }
@@ -96,4 +95,5 @@ export class ChatService {
             });
         });
     }
+
 }
