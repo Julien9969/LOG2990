@@ -16,6 +16,7 @@ import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { DrawBottomBarComponent } from './components/draw-bottom-bar/draw-bottom-bar.component';
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
 import { GameCreationFormComponent } from './components/game-creation-form/game-creation-form.component';
+import { HistoryPopupComponent } from './components/history-popup/history-popup.component';
 import { ImageDifferencePopupComponent } from './components/image-difference-popup/image-difference-popup.component';
 import { LimitedTimeSelectionComponent } from './components/limited-time-selection/limited-time-selection.component';
 import { MatchMakingDialogComponent } from './components/match-making-dialog/match-making-dialog.component';
@@ -23,7 +24,7 @@ import { PopupDialogComponent } from './components/popup-dialog/popup-dialog.com
 import { UploadImageSquareComponent } from './components/upload-image-square/upload-image-square.component';
 import { ConfigurationGameComponent } from './pages/configuration-game-page/configuration-game-page.component';
 import { GameCreationPageComponent } from './pages/game-creation-page/game-creation-page.component';
-import { SoloGamePageComponent } from './pages/game-page/game-page.component';
+import { GamePageComponent } from './pages/game-page/game-page.component';
 import { GameSelectionPageComponent } from './pages/game-selection-page/game-selection-page.component';
 
 /**
@@ -41,10 +42,11 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         UploadImageSquareComponent,
         GameCreationFormComponent,
         SquareInterfaceComponent,
-        SoloGamePageComponent,
+        GamePageComponent,
         PopupDialogComponent,
         ErrorDuringLoadingComponent,
         MatchMakingDialogComponent,
+        HistoryPopupComponent,
         PlayImageComponent,
         GameCreationPageComponent,
         ConfigurationGameComponent,
@@ -65,7 +67,7 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         MatFormFieldModule,
     ],
     providers: [],
-    entryComponents: [PopupDialogComponent, MatchMakingDialogComponent, LimitedTimeSelectionComponent],
+    entryComponents: [PopupDialogComponent, MatchMakingDialogComponent, LimitedTimeSelectionComponent, HistoryPopupComponent],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

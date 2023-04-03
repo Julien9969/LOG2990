@@ -51,7 +51,7 @@ export const stubGame: Game = {
     isValid: true,
     scoreBoardSolo: undefined,
     scoreBoardMulti: undefined,
-    penalty: undefined,
+    penalty: 5,
     reward: undefined,
     time: undefined,
 };

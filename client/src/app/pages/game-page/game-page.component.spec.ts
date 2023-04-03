@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-with */
@@ -13,12 +14,13 @@ import { By } from '@angular/platform-browser';
 import { PlayImageComponent } from '@app/components/play-image/play-image.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
+import { HistoryService } from '@app/services/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Clue } from '@common/Clue';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
-import { SoloGamePageComponent } from './game-page.component';
+import { GamePageComponent } from './game-page.component';
 
 @Component({
     selector: 'app-play-image',
@@ -45,13 +47,14 @@ export class StubAppSidebarComponent {
 }
 
 describe('GamePageComponent', () => {
-    let component: SoloGamePageComponent;
-    let fixture: ComponentFixture<SoloGamePageComponent>;
+    let component: GamePageComponent;
+    let fixture: ComponentFixture<GamePageComponent>;
     let dialogSpy: jasmine.SpyObj<MatDialog>;
     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let inGameServiceSpy: jasmine.SpyObj<InGameService>;
     let socketClientServiceSpy: jasmine.SpyObj<SocketClientService>;
+    let historyServiceSpy: jasmine.SpyObj<HistoryService>;
 
     beforeEach(async () => {
         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['gameInfoGet', 'customGet']);
@@ -93,11 +96,13 @@ describe('GamePageComponent', () => {
         });
 
         socketClientServiceSpy = jasmine.createSpyObj('SocketClientMock', ['send']);
+        historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
+
         playImageComponentSpy = jasmine.createSpyObj('PlayImageComponentMock', ['playAudio']);
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
         TestBed.configureTestingModule({
-            declarations: [SoloGamePageComponent, StubPlayImageComponent, StubAppSidebarComponent],
+            declarations: [GamePageComponent, StubPlayImageComponent, StubAppSidebarComponent],
             imports: [MatIconModule, MatToolbarModule],
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },
@@ -105,13 +110,14 @@ describe('GamePageComponent', () => {
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: InGameService, useValue: inGameServiceSpy },
                 { provide: SocketClientService, useValue: socketClientServiceSpy },
+                { provide: HistoryService, useValue: historyServiceSpy },
             ],
         }).compileComponents();
     });
 
     beforeEach(() => {
         window.history.pushState({ isSolo: true, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-        fixture = TestBed.createComponent(SoloGamePageComponent);
+        fixture = TestBed.createComponent(GamePageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -126,7 +132,7 @@ describe('GamePageComponent', () => {
 
     it('constructor should define opponentName if isSolo is false', () => {
         window.history.pushState({ isSolo: false, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-        const newComponent = TestBed.createComponent(SoloGamePageComponent);
+        const newComponent = TestBed.createComponent(GamePageComponent);
         expect(newComponent.componentInstance.opponentName).toBeDefined();
     });
 
@@ -186,6 +192,10 @@ describe('GamePageComponent', () => {
 
             expect(inGameServiceSpy.listenTimerUpdate).toHaveBeenCalled();
             expect(component.time).toEqual('35:12');
+        });
+        it('should call initHistory', () => {
+            component.ngOnInit();
+            expect(historyServiceSpy.initHistory).toHaveBeenCalled();
         });
     });
 
@@ -254,6 +264,16 @@ describe('GamePageComponent', () => {
                 data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`],
             });
         });
+
+        it('should call history.playerWon if client is winner', () => {
+            const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
+            component.userSocketId = 'socketId';
+            component.time = '9:14';
+            component.isSolo = true;
+
+            component.endGameDialog(winnerInfo);
+            expect(historyServiceSpy.playerWon).toHaveBeenCalledWith('9:14');
+        });
     });
 
     it('getGameInfos should call communicationService.gameInfoGet and set the gameInfos attribute', () => {
@@ -286,9 +306,9 @@ describe('GamePageComponent', () => {
     });
 
     // Can't test by dispatching event because it will reload the page and make the test crash
-    it('unloadNotification should set event.returnValue to true', () => {
+    it('unloadHandler should set event.returnValue to true', () => {
         const event = new Event('beforeunload');
-        component.unloadNotification(event);
+        component.unloadHandler(event);
         // eslint-disable-next-line deprecation/deprecation
         expect(event.returnValue).toEqual(true);
     });
@@ -311,6 +331,13 @@ describe('GamePageComponent', () => {
         });
     });
 
+    it('unloadHandler should call historyService.playerQuit is in solo and game not over', () => {
+        const event = new Event('beforeunload');
+        component.isSolo = true;
+        component.unloadHandler(event);
+        expect(historyServiceSpy.playerQuit).toHaveBeenCalled();
+    });
+
     describe('openDialog', () => {
         it('openDialog with "quit" as argument call dialog.open with right args', () => {
             component.openDialog('quit');
@@ -326,6 +353,14 @@ describe('GamePageComponent', () => {
             });
         });
     });
+
+    it('initHistory should call historyService.initHistory , setPlayer and set gameMode', () => {
+        component['initHistory']();
+        expect(historyServiceSpy.initHistory).toHaveBeenCalled();
+        expect(historyServiceSpy.setPlayers).toHaveBeenCalled();
+        expect(historyServiceSpy.setGameMode).toHaveBeenCalled();
+    });
+
     it('ngOnDestroy should call socketClientService with leaveRoom', () => {
         component.ngOnDestroy();
         expect(socketClientServiceSpy.send).toHaveBeenCalledWith('leaveRoom');

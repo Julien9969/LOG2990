@@ -23,6 +23,7 @@ export class SessionGateway {
     }
 
     /**
+     * Donne l'identifiant de socket correspondant au client qui le demande
      *
      * @param client
      * @returns
@@ -44,7 +45,7 @@ export class SessionGateway {
     async handleClueRequest(client: Socket) {
         const session = this.sessionService.findByClientId(client.id);
         const game = await this.gameService.findById(session.gameID);
-        return session.getClue(game.penalty);
+        return await session.getClue(game.penalty);
     }
 
     /**

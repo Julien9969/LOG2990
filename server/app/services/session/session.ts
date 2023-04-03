@@ -61,7 +61,7 @@ export class Session {
      *
      * @return la liste de pixel correspondant à l'indice (pixels qui changerons de couleur sur l'écran)
      */
-    async getClue(penalty: number): Promise<Clue | undefined> {
+    async getClue(penalty: number): Promise<Clue | void> {
         if (this.nbCluesRequested >= 3) return;
         this.nbCluesRequested++;
         this.timeElapsed += penalty;

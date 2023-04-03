@@ -43,6 +43,7 @@
                         </mat-card-actions>
 
                         <mat-card-actions *ngIf="configPage" class="buttons">
+                            <button mat-raised-button color="primary" (click)="openHistoryDialog(gameData.id)">Historique</button>
                             <button (click)="deleteGame(gameData.id)" mat-raised-button color="primary">Supprimer</button>
                             <button mat-raised-button color="primary">Réinitialiser</button>
                         </mat-card-actions>

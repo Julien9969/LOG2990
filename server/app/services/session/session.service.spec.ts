@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines, no-restricted-imports, max-len */
+import { instanceOfClue } from '@common/Clue';
 import { Test, TestingModule } from '@nestjs/testing';
-import { createStubInstance, SinonStubbedInstance } from 'sinon';
+import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { DifferenceValidationService } from '../difference-validation/difference-validation.service';
 import { Session } from './session';
 import { SessionService } from './session.service';
@@ -315,6 +316,38 @@ describe('Session tests', () => {
     //     });
     // });
 
+    describe('getClue', () => {
+        const gameId = 'gameId';
+        const firstSocketId = 'firstSocketId';
+        const session: Session = new Session(gameId, firstSocketId);
+        beforeEach(() => {
+            session.nbCluesRequested = 0;
+            session.timeElapsed = 0;
+        });
+
+        it('should return a clue', async () => {
+            const clue = await session.getClue(5);
+            expect(instanceOfClue(clue)).toBeTruthy();
+        });
+
+        it('should return nothing if nbCluesRequested >= 3', async () => {
+            session.nbCluesRequested = 3;
+            expect(await session.getClue(5)).toEqual(undefined);
+            session.nbCluesRequested = 5;
+            expect(await session.getClue(5)).toEqual(undefined);
+        });
+
+        it('should add one request to the nbCluesRequested', async () => {
+            await session.getClue(5);
+            expect(session.nbCluesRequested).toEqual(1);
+        });
+
+        it('should add the time indicated by the penalty to the total timer time', async () => {
+            await session.getClue(5);
+            expect(session.timeElapsed).toEqual(5);
+        });
+    });
+
     describe('verifyGameWon', () => {
         const gameId = 'gameId';
         const firstSocketId = 'firstSocketId';
@@ -440,6 +473,7 @@ describe('Session tests', () => {
         });
     });
 });
+
 describe('Session Service tests', () => {
     beforeAll(async () => {
         sessionService = new SessionService();
@@ -507,6 +541,40 @@ describe('Session Service tests', () => {
             expect(spy).toHaveBeenCalledWith(session);
         });
     });
+
+    // TODO: compléter le test après la Demo (Sébastien)
+
+    // describe('delete', () => {
+    //     let stubSession: SinonStubbedInstance<Session>;
+    //     let findBySessionIdSpy: jest.SpyInstance;
+    //     let stopTimerSpy: jest.SpyInstance;
+    //     const sessionId = 1234;
+
+    //     beforeEach(() => {
+    //         findBySessionIdSpy = jest.spyOn(sessionService, 'delete');
+    //         stopTimerSpy = jest.spyOn(stubSession, 'stopTimer');
+    //         stubSession = createStubInstance<Session>(Session);
+    //         stubSession.id = sessionId;
+    //         sessionService.activeSessions.push(stubSession);
+    //     });
+
+    //     it('should call findBySessionId', () => {
+    //         findBySessionIdSpy.mockImplementation(() => {
+    //             return stubGame;
+    //         });
+    //         sessionService.delete(sessionId);
+    //         expect(findBySessionIdSpy).lastCalledWith(sessionId);
+    //     });
+
+    //     it("should throw error if the session doesn't exist", () => {
+    //         sessionService.activeSessions.pop();
+    //         expect(sessionService.delete).toThrow();
+    //     });
+
+    //     it('should stop timer before removing session from activeSessions', () => {
+    //         let findBySessionIdSpy: jest.SpyInstance;
+    //     });
+    // });
 
     describe('findBy', () => {
         const session2: SinonStubbedInstance<Session> = createStubInstance<Session>(Session);
@@ -582,60 +650,4 @@ describe('Session Service tests', () => {
             expect(mathSpy).toHaveBeenCalledTimes(2);
         });
     });
-    //     it('addToList should push a new session to the list of activesessions', () => {
-    //         const spy = jest.spyOn(sessionService['activeSessions'], 'push').mockImplementation(() => {
-    //             return null;
-    //         });
-    //         const exampleSession = new Session();
-    //         sessionService.addToList(exampleSession);
-    //         expect(spy).toHaveBeenCalledWith(exampleSession);
-    //     });
-    //     it('getAllShould return a list of Sessions', () => {
-    //         expect(Array.isArray(sessionService.getAll())).toEqual(true);
-    //     });
-    //     it('delete should throw an error if it is invalid', () => {
-    //         jest.spyOn(sessionService['activeSessions'], 'indexOf').mockImplementation(() => {
-    //             return null;
-    //         });
-    //         jest.spyOn(sessionService['activeSessions'], 'splice').mockImplementation(() => {
-    //             return null;
-    //         });
-    //         jest.spyOn(sessionService['activeSessions'], 'indexOf').mockImplementation(() => {
-    //             return null;
-    //         });
-    //         let error: Error;
-
-    //         try {
-    //             sessionService.delete(12);
-    //         } catch (e) {
-    //             error = e;
-    //         }
-    //         expect(error).toBeDefined();
-    //         expect(error).toEqual(new Error('Aucune session trouvee avec ce ID.'));
-    //     });
-    //     it('delete should remove the correct session', () => {
-    //         jest.spyOn(sessionService['activeSessions'], 'indexOf').mockImplementation(() => {
-    //             return 12;
-    //         });
-    //         const spy = jest.spyOn(sessionService['activeSessions'], 'splice').mockImplementation(() => {
-    //             return null;
-    //         });
-    //         let error: Error;
-
-    //         try {
-    //             sessionService.delete(13);
-    //         } catch (e) {
-    //             error = e;
-    //         }
-    //         expect(error).not.toBeDefined();
-    //         expect(spy).toHaveBeenCalledWith(12, 1);
-    //     });
-    //     it('findById should return the Session with the correct id', () => {
-    //         const testSession = new Session();
-    //         testSession.id = 12;
-    //         sessionService.activeSessions = [testSession];
-    //         const result = sessionService.findById(12);
-    //         expect(result).toBeDefined();
-    //         expect(result.id).toEqual(12);
 });
-// });

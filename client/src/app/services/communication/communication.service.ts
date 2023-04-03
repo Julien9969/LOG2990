@@ -2,12 +2,12 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Coordinate } from '@common/coordinate';
 import { ImageComparisonResult } from '@common/image-comparison-result';
-
 import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { GameHistory } from '@common/game-history';
 
 @Injectable({
     providedIn: 'root',
@@ -119,6 +119,26 @@ export class CommunicationService {
      */
     getImageURL(id: number) {
         return `${this.baseUrl}/images/${id}`;
+    }
+
+    async postNewHistoryEntry(newEntry: GameHistory): Promise<HttpResponse<object>> {
+        const observer = this.http.post<GameHistory>(`${this.baseUrl}/history/`, newEntry, {
+            observe: 'response',
+            responseType: 'json',
+        });
+        return await firstValueFrom(observer);
+    }
+
+    async getHistory(gameId: string): Promise<GameHistory[]> {
+        const observer = this.http
+            .get<GameHistory[]>(`${this.baseUrl}/history/${gameId}`)
+            .pipe(catchError(this.handleError<GameHistory[]>('error getting history')));
+        return await firstValueFrom(observer);
+    }
+
+    async deleteHistory(gameId: string) {
+        const observer = this.http.delete(`${this.baseUrl}/history/${gameId}`, { observe: 'response' });
+        return await firstValueFrom(observer);
     }
 
     /**
