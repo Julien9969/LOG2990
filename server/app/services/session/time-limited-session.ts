@@ -61,16 +61,11 @@ export class LimitedTimeSession implements Session {
      * @param guess La coordonnée de l'essai
      * @returns Le résultat de l'essai
      */
-    tryGuess(guess: Coordinate, socketId: string): GuessResult {
+    async tryGuess(guess: Coordinate, socketId: string): Promise<GuessResult> {
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
-
         const isCorrect = this.differenceValidationService.validateGuess(guess) !== undefined;
         // Traitement des pénalités, le cas échéant
-        if (isCorrect) {
-            this.decideNewGame();
-        } else this.nPenalties++;
         console.log('TO DO: enlever ce log inutile', socketId);
-
         return this.buildGuessResult(isCorrect, []);
     }
 
@@ -96,9 +91,10 @@ export class LimitedTimeSession implements Session {
      *
      * @returns le socketId du joueur gagnant ou un string indiquant qu'il n'y a pas de gagnant
      */
-    async decideNewGame() {
+    async decideNewGame(): Promise<Game> {
         const newGame: Game = await this.gameService.getRandomGame();
         this.gameID = newGame.id;
         this.differenceValidationService.loadDifferences(this.gameID.toString());
+        return newGame;
     }
 }

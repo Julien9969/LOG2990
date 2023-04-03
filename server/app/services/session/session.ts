@@ -14,7 +14,7 @@ export interface Session {
     players: Player[];
 
     stopTimer();
-    tryGuess(guess: Coordinate, socketId: string): GuessResult;
+    // tryGuess(guess: Coordinate, socketId: string): GuessResult;
     buildGuessResult(isCorrect: boolean, differencePixelList: Coordinate[]): GuessResult;
     get formatedTime(): string;
     get isSolo(): boolean;

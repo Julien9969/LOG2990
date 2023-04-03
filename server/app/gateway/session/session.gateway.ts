@@ -4,8 +4,10 @@ import { GameService } from '@app/services/game/game.service';
 import { ClassicSession } from '@app/services/session/classic-session';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
+import { LimitedTimeSession } from '@app/services/session/time-limited-session';
 import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
@@ -111,10 +113,10 @@ export class SessionGateway {
     handleCoordinatesSubmissionSolo(client: Socket, data: [number, Coordinate]) {
         const [sessionId, coordinates] = data;
         let result: GuessResult;
-        let session: Session;
+        let session: ClassicSession;
 
         try {
-            session = this.getSession(sessionId);
+            session = this.getSession(sessionId) as ClassicSession;
             result = session.tryGuess(coordinates, client.id);
             if (result.isCorrect) {
                 this.sendSystemMessage(client, 'guess_good');
@@ -133,10 +135,10 @@ export class SessionGateway {
     handleCoordinatesSubmissionMulti(client: Socket, data: [number, Coordinate]) {
         const [sessionId, coordinates] = data;
         let result: GuessResult;
-        let session: Session;
+        let session: ClassicSession;
 
         try {
-            session = this.getSession(sessionId);
+            session = this.getSession(sessionId) as ClassicSession;
             result = session.tryGuess(coordinates, client.id);
             if (result.isCorrect) {
                 this.notifyPlayersOfDiffFound(client, result);
@@ -153,14 +155,14 @@ export class SessionGateway {
     }
 
     @SubscribeMessage(SessionEvents.SubmitCoordinatesLimitedTime)
-    handleCoordinatesSubmission(client: Socket, data: [number, Coordinate]) {
+    async handleCoordinatesSubmissionLimitedTime(client: Socket, data: [number, Coordinate]) {
         const [sessionId, coordinates] = data;
         let result: GuessResult;
-        let session: Session;
+        let session: LimitedTimeSession;
 
         try {
-            session = this.getSession(sessionId);
-            result = session.tryGuess(coordinates, client.id);
+            session = this.getSession(sessionId) as LimitedTimeSession;
+            result = await session.tryGuess(coordinates, client.id);
             if (result.isCorrect) {
                 this.notifyPlayersOfDiffFound(client, result);
                 this.sendSystemMessage(client, 'guess_good');
@@ -170,7 +172,7 @@ export class SessionGateway {
                         this.logger.log(`Client ${client.id} emited that he found a difference to the room: ${roomId}`);
                     }
                 });
-                this.sendNewGame(client);
+                this.sendNewGame(client, session);
             } else {
                 this.logger.log(`Client ${client.id} submitted a wrong guess`);
             }
@@ -223,14 +225,13 @@ export class SessionGateway {
         client.disconnect();
     }
 
-    @SubscribeMessage(SessionEvents.NewGame)
-    async sendNewGame(client: Socket) {
+    async sendNewGame(client: Socket, session: LimitedTimeSession): Promise<Game> {
         // const allGames: Promise<Game[]> = this.gameService.findAll();
         // const newGame: Game = allGames[0];
 
-        const chosenGame = await this.gameService.getRandomGame();
-        await this.logger.log(`client ${client.id} is receiving a new game`);
-        await this.logger.log(`this is the main image id: ${chosenGame.imageMain}`);
+        const chosenGame = await session.decideNewGame();
+        this.logger.log(`client ${client.id} is receiving a new game`);
+        this.logger.log(`this is the main image id: ${chosenGame.imageMain}`);
 
         // return await this.gameService.findAll();
         return chosenGame;
