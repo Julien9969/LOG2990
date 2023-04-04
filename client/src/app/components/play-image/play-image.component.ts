@@ -133,6 +133,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
 
     async receiveNewGame(newGame: Game) {
         try {
+            if (!newGame) return;
             console.log('receivedNewGame from server, its imageMainId is', this.imageMainId);
             this.imageMainId = newGame.imageMain;
             this.imageAltId = newGame.imageAlt;
