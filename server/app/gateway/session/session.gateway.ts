@@ -103,6 +103,8 @@ export class SessionGateway {
         if (isSolo) {
             console.log('we enter in the isSolo = true part if startLimitedTimeSession');
             const sessionId = this.sessionService.createNewLimitedTimeSession(client.id);
+            const session: LimitedTimeSession = this.getSession(sessionId) as LimitedTimeSession;
+            this.sendNewGame(client, session);
             this.startSessionTimer(client, sessionId);
             this.logger.log(`solo session ${sessionId} was created by ${client.id}`);
             return sessionId;
