@@ -168,7 +168,9 @@ export class CommunicationService {
     }
 
     async getGameConstants(): Promise<GameConstants> {
-        const observer = this.http.get<GameConstants>(`${this.baseUrl}/games/constants`).pipe(catchError(this.handleError<GameConstants>('error getting games')));
+        const observer = this.http
+            .get<GameConstants>(`${this.baseUrl}/games/constants`)
+            .pipe(catchError(this.handleError<GameConstants>('error getting games')));
         return firstValueFrom(observer);
     }
 

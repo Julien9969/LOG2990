@@ -67,5 +67,4 @@ export class GameService {
     async getGameConstants(): Promise<GameConstants> {
         return await this.communicationService.getGameConstants();
     }
-
 }

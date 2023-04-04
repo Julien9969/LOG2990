@@ -48,9 +48,9 @@ export class TimeConstantsComponent {
             MAX_PENALTY_TIME,
             MIN_REWARD_TIME,
             MAX_REWARD_TIME,
-        } 
+        };
     }
-    
+
     async loadGameConstants() {
         this.gameConstants = await this.gameService.getGameConstants();
         this.modifiedGameConstants = {};
@@ -63,7 +63,7 @@ export class TimeConstantsComponent {
 
     cancelConstantsEdit(): void {
         this.editingConstants = false;
-        this.modifiedGameConstants = this.gameConstants
+        this.modifiedGameConstants = this.gameConstants;
     }
 
     updateDisplay(updatedGameConsts: GameConstants) {
@@ -91,11 +91,11 @@ export class TimeConstantsComponent {
             (this.modifiedGameConstants.penalty === undefined || !isNaN(this.modifiedGameConstants.penalty))
         );
     }
-    
-    async updateGameConstants() {
-        if(!this.validateGameConstants()) return;
 
-        this.gameConstants = {...this.gameConstants, ...this.modifiedGameConstants};
+    async updateGameConstants() {
+        if (!this.validateGameConstants()) return;
+
+        this.gameConstants = { ...this.gameConstants, ...this.modifiedGameConstants };
         await this.gameService.updateGameConstants(this.gameConstants);
         this.editingConstants = false;
     }
@@ -106,17 +106,16 @@ export class TimeConstantsComponent {
 
     isNumber(): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
-            return isNaN(parseInt(control.value))? {value: control.value} : null;
-          };
+            return isNaN(parseInt(control.value)) ? { value: control.value } : null;
+        };
     }
 
     private isInRange(value: number | undefined, min: number, max: number): boolean {
         // Si la valeur n'est pas définie, alors elle n'est pas modifiée donc reste valide.
         console.log(value);
-        if(value === undefined) {
+        if (value === undefined) {
             return true;
         }
         return isNaN(value) || (value >= min && value <= max);
     }
-
 }
