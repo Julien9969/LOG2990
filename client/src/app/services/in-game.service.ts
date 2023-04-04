@@ -180,9 +180,9 @@ export class InGameService {
      *
      * @param callback the callback function that handles a new game
      */
-    listenNewGame(callback: (newGame: Game) => void) {
-        this.socketService.on(SessionEvents.NewGame, (newGame: Game) => {
-            callback(newGame);
+    listenNewGame(callback: (data: [Game, number]) => void) {
+        this.socketService.on(SessionEvents.NewGame, (data: [Game, number]) => {
+            callback(data);
         });
     }
 }

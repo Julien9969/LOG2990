@@ -72,8 +72,8 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
-        this.socket.listenNewGame((newGame: Game) => {
-            this.receiveNewGame(newGame);
+        this.socket.listenNewGame((data: [Game, number]) => {
+            this.receiveNewGame(data[0]);
         });
     }
 

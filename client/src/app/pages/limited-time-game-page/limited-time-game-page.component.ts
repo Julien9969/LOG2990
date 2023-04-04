@@ -23,7 +23,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     // gameID: string;
     gameInfos: Game;
 
-    nDiffFound: number = 0;
+    nDiffFound: number;
 
     time: string = '0:00';
 
@@ -69,10 +69,10 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
             this.time = time;
         });
         this.socket.listenProvideName(this.playerName);
-        // this.socket.listenNewGame((game: Game) => {
-        //     console.log('received a new game');
-        //     this.gameInfos = game;
-        // });
+        this.socket.listenNewGame((data: [Game, number]) => {
+            console.log('LT page got called on New Game');
+            this.nDiffFound = data[1];
+        });
     }
 
     // getGameInfos(): void {
@@ -85,10 +85,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     //             alert(e.message);
     //         });
     // }
-
-    handleDiffFoundUpdate(diffFoundByPlayer: [string, number][]) {
-        this.nDiffFound = diffFoundByPlayer[0][1];
-    }
 
     playerExited() {
         this.socket.playerExited(this.sessionId);

@@ -7,6 +7,7 @@ import { SessionService } from '@app/services/session/session.service';
 import { LimitedTimeSession } from '@app/services/session/time-limited-session';
 import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
@@ -268,11 +269,12 @@ export class SessionGateway {
         }
         // return await this.gameService.findAll();
         // return chosenGame;
-        client.emit(SessionEvents.NewGame, chosenGame);
+        const data: [Game, number] = [chosenGame, session.nDifferencesFound];
+        client.emit(SessionEvents.NewGame, data);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 this.logger.log(`Room ${roomId} is receiving a new game`);
-                this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, chosenGame);
+                this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, data);
             }
         });
     }

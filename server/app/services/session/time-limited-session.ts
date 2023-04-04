@@ -12,7 +12,7 @@ export class LimitedTimeSession implements Session {
     id: number;
     nGuesses: number = 0;
     nPenalties: number = 0;
-    nDifferencesFound: number;
+    nDifferencesFound: number = 0;
     time: number = 0;
     timerId: NodeJS.Timeout;
     playedGames: Game[] = [];
@@ -67,7 +67,10 @@ export class LimitedTimeSession implements Session {
         let diffPixelList: Coordinate[] = [];
         const diffNum: number = this.differenceValidationService.checkDifference(guess.x, guess.y);
         isCorrect = diffNum !== undefined;
-        if (isCorrect) diffPixelList = this.differenceValidationService.getDifferencePixelList(diffNum);
+        if (isCorrect) {
+            this.nDifferencesFound += 1;
+            diffPixelList = this.differenceValidationService.getDifferencePixelList(diffNum);
+        }
         // Traitement des pénalités, le cas échéant
         console.log('TO DO: enlever ce log inutile', socketId);
         return this.buildGuessResult(isCorrect, diffPixelList);
