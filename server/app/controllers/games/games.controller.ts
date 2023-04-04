@@ -61,6 +61,11 @@ export class GamesController {
         return await this.gameService.findAll();
     }
 
+    @Get('constants')
+    getGameConstants() {
+        return this.gameService.constants;
+    }
+
     /**
      * Obtient les informations d'un jeu.
      *
