@@ -36,7 +36,7 @@ export class TimeConstantsComponent {
         this.isNumber(),
     ]);
 
-    constructor(readonly gameService: GameService) {
+    constructor(private readonly gameService: GameService) {
         this.loadGameConstants();
     }
 
@@ -51,13 +51,8 @@ export class TimeConstantsComponent {
         } 
     }
     
-    loadGameConstants() {
-        // TODO: CALL COMM SERVICE
-        this.gameConstants = {
-            time: Math.random(),
-            penalty: 30,
-            reward: 30,
-        }
+    async loadGameConstants() {
+        this.gameConstants = await this.gameService.getGameConstants();
         this.modifiedGameConstants = {};
     }
 
@@ -97,21 +92,11 @@ export class TimeConstantsComponent {
         );
     }
     
-    updateGameConstants() {
-        alert("updating constants");
-
-        // if(!this.validateGameConstants()) return;
-
-        alert('valid constants')
-
-        // this.modifiedGameConstants = {
-        //     time: 125,
-        //     penalty: 100,
-        //     reward: 999,
-        // }
-        // this.data.gameConsts.time = 6666;
+    async updateGameConstants() {
+        if(!this.validateGameConstants()) return;
 
         this.gameConstants = {...this.gameConstants, ...this.modifiedGameConstants};
+        await this.gameService.updateGameConstants(this.gameConstants);
         this.editingConstants = false;
     }
 
