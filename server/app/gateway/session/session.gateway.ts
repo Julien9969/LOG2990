@@ -266,9 +266,6 @@ export class SessionGateway {
         if (!chosenGame) {
             this.limitedTimeGameEnded(client, false);
         }
-        this.logger.log(`client ${client.id} is receiving a new game`);
-        this.logger.log(`this is the main image id: ${chosenGame.imageMain}`);
-
         // return await this.gameService.findAll();
         // return chosenGame;
         client.emit(SessionEvents.NewGame, chosenGame);
