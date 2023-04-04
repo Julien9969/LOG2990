@@ -70,16 +70,26 @@ export class InGameService {
         });
     }
 
-    async requestNewGame(): Promise<Game> {
-        const data = 'a enlever';
-        return new Promise<Game>((resolve) => {
-            this.socketService.sendAndCallBack(SessionEvents.NewGame, data, (response: Game) => {
-                resolve(response);
-                console.log(`this is the new Games main image id: ${response.imageMain}`);
-            });
+    // async requestNewGame(): Promise<Game> {
+    //     const data = 'a enlever';
+    //     return new Promise<Game>((resolve) => {
+    //         this.socketService.sendAndCallBack(SessionEvents.NewGame, data, (response: Game) => {
+    //             resolve(response);
+    //             console.log(`this is the new Games main image id: ${response.imageMain}`);
+    //         });
+    //     });
+    // }
+    /**
+     * listen to the server for any difference found (by the opponent or the player)
+     *
+     * @param callback the callback function that handles the difference found
+     */
+    async requestNewGame(callback: (newGame: Game) => void) {
+        this.socketService.on(SessionEvents.NewGame, (newGame: Game) => {
+            console.log(`this is the new Games main image id: ${newGame.imageMain}`);
+            callback(newGame);
         });
     }
-
     /**
      * destroys the websocket connection with the server if it exists
      */

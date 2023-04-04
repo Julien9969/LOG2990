@@ -174,6 +174,10 @@ export class GameService {
         return chosenGame;
     }
 
+    async getNumberOfGames(): Promise<number> {
+        return (await this.findAll()).length;
+    }
+
     private verifyGameId(id: string): void {
         if (!mongoose.isValidObjectId(id)) {
             throw new Error(`Le ID "${id}" n'est pas un ID valide (format non-valide)`);

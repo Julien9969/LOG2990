@@ -20,7 +20,7 @@ export class LimitedTimeSession implements Session {
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
     players: Player[] = [];
 
-    constructor(gameID: string, gameService: GameService, players: Player[]) {
+    constructor(gameService: GameService, players: Player[]) {
         this.gameService = gameService;
         this.players = players;
 
@@ -63,10 +63,14 @@ export class LimitedTimeSession implements Session {
      */
     async tryGuess(guess: Coordinate, socketId: string): Promise<GuessResult> {
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
-        const isCorrect = this.differenceValidationService.validateGuess(guess) !== undefined;
+        let isCorrect = false;
+        let diffPixelList: Coordinate[] = [];
+        const diffNum: number = this.differenceValidationService.checkDifference(guess.x, guess.y);
+        isCorrect = diffNum !== undefined;
+        if (isCorrect) diffPixelList = this.differenceValidationService.getDifferencePixelList(diffNum);
         // Traitement des pénalités, le cas échéant
         console.log('TO DO: enlever ce log inutile', socketId);
-        return this.buildGuessResult(isCorrect, []);
+        return this.buildGuessResult(isCorrect, diffPixelList);
     }
 
     /**
@@ -92,9 +96,31 @@ export class LimitedTimeSession implements Session {
      * @returns le socketId du joueur gagnant ou un string indiquant qu'il n'y a pas de gagnant
      */
     async decideNewGame(): Promise<Game> {
-        const newGame: Game = await this.gameService.getRandomGame();
+        console.log('we enter decideNewGame in sessionTimeLimited');
+        let newGame: Game = await this.gameService.getRandomGame();
+        if (await this.noMoreGames()) {
+            return undefined;
+        }
+        while (this.hasGameBeenPlayed(newGame)) {
+            // console.log('found that the game has already been played');
+            newGame = await this.gameService.getRandomGame();
+        }
+        // console.log('game has been Played?', this.hasGameBeenPlayed(newGame));
+        this.playedGames.push(newGame);
         this.gameID = newGame.id;
+        // console.log('decideNewGame:', this.gameID);
         this.differenceValidationService.loadDifferences(this.gameID.toString());
         return newGame;
+    }
+
+    hasGameBeenPlayed(game: Game): boolean {
+        return (
+            this.playedGames.find((value) => {
+                return game.id === value.id;
+            }) !== undefined
+        );
+    }
+    async noMoreGames(): Promise<boolean> {
+        return this.playedGames.length === (await this.gameService.getNumberOfGames());
     }
 }

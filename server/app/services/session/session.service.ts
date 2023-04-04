@@ -30,10 +30,11 @@ export class SessionService {
      * @param id L'identifiant du jeu voulu
      * @returns L'identifiant de la session créée
      */
-    createNewLimitedTimeSession(id: string, socketIdOne: string, socketIdTwo: string = undefined): number {
+    createNewLimitedTimeSession(socketIdOne: string, socketIdTwo: string = undefined): number {
+        console.log('called limited time session creator');
         const players: Player[] = [{ name: 'unknown', socketId: socketIdOne, differencesFound: [] }];
         if (socketIdTwo) players.push({ name: 'unknown', socketId: socketIdTwo, differencesFound: [] });
-        return this.addToList(new LimitedTimeSession(id, this.gameService, players));
+        return this.addToList(new LimitedTimeSession(this.gameService, players));
     }
 
     /**
@@ -43,6 +44,7 @@ export class SessionService {
      * @returns L'identifiant de la session créée
      */
     createNewClassicSession(id: string, socketIdOne: string, socketIdTwo: string = undefined): number {
+        console.log('called classic session creator');
         const players: Player[] = [{ name: 'unknown', socketId: socketIdOne, differencesFound: [] }];
         if (socketIdTwo) players.push({ name: 'unknown', socketId: socketIdTwo, differencesFound: [] });
         return this.addToList(new ClassicSession(id, players));

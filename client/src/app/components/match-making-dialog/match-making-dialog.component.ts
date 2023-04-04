@@ -48,11 +48,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     @HostListener('window:keydown.enter', ['$event'])
     handleKeyDown(event: KeyboardEvent) {
         event.preventDefault();
-        if (this.nameFormControl.valid) {
-            if (this.gameInfo.isSolo) this.navigateToSoloGame();
-            else if (this.gameInfo.id === 'limited-time') this.navigateToLimitedTimeGame();
-            else this.joinGame();
-        }
+        this.navigateToGame();
     }
 
     ngOnInit(): void {
@@ -108,6 +104,15 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         this.matchMaking.leaveWaiting(this.gameInfo.id);
     }
 
+    navigateToGame() {
+        console.log('handleKeyDown est appele avec le gameId suivant:');
+        if (this.nameFormControl.valid) {
+            if (this.gameInfo.id === 'limited-time') this.navigateToSoloLimitedTimeGame();
+            else if (this.gameInfo.isSolo) this.navigateToSoloGame();
+            else this.joinGame();
+        }
+    }
+
     navigateToMultiGame(sessionID: number): void {
         this.router.navigateByUrl(this.routerLink, {
             state: { isSolo: false, gameID: this.gameInfo.id, playerName: this.playerName, opponentName: this.opponentName, sessionId: sessionID },
@@ -122,8 +127,10 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         });
     }
 
-    navigateToLimitedTimeGame(): void {
+    navigateToSoloLimitedTimeGame(): void {
+        console.log('calledNavigateToLimitedTimeGame');
         this.matchMaking.startSoloLimitedTimeSession((newSessionId: number) => {
+            console.log('we received the callback');
             this.router.navigateByUrl(this.routerLink, {
                 state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
             });

@@ -6,6 +6,7 @@ import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { Coordinate } from '@common/coordinate';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 
 @Component({
@@ -71,16 +72,19 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
+        this.socket.listenNewGame((newGame: Game) => {
+            this.receiveNewGame(newGame);
+        });
     }
 
     async ngAfterViewInit(): Promise<void> {
-        if (this.isTimeLimited) {
-            await this.requestNewGame();
-        } else {
-            await this.loadImage(this.canvasContext1, this.imageMainId);
-            await this.loadImage(this.canvasContext2, this.imageAltId);
-            this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
-        }
+        // if (this.isTimeLimited) {
+        //     await this.requestNewGame();
+        // } else {
+        await this.loadImage(this.canvasContext1, this.imageMainId);
+        await this.loadImage(this.canvasContext2, this.imageAltId);
+        this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
+        // }
     }
 
     sendPosition(event: MouseEvent): void {
@@ -115,22 +119,20 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
      * @param guessResult résultat du serveur après avoir demander de valider les coordonnés de la différence trouvé
      */
     updateDiffFound(guessResult: GuessResult): void {
-        if (guessResult.isCorrect && this.hasNbDifferencesChanged(guessResult.differencesByPlayer)) {
+        if (guessResult.isCorrect) {
             this.lastDifferenceFound = guessResult;
             this.audioService.playAudio('success');
             this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
             this.errorCounter = 0;
-            if (this.isTimeLimited) this.requestNewGame();
-            else this.imageOperationService.pixelBlink(guessResult.differencePixelList);
+            // if (this.isTimeLimited) this.requestNewGame();
+            if (!this.isTimeLimited) this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
             this.handleErrorGuess();
         }
     }
 
-    async requestNewGame(): Promise<void> {
+    async receiveNewGame(newGame: Game) {
         try {
-            console.log('requestedNewImages()');
-            const newGame = await this.socket.requestNewGame();
             console.log('receivedNewGame from server, its imageMainId is', this.imageMainId);
             this.imageMainId = newGame.imageMain;
             this.imageAltId = newGame.imageAlt;

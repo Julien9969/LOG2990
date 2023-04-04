@@ -7,7 +7,6 @@ import { SessionService } from '@app/services/session/session.service';
 import { LimitedTimeSession } from '@app/services/session/time-limited-session';
 import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
-import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
@@ -62,12 +61,11 @@ export class SessionGateway {
      * @param gameId L'identifiant du jeu que le client veut jouer
      */
     @SubscribeMessage(SessionEvents.StartClassicSession)
-    async startSession(client: Socket, data: StartSessionData) {
+    async startClassicSession(client: Socket, data: StartSessionData) {
+        console.log('on rentre dans le startClassicSession');
+
         // eslint-disable-next-line prefer-const
         let { gameId, isSolo } = data;
-        if (gameId === 'limited-time') {
-            gameId = '6418b9f4256cb4da1cbc1a6e';
-        }
 
         this.logger.log(`Client ${client.id} asked for session id`);
         if (isSolo) {
@@ -82,6 +80,39 @@ export class SessionGateway {
                 if (clientsInRoom.size === 2) {
                     const [firstClientId, secondClientId] = clientsInRoom;
                     const sessionId = this.sessionService.createNewClassicSession(gameId, firstClientId, secondClientId);
+                    this.startSessionTimer(client, sessionId);
+                    this.server.to(roomId).emit(SessionEvents.SessionId, sessionId);
+                    this.logger.log(`multiplayer session ${sessionId} was created by client ${client.id}`);
+                }
+            }
+        });
+    }
+
+    /**
+     * Lorsqu'un joueur entre dans une salle solo ou lorsque 2 joueurs rentres dans
+     * une salle multijoueur et le créateur envoie une requête, une session est crée
+     * et son identifiant (id) est envoyé à tout les joueurs dans la salle.
+     *
+     * @param client Le client qui a fait la demande d'un identifiant (id) de session
+     * @param gameId L'identifiant du jeu que le client veut jouer
+     */
+    @SubscribeMessage(SessionEvents.StartLimitedTimeSession)
+    async startLimitedTimeSession(client: Socket, isSolo: boolean) {
+        console.log('on rentre dans le startLimitedTimeSession');
+        this.logger.log(`Client ${client.id} asked for session id`);
+        if (isSolo) {
+            console.log('we enter in the isSolo = true part if startLimitedTimeSession');
+            const sessionId = this.sessionService.createNewLimitedTimeSession(client.id);
+            this.startSessionTimer(client, sessionId);
+            this.logger.log(`solo session ${sessionId} was created by ${client.id}`);
+            return sessionId;
+        }
+        client.rooms.forEach(async (roomId) => {
+            if (roomId.startsWith('gameRoom')) {
+                const clientsInRoom = await this.server.in(roomId).allSockets();
+                if (clientsInRoom.size === 2) {
+                    const [firstClientId, secondClientId] = clientsInRoom;
+                    const sessionId = this.sessionService.createNewLimitedTimeSession(firstClientId, secondClientId);
                     this.startSessionTimer(client, sessionId);
                     this.server.to(roomId).emit(SessionEvents.SessionId, sessionId);
                     this.logger.log(`multiplayer session ${sessionId} was created by client ${client.id}`);
@@ -225,23 +256,26 @@ export class SessionGateway {
         client.disconnect();
     }
 
-    async sendNewGame(client: Socket, session: LimitedTimeSession): Promise<Game> {
+    async sendNewGame(client: Socket, session: LimitedTimeSession) {
         // const allGames: Promise<Game[]> = this.gameService.findAll();
         // const newGame: Game = allGames[0];
-
+        console.log(session.id);
         const chosenGame = await session.decideNewGame();
+        if (!chosenGame) {
+            this.limitedTimeGameEnded(client, false);
+        }
         this.logger.log(`client ${client.id} is receiving a new game`);
         this.logger.log(`this is the main image id: ${chosenGame.imageMain}`);
 
         // return await this.gameService.findAll();
-        return chosenGame;
-        // client.emit(SessionEvents.NewGame, newGame);
-        // client.rooms.forEach((roomId) => {
-        //     if (roomId.startsWith('gameRoom')) {
-        //         this.logger.log(`Room ${roomId} is receiving a new game`);
-        //         this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, newGame);
-        //     }
-        // });
+        // return chosenGame;
+        client.emit(SessionEvents.NewGame, chosenGame);
+        client.rooms.forEach((roomId) => {
+            if (roomId.startsWith('gameRoom')) {
+                this.logger.log(`Room ${roomId} is receiving a new game`);
+                this.server.to(roomId).except(client.id).emit(SessionEvents.NewGame, chosenGame);
+            }
+        });
     }
 
     /**
