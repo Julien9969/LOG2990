@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClient } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -74,7 +75,7 @@ describe('GameService', () => {
         const getGameConstantsSpy = spyOn(service['communicationService'], 'getGameConstants').and.callFake(async () => stubGameConstants);
 
         const result = await service.getGameConstants();
-        
+
         expect(getGameConstantsSpy).toHaveBeenCalled();
         expect(result).toEqual(stubGameConstants);
     });
@@ -86,9 +87,9 @@ describe('GameService', () => {
             reward: 10,
         };
         const patchGameConstantsSpy = spyOn(service['communicationService'], 'patchGameConstants').and.callFake(async () => {});
-        
-        await service.updateGameConstants(stubGameConstants)
-        
+
+        await service.updateGameConstants(stubGameConstants);
+
         expect(patchGameConstantsSpy).toHaveBeenCalled();
     });
 });

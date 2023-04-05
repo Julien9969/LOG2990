@@ -367,21 +367,21 @@ describe('CommunicationService', () => {
                 penalty: 10,
                 reward: 10,
             };
-    
+
             service.getGameConstants().then((games) => {
                 expect(games).toEqual(expectedConstants);
             });
-    
+
             const req = httpMock.expectOne(`${baseUrl}/games/constants`);
             expect(req.request.method).toEqual('GET');
             req.flush(expectedConstants);
         });
-    
+
         it('should handle http error', () => {
             service.getGameConstants().then((games) => {
                 expect(games).toBeUndefined();
             });
-    
+
             const req = httpMock.expectOne(`${baseUrl}/games/constants`);
             expect(req.request.method).toEqual('GET');
             req.error(new ProgressEvent('Random error occurred'));
@@ -403,10 +403,10 @@ describe('CommunicationService', () => {
             expect(req.request.body).toEqual(gameConsts);
             req.flush(null, undefined);
         });
-    
+
         it('should handle http error', async () => {
             service.patchGameConstants(gameConsts);
-    
+
             const req = httpMock.expectOne(`${baseUrl}/games/constants`);
             expect(req.request.method).toEqual('PATCH');
             req.error(new ProgressEvent('Random error occurred'));

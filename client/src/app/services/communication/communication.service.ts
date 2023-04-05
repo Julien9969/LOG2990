@@ -176,8 +176,8 @@ export class CommunicationService {
 
     async patchGameConstants(gameConsts: GameConstants) {
         const observer = this.http
-        .patch<void>(`${this.baseUrl}/games/constants`, gameConsts, { observe: 'response' })
-        .pipe(catchError(this.handleError<void>('Erreur lors de la modification des constantes de jeu.')));
+            .patch<void>(`${this.baseUrl}/games/constants`, gameConsts, { observe: 'response' })
+            .pipe(catchError(this.handleError<void>('Erreur lors de la modification des constantes de jeu.')));
         return await firstValueFrom(observer);
     }
 
