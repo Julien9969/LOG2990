@@ -4,15 +4,15 @@
     </p>
     <div class="info">
         <a><mat-icon>alarm</mat-icon></a>
-        Temps initial : {{ this.gameConstants.time }}s
+        Temps initial : {{ this.gameConstants?.time }}s
     </div>
     <div class="info">
         <a><mat-icon>alarm_add</mat-icon></a>
-        Récompense : {{ this.gameConstants.reward }}s
+        Récompense : {{ this.gameConstants?.reward }}s
     </div>
     <div class="info">
         <a><mat-icon>alarm_off</mat-icon></a>
-        Pénalité : {{ this.gameConstants.penalty }}s
+        Pénalité : {{ this.gameConstants?.penalty }}s
     </div>
     <button mat-raised-button color="primary" (click)="openEditPopup()">Modifier constantes</button>
 </div>
@@ -28,7 +28,7 @@
                     autofocus
                     (keyup)="this.modifiedGameConstants.time = parseInt(timerInput.value)"
                     matInput
-                    [placeholder]="'Entre ' + this.timeConstantBounds.MIN_GAME_TIME + ' et ' + this.timeConstantBounds.MAX_GAME_TIME"
+                    [placeholder]="'Entre ' + this.timeConstantBounds.minTime + ' et ' + this.timeConstantBounds.maxTime"
                     [formControl]="this.timeFormControl"
                     />
                     <mat-error *ngIf="this.timeFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>
@@ -42,7 +42,7 @@
                     autofocus
                     (keyup)="this.modifiedGameConstants.reward = parseInt(rewardInput.value)"
                     matInput
-                    [placeholder]="'Entre ' + this.timeConstantBounds.MIN_REWARD_TIME + ' et ' + this.timeConstantBounds.MAX_REWARD_TIME"
+                    [placeholder]="'Entre ' + this.timeConstantBounds.minReward + ' et ' + this.timeConstantBounds.maxReward"
                     [formControl]="this.rewardFormControl"
                 />
                 <mat-error *ngIf="this.rewardFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>
@@ -56,7 +56,7 @@
                     autofocus
                     (keyup)="this.modifiedGameConstants.penalty = parseInt(penaltyInput.value)"
                     matInput
-                    [placeholder]="'Entre ' + this.timeConstantBounds.MIN_PENALTY_TIME + ' et ' + this.timeConstantBounds.MAX_PENALTY_TIME"
+                    [placeholder]="'Entre ' + this.timeConstantBounds.minPenalty + ' et ' + this.timeConstantBounds.maxPenalty"
                     [formControl]="this.penaltyFormControl"
                 />
                 <mat-error *ngIf="this.penaltyFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>

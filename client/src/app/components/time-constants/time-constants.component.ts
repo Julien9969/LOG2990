@@ -40,14 +40,15 @@ export class TimeConstantsComponent {
         this.loadGameConstants();
     }
 
+    // Pour y avoir accès dans le code html, qui affiche les bornes de chaque valeur
     get timeConstantBounds() {
         return {
-            MIN_GAME_TIME,
-            MAX_GAME_TIME,
-            MIN_PENALTY_TIME,
-            MAX_PENALTY_TIME,
-            MIN_REWARD_TIME,
-            MAX_REWARD_TIME,
+            minTime: MIN_GAME_TIME,
+            maxTime: MAX_GAME_TIME,
+            minPenalty: MIN_PENALTY_TIME,
+            maxPenalty: MAX_PENALTY_TIME,
+            minReward: MIN_REWARD_TIME,
+            maxReward: MAX_REWARD_TIME,
         };
     }
 
@@ -101,18 +102,17 @@ export class TimeConstantsComponent {
     }
 
     parseInt(value: string): number {
-        return parseInt(value);
+        return parseInt(value, 10);
     }
 
     isNumber(): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
-            return isNaN(parseInt(control.value)) ? { value: control.value } : null;
+            return isNaN(parseInt(control.value, 10)) ? { value: control.value } : null;
         };
     }
 
     private isInRange(value: number | undefined, min: number, max: number): boolean {
         // Si la valeur n'est pas définie, alors elle n'est pas modifiée donc reste valide.
-        console.log(value);
         if (value === undefined) {
             return true;
         }
