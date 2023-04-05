@@ -6,7 +6,7 @@ import { GameService } from '@app/services/game.service';
 import { GameConstants } from '@common/game-constants';
 import { TimeConstantsComponent } from './time-constants.component';
 
-fdescribe('UploadImageSquareComponent', () => {
+describe('UploadImageSquareComponent', () => {
     let component: TimeConstantsComponent;
     let fixture: ComponentFixture<TimeConstantsComponent>;
     let gameServiceSpy: GameService;
