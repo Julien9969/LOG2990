@@ -6,6 +6,7 @@ import { PATH_TO_VALID_IMAGE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
+import { GameConstants } from '@common/game-constants';
 import { GameHistory } from '@common/game-history';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 
@@ -357,6 +358,59 @@ describe('CommunicationService', () => {
         const req = httpMock.expectOne(expectedUrl);
         expect(req.request.method).toEqual('DELETE');
         req.flush(null, { status: 200, statusText: 'Ok' });
+    });
+    
+    describe('getGameConstants', () => {
+        it('should return received constants', async () => {
+            const expectedConstants: GameConstants = {
+                time: 100,
+                penalty: 10,
+                reward: 10,
+            };
+    
+            service.getGameConstants().then((games) => {
+                expect(games).toEqual(expectedConstants);
+            });
+    
+            const req = httpMock.expectOne(`${baseUrl}/games/constants`);
+            expect(req.request.method).toEqual('GET');
+            req.flush(expectedConstants);
+        });
+    
+        it('should handle http error', () => {
+            service.getGameConstants().then((games) => {
+                expect(games).toBeUndefined();
+            });
+    
+            const req = httpMock.expectOne(`${baseUrl}/games/constants`);
+            expect(req.request.method).toEqual('GET');
+            req.error(new ProgressEvent('Random error occurred'));
+        });
+    });
+
+    describe('patchGameConstants', () => {
+        const gameConsts: GameConstants = {
+            time: 100,
+            penalty: 10,
+            reward: 10,
+        };
+
+        it('should send PATCH to correct path', async () => {
+            service.patchGameConstants(gameConsts);
+
+            const req = httpMock.expectOne(`${baseUrl}/games/constants`);
+            expect(req.request.method).toBe('PATCH');
+            expect(req.request.body).toEqual(gameConsts);
+            req.flush(null, undefined);
+        });
+    
+        it('should handle http error', async () => {
+            service.patchGameConstants(gameConsts);
+    
+            const req = httpMock.expectOne(`${baseUrl}/games/constants`);
+            expect(req.request.method).toEqual('PATCH');
+            req.error(new ProgressEvent('Random error occurred'));
+        });
     });
 
     describe('instanceOfImageComparisonResult', () => {

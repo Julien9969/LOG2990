@@ -170,12 +170,14 @@ export class CommunicationService {
     async getGameConstants(): Promise<GameConstants> {
         const observer = this.http
             .get<GameConstants>(`${this.baseUrl}/games/constants`)
-            .pipe(catchError(this.handleError<GameConstants>('error getting games')));
+            .pipe(catchError(this.handleError<GameConstants>('Erreur lors du chargement des constantes de jeu.')));
         return firstValueFrom(observer);
     }
 
     async patchGameConstants(gameConsts: GameConstants) {
-        const observer = this.http.patch<GameConstants>(`${this.baseUrl}/games/constants`, gameConsts, { observe: 'response' });
+        const observer = this.http
+        .patch<void>(`${this.baseUrl}/games/constants`, gameConsts, { observe: 'response' })
+        .pipe(catchError(this.handleError<void>('Erreur lors de la modification des constantes de jeu.')));
         return await firstValueFrom(observer);
     }
 
