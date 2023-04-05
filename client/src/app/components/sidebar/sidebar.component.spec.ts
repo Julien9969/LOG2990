@@ -59,11 +59,4 @@ describe('SidebarComponent', () => {
             message: 'blah',
         });
     });
-
-    it('scrollTobottom should call scrollIntoView', () => {
-        const scrollIntoViewSpy = spyOn(component.formElement.nativeElement, 'scrollIntoView');
-
-        component.scrollToBottom();
-        expect(scrollIntoViewSpy).toHaveBeenCalled();
-    });
 });

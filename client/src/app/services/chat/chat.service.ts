@@ -1,4 +1,4 @@
-import { ElementRef, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { SystemCode } from '@app/services/constantes.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { ChatEvents } from '@common/chat.gateway.events';
@@ -10,7 +10,6 @@ import { SystemMessage } from '@common/systemMessage';
 })
 export class ChatService {
     messageList: Message[];
-    formElement: ElementRef<HTMLFormElement>;
     clientId: string;
 
     constructor(public socketService: SocketClientService) {
@@ -27,6 +26,7 @@ export class ChatService {
     giveNameToServer(playerName: string) {
         this.socketService.send(SessionEvents.GiveName, playerName);
     }
+
     readSystemMessage(systemCode: string, playerName: string): string {
         switch (systemCode) {
             case SystemCode.MistakeGuess:
@@ -48,6 +48,7 @@ export class ChatService {
             message: this.readSystemMessage(systemCode, playerName),
         };
     }
+
     isFromMe(message: Message): boolean {
         return message.socketId === this.clientId;
     }
@@ -58,11 +59,8 @@ export class ChatService {
 
     receiveMessage(message: Message) {
         this.messageList.push(message);
-        this.scrollToBottom();
     }
-    scrollToBottom() {
-        this.formElement.nativeElement.scrollIntoView();
-    }
+
     async listenForSystemMessage() {
         this.socketService.on(ChatEvents.SystemMessageFromServer, (systemMessage: SystemMessage) => {
             this.receiveMessage(this.createSystemMessage(systemMessage.systemCode, systemMessage.playerName));
@@ -92,5 +90,4 @@ export class ChatService {
             });
         });
     }
-
 }

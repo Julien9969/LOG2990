@@ -4,6 +4,7 @@ import { createStubInstance, SinonStubbedInstance } from 'sinon';
 import { DifferenceValidationService } from '../difference-validation/difference-validation.service';
 import { Session } from './session';
 import { SessionService } from './session.service';
+import { Coordinate } from '@common/coordinate';
 let sessionService: SessionService;
 // let session: Session;
 
@@ -506,6 +507,23 @@ describe('Session Service tests', () => {
             sessionService.addToList(session);
             expect(spy).toHaveBeenCalledWith(session);
         });
+    });
+
+    it('session getNotFoundDifferences should return a list of difference', () => {
+        const gameId = 'gameId';
+        const firstSocketId = 'firstSocketId';
+        const secondSocketId = 'secondSocketId';
+
+        jest.spyOn(DifferenceValidationService.prototype, 'loadDifferences').mockImplementation(() => {});
+        const sessionMulti = new Session(gameId, firstSocketId, secondSocketId);
+
+        sessionMulti.differenceValidationService = { differenceCoordLists: [[], []] } as any;
+        sessionMulti.differencesFoundByPlayer = [
+            [firstSocketId, []],
+            [secondSocketId, []],
+        ];
+        const result: Coordinate[][] = sessionMulti.getNotFoundDifferences();
+        expect(result).toEqual([[], []]);
     });
 
     describe('findBy', () => {
