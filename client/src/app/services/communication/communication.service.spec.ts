@@ -359,7 +359,7 @@ describe('CommunicationService', () => {
         expect(req.request.method).toEqual('DELETE');
         req.flush(null, { status: 200, statusText: 'Ok' });
     });
-    
+
     describe('getGameConstants', () => {
         it('should return received constants', async () => {
             const expectedConstants: GameConstants = {
