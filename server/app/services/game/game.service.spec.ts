@@ -10,7 +10,17 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
-import { DEFAULT_GAME_TIME, DEFAULT_PENALTY_TIME, DEFAULT_REWARD_TIME, DIFFERENCE_LISTS_FOLDER, DIFFERENCE_LISTS_PREFIX, GAME_CONSTS_PATH, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME } from '../constants/services.const';
+import {
+    DEFAULT_GAME_TIME,
+    DEFAULT_PENALTY_TIME,
+    DEFAULT_REWARD_TIME,
+    DIFFERENCE_LISTS_FOLDER,
+    DIFFERENCE_LISTS_PREFIX,
+    GAME_CONSTS_PATH,
+    MAX_REWARD_TIME,
+    MIN_GAME_TIME,
+    MIN_PENALTY_TIME,
+} from '../constants/services.const';
 import { DifferenceDetectionService } from '../difference-detection/difference-detection.service';
 import { ImageService } from '../images/image.service';
 import { GameService } from './game.service';
@@ -426,7 +436,7 @@ describe('Game Service tests', () => {
             penalty: 0,
             reward: 0,
             time: 0,
-        }
+        };
         gameService['globalGameConstants'] = stubGameConstants;
 
         expect(gameService.getGameConstants()).toEqual(stubGameConstants);
@@ -435,16 +445,16 @@ describe('Game Service tests', () => {
     describe('updateConstants', () => {
         let validateGameConstantsSpy: jest.SpyInstance;
         let saveGameConstantsSpy: jest.SpyInstance;
-        let stubConstantsInput: GameConstantsInput = {
+        const stubConstantsInput: GameConstantsInput = {
             time: '60',
             penalty: '10',
             reward: '5',
-        }
-        let stubConstantsToNumbers: GameConstants = {
+        };
+        const stubConstantsToNumbers: GameConstants = {
             time: 60,
             penalty: 10,
             reward: 5,
-        }
+        };
         beforeEach(() => {
             validateGameConstantsSpy = jest.spyOn(gameService as any, 'validateGameConstants').mockImplementation(() => true);
             saveGameConstantsSpy = jest.spyOn(gameService as any, 'saveGameConstants').mockImplementation();
@@ -452,20 +462,22 @@ describe('Game Service tests', () => {
 
         it('validates input after converting them to numbers', () => {
             gameService.updateConstants(stubConstantsInput);
-            
+
             expect(validateGameConstantsSpy).toBeCalledWith(stubConstantsToNumbers);
         });
 
         it('saves constants when valid', () => {
             gameService.updateConstants(stubConstantsInput);
-            
+
             expect(saveGameConstantsSpy).toBeCalled();
         });
 
         it('throws error and does not save constants when invalid', () => {
             validateGameConstantsSpy.mockImplementationOnce(() => false);
-            
-            expect(() => { gameService.updateConstants(stubConstantsInput) }).toThrow();
+
+            expect(() => {
+                gameService.updateConstants(stubConstantsInput);
+            }).toThrow();
             expect(saveGameConstantsSpy).not.toBeCalled();
         });
     });
@@ -476,8 +488,8 @@ describe('Game Service tests', () => {
             penalty: 0,
             reward: 0,
             time: 0,
-        }
-        let stubConstantsRead = JSON.stringify(stubGameConstants);
+        };
+        const stubConstantsRead = JSON.stringify(stubGameConstants);
         beforeEach(() => {
             readFileSyncSpy = jest.spyOn(fs, 'readFileSync').mockImplementation(() => stubConstantsRead);
         });
@@ -493,7 +505,7 @@ describe('Game Service tests', () => {
         it('sets default constants when read fails', () => {
             readFileSyncSpy.mockImplementationOnce(() => {
                 throw new Error();
-            })
+            });
             gameService['globalGameConstants'] = undefined;
             gameService['loadGameConstants']();
 
@@ -511,7 +523,7 @@ describe('Game Service tests', () => {
             penalty: 0,
             reward: 0,
             time: 0,
-        }
+        };
 
         beforeEach(() => {
             writeFileSyncSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation();
@@ -528,8 +540,10 @@ describe('Game Service tests', () => {
             gameService['globalGameConstants'] = stubGameConstants;
             writeFileSyncSpy.mockImplementationOnce(() => {
                 throw new Error();
-            })
-            expect(() => { gameService['saveGameConstants'](); }).toThrow();
+            });
+            expect(() => {
+                gameService['saveGameConstants']();
+            }).toThrow();
         });
     });
 

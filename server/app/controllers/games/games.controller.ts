@@ -4,7 +4,21 @@ import { GameService } from '@app/services/game/game.service';
 import { Utils } from '@app/services/utils/utils.service';
 import { Game } from '@common/game';
 import { InputGame } from '@common/input-game';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Logger, Param, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Logger,
+    Param,
+    Patch,
+    Post,
+    UploadedFiles,
+    UseInterceptors,
+} from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 /**

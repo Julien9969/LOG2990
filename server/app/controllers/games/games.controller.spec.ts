@@ -136,7 +136,9 @@ describe('GameController tests', () => {
 
     it('getGameConstants should call game service getGameConstants', () => {
         const stubGameConstants: GameConstants = {};
-        const gameConstsSpy = jest.spyOn(gameService, 'getGameConstants').mockImplementation(() => { return stubGameConstants} );
+        const gameConstsSpy = jest.spyOn(gameService, 'getGameConstants').mockImplementation(() => {
+            return stubGameConstants;
+        });
 
         const result = controller.getGameConstants();
         expect(result).toBe(stubGameConstants);
@@ -145,7 +147,7 @@ describe('GameController tests', () => {
 
     describe('configureConstants', () => {
         let updateConstantsSpy: jest.SpyInstance;
-        let stubGameConstsInput: GameConstantsInput = {};
+        const stubGameConstsInput: GameConstantsInput = {};
 
         beforeEach(() => {
             updateConstantsSpy = jest.spyOn(gameService, 'updateConstants').mockImplementation(() => {});
@@ -153,7 +155,7 @@ describe('GameController tests', () => {
 
         it('calls gameService updateConstants', async () => {
             await controller.configureConstants(stubGameConstsInput);
-            
+
             expect(updateConstantsSpy).toBeCalledWith(stubGameConstsInput);
         });
 
