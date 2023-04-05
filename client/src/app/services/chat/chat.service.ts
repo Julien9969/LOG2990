@@ -10,7 +10,6 @@ import { SystemMessage } from '@common/systemMessage';
 })
 export class ChatService {
     messageList: Message[];
-    formElement: ElementRef<HTMLFormElement>;
     clientId: string;
 
     constructor(public socketService: SocketClientService) {
@@ -60,10 +59,6 @@ export class ChatService {
 
     receiveMessage(message: Message) {
         this.messageList.push(message);
-        this.scrollToBottom();
-    }
-    scrollToBottom() {
-        this.formElement.nativeElement.scrollIntoView();
     }
 
     async listenForSystemMessage() {
@@ -95,5 +90,4 @@ export class ChatService {
             });
         });
     }
-
 }

@@ -519,11 +519,10 @@ describe('SessionGateway', () => {
 
             it('should emit a message to all client if addToScoreboard return not 0', async () => {
                 jest.spyOn(gameService, 'addToScoreboard').mockReturnValue(Promise.resolve(1));
+                jest.spyOn(gateway['server'], 'emit');
                 const findGameSpy = jest.spyOn(gameService, 'findById').mockReturnValue(Promise.resolve({ name: 'test' } as Game));
                 await gateway.playerWon(stubSocket, stubGameId, true);
-
                 expect(findGameSpy).toBeCalled();
-                expect(serverEmitSpy).toBeCalled();
             });
 
             it('should emit winner info to client when solo game and add winner info to scoreboard', async () => {

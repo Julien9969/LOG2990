@@ -20,7 +20,6 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
     });
 
     constructor(private formBuilder: FormBuilder, public chatService: ChatService, public imageOperationService: ImageOperationService) {
-        this.chatService.formElement = this.formElement;
         this.chatService.start();
     }
 
@@ -52,9 +51,5 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
             }
         }
         this.messageForm.reset();
-    }
-
-    scrollToBottom() {
-        this.formElement.nativeElement.scrollIntoView();
     }
 }
