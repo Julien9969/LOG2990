@@ -9,7 +9,7 @@ import { GameConstants } from '@common/game-constants';
     templateUrl: './time-constants.component.html',
     styleUrls: ['./time-constants.component.scss'],
 })
-export class TimeConstantsComponent implements OnInit{
+export class TimeConstantsComponent implements OnInit {
     gameConstants: GameConstants;
     modifiedGameConstants: GameConstants;
     editingConstants = false;
@@ -36,10 +36,6 @@ export class TimeConstantsComponent implements OnInit{
     ]);
 
     constructor(private readonly gameService: GameService) {}
-    
-    async ngOnInit() {
-        await this.loadGameConstants();
-    }
 
     // Pour y avoir accès dans le code html, qui affiche les bornes de chaque valeur
     get timeConstantBounds() {
@@ -51,6 +47,10 @@ export class TimeConstantsComponent implements OnInit{
             minReward: MIN_REWARD_TIME,
             maxReward: MAX_REWARD_TIME,
         };
+    }
+
+    async ngOnInit() {
+        await this.loadGameConstants();
     }
 
     async loadGameConstants() {

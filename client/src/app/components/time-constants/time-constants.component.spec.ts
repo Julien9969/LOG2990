@@ -16,7 +16,7 @@ fdescribe('UploadImageSquareComponent', () => {
         await TestBed.configureTestingModule({
             declarations: [TimeConstantsComponent],
             imports: [MatIconModule],
-            providers: [{ provide: GameService, useValue: gameServiceSpy }]
+            providers: [{ provide: GameService, useValue: gameServiceSpy }],
         }).compileComponents();
     });
 
@@ -49,16 +49,14 @@ fdescribe('UploadImageSquareComponent', () => {
     });
 
     it('timeConstantBounds returns all constants', () => {
-        expect(Object.values(component.timeConstantBounds)).toEqual(
-            [
-                MIN_GAME_TIME,
-                MAX_GAME_TIME,
-                MIN_PENALTY_TIME,
-                MAX_PENALTY_TIME,
-                MIN_REWARD_TIME,
-                MAX_REWARD_TIME,
-            ]
-        );
+        expect(Object.values(component.timeConstantBounds)).toEqual([
+            MIN_GAME_TIME,
+            MAX_GAME_TIME,
+            MIN_PENALTY_TIME,
+            MAX_PENALTY_TIME,
+            MIN_REWARD_TIME,
+            MAX_REWARD_TIME,
+        ]);
     });
 
     it('updateDisplay sets gameConstants', () => {
@@ -70,8 +68,8 @@ fdescribe('UploadImageSquareComponent', () => {
         component.gameConstants = {};
 
         component.updateDisplay(stubConsts);
-        expect(component.gameConstants).toEqual(stubConsts)
-    })
+        expect(component.gameConstants).toEqual(stubConsts);
+    });
 
     describe('validateGameConstants', () => {
         it('checks if numbers valid and in range', () => {
@@ -86,32 +84,32 @@ fdescribe('UploadImageSquareComponent', () => {
             expect(component.validateGameConstants()).toBeFalse();
         });
 
-        describe('constantsAreInRange', () => {            
+        describe('constantsAreInRange', () => {
             it('returns true when values are all in bounds (or undefined)', () => {
                 component.modifiedGameConstants = {
                     time: undefined,
                     penalty: MIN_PENALTY_TIME + 1,
                     reward: MAX_REWARD_TIME,
                 };
-                
+
                 expect(component.constantsAreInRange()).toBeTrue();
             });
-        
+
             it('returns false when values are out of bounds', () => {
                 component.modifiedGameConstants = {
                     time: MIN_GAME_TIME - 1,
                     penalty: MIN_PENALTY_TIME,
                     reward: MAX_REWARD_TIME,
                 };
-                
+
                 expect(component.constantsAreInRange()).toBeFalse();
-                
+
                 component.modifiedGameConstants = {
                     time: MIN_GAME_TIME,
                     penalty: MIN_PENALTY_TIME,
                     reward: MAX_REWARD_TIME + 1,
                 };
-                
+
                 expect(component.constantsAreInRange()).toBeFalse();
             });
         });
@@ -123,7 +121,7 @@ fdescribe('UploadImageSquareComponent', () => {
                     penalty: 0,
                     reward: 0,
                 };
-        
+
                 expect(component.constantsAreValidNumbers()).toBeTrue();
             });
 
@@ -133,7 +131,7 @@ fdescribe('UploadImageSquareComponent', () => {
                     penalty: NaN,
                     reward: 0,
                 };
-        
+
                 expect(component.constantsAreValidNumbers()).toBeFalse();
             });
         });
@@ -169,10 +167,10 @@ fdescribe('UploadImageSquareComponent', () => {
     });
 
     it('parseInt wraps around basic parseInt', () => {
-        expect(component.parseInt('0')).toEqual(parseInt('0'));
+        expect(component.parseInt('0')).toEqual(parseInt('0', 10));
         expect(component.parseInt('0')).toEqual(0);
-        expect(component.parseInt('13')).toEqual(parseInt('13'));
-        expect(component.parseInt('13')).toEqual(13);
-        expect(component.parseInt('a')).toEqual(parseInt('a'));
+        expect(component.parseInt('1')).toEqual(parseInt('1', 10));
+        expect(component.parseInt('1')).toEqual(1);
+        expect(component.parseInt('a')).toEqual(parseInt('a', 10));
     });
 });
