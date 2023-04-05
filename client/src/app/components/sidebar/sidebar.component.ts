@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ChatService } from '@app/services/chat/chat.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
@@ -8,13 +8,10 @@ import { ImageOperationService } from '@app/services/image-operation/image-opera
     templateUrl: './sidebar.component.html',
     styleUrls: ['./sidebar.component.scss'],
 })
-export class SidebarComponent implements AfterViewInit {
-    @Input()
-    playerName: string;
-    @Input()
-    sessionID: number;
-    @Input()
-    isSolo: boolean;
+export class SidebarComponent implements AfterViewInit, AfterViewChecked {
+    @Input() playerName: string;
+    @Input() sessionID: number;
+    @Input() isSolo: boolean;
     @ViewChild('chatContainer') chatContainer: ElementRef<HTMLDivElement>;
     @ViewChild('formGroup') formElement: ElementRef<HTMLFormElement>;
 
@@ -23,13 +20,17 @@ export class SidebarComponent implements AfterViewInit {
     });
 
     constructor(private formBuilder: FormBuilder, public chatService: ChatService, public imageOperationService: ImageOperationService) {
-        this.chatService.formElement = this.formElement;
         this.chatService.start();
     }
 
     ngAfterViewInit() {
         this.chatService.giveNameToServer(this.playerName);
     }
+
+    ngAfterViewChecked() {
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+    }
+
     formatedTime(time: number): string {
         return new Date(time).toUTCString();
     }
@@ -50,9 +51,5 @@ export class SidebarComponent implements AfterViewInit {
             }
         }
         this.messageForm.reset();
-    }
-
-    scrollToBottom() {
-        this.formElement.nativeElement.scrollIntoView();
     }
 }

@@ -13,8 +13,9 @@
                 {{ formatedTime(message.time) }}
             </div>
             <br />
-            <p>
-                <b>{{ message.author }}: <br /> </b>{{ message.message }}
+            <p class="flex-column">
+                <b id="sender">{{ message.author }}:</b>
+                {{ message.message }}
             </p>
         </div>
 
