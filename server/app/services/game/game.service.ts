@@ -48,10 +48,6 @@ export class GameService {
         this.loadGameConstants();
     }
 
-    get constants() {
-        return this.globalGameConstants;
-    }
-
     /**
      * @returns La liste de tous les jeux
      */
@@ -152,6 +148,10 @@ export class GameService {
         await diffDetectionService.compareImages(mainImageBuffer, altImageBuffer, game.radius);
 
         return diffDetectionService.getComparisonResult();
+    }
+
+    getGameConstants() {
+        return this.globalGameConstants;
     }
 
     async getSoloScoreboard(id: string) {

@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines  */
+import { GameConstantsInput } from '@app/interfaces/game-constants-input';
 import { GameService } from '@app/services/game/game.service';
 import { stubGame, stubGameCreationBody, stubGameFileInput } from '@app/services/game/game.service.spec.const';
 import { Game } from '@common/game';
+import { GameConstants } from '@common/game-constants';
 import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { createStubInstance, SinonStubbedInstance } from 'sinon';
+import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { GamesController } from './games.controller';
 import { exampleGame } from './games.controller.spec.const';
 
@@ -129,6 +131,55 @@ describe('GameController tests', () => {
             expect(async () => {
                 await controller.newGame(stubGameCreationBody, stubGameFileInput);
             }).rejects.toThrowError(new HttpException('', HttpStatus.BAD_REQUEST));
+        });
+    });
+
+    it('getGameConstants should call game service getGameConstants', () => {
+        const stubGameConstants: GameConstants = {};
+        const gameConstsSpy = jest.spyOn(gameService, 'getGameConstants').mockImplementation(() => { return stubGameConstants} );
+
+        const result = controller.getGameConstants();
+        expect(result).toBe(stubGameConstants);
+        expect(gameConstsSpy).toBeCalled();
+    });
+
+    describe('configureConstants', () => {
+        let updateConstantsSpy: jest.SpyInstance;
+        let stubGameConstsInput: GameConstantsInput = {};
+
+        beforeEach(() => {
+            updateConstantsSpy = jest.spyOn(gameService, 'updateConstants').mockImplementation(() => {});
+        });
+
+        it('calls gameService updateConstants', async () => {
+            await controller.configureConstants(stubGameConstsInput);
+            
+            expect(updateConstantsSpy).toBeCalledWith(stubGameConstsInput);
+        });
+
+        it('throws an http BAD_REQUEST when input is undefined', async () => {
+            let error: HttpException;
+            try {
+                await controller.configureConstants(undefined);
+            } catch (err) {
+                error = err;
+            }
+            expect(controller.configureConstants).rejects.toThrow();
+            expect(error).toEqual(new HttpException('Il manque un corps dans la requete', HttpStatus.BAD_REQUEST));
+        });
+
+        it('throws an http BAD_REQUEST when gameService validation fails', async () => {
+            updateConstantsSpy.mockImplementationOnce(() => {
+                throw new Error('');
+            });
+            let error: HttpException;
+            try {
+                await controller.configureConstants(stubGameConstsInput);
+            } catch (err) {
+                error = err;
+            }
+            expect(controller.configureConstants).rejects.toThrow();
+            expect(error).toEqual(new HttpException('', HttpStatus.BAD_REQUEST));
         });
     });
 });

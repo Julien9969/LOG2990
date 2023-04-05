@@ -4,7 +4,7 @@ import { GameService } from '@app/services/game/game.service';
 import { Utils } from '@app/services/utils/utils.service';
 import { Game } from '@common/game';
 import { InputGame } from '@common/input-game';
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Param, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Logger, Param, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 /**
@@ -63,7 +63,7 @@ export class GamesController {
 
     @Get('constants')
     getGameConstants() {
-        return this.gameService.constants;
+        return this.gameService.getGameConstants();
     }
 
     /**
@@ -102,6 +102,7 @@ export class GamesController {
      * @param gameConstsInput Les valeurs modifiees de constantes de jeu
      */
     @Patch('constants')
+    @HttpCode(HttpStatus.NO_CONTENT)
     async configureConstants(@Body() gameConstsInput: GameConstantsInput) {
         if (!gameConstsInput) {
             throw new HttpException('Il manque un corps dans la requete', HttpStatus.BAD_REQUEST);
