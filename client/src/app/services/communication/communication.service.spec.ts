@@ -248,9 +248,6 @@ describe('CommunicationService', () => {
             isValid: true,
             isHard: false,
             differenceCount: 0,
-            time: 0,
-            penalty: 0,
-            reward: 0,
         };
 
         service.gameInfoGet('1').subscribe({
@@ -289,9 +286,6 @@ describe('CommunicationService', () => {
                 isValid: true,
                 isHard: false,
                 differenceCount: 0,
-                time: 0,
-                penalty: 0,
-                reward: 0,
             },
         ];
 

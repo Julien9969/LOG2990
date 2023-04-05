@@ -22,9 +22,6 @@ describe('GameService', () => {
             isValid: false,
             isHard: false,
             differenceCount: 0,
-            time: 0,
-            penalty: 0,
-            reward: 0,
         };
     });
     it('should be created', () => {
