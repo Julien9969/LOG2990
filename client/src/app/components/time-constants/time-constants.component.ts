@@ -1,6 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-// import { MatDialog } from '@angular/material/dialog';
 import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME, MIN_REWARD_TIME } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game.service';
 import { GameConstants } from '@common/game-constants';
@@ -10,7 +9,7 @@ import { GameConstants } from '@common/game-constants';
     templateUrl: './time-constants.component.html',
     styleUrls: ['./time-constants.component.scss'],
 })
-export class TimeConstantsComponent {
+export class TimeConstantsComponent implements OnInit{
     gameConstants: GameConstants;
     modifiedGameConstants: GameConstants;
     editingConstants = false;
@@ -36,8 +35,10 @@ export class TimeConstantsComponent {
         this.isNumber(),
     ]);
 
-    constructor(private readonly gameService: GameService) {
-        this.loadGameConstants();
+    constructor(private readonly gameService: GameService) {}
+    
+    async ngOnInit() {
+        await this.loadGameConstants();
     }
 
     // Pour y avoir accès dans le code html, qui affiche les bornes de chaque valeur
@@ -101,6 +102,7 @@ export class TimeConstantsComponent {
         this.editingConstants = false;
     }
 
+    // Wrapper de parseInt pour y acceder dans le HTML
     parseInt(value: string): number {
         return parseInt(value, 10);
     }
