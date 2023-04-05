@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, no-restricted-imports, max-lines, max-len  */
-import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { GameDocument } from '@app/Schemas/game/game.schema';
+import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
+import { GameConstantsInput } from '@app/interfaces/game-constants-input';
 import { FinishedGame } from '@common/finishedGame';
 import { Game } from '@common/game';
+import { GameConstants } from '@common/game-constants';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
-import { DIFFERENCE_LISTS_FOLDER, DIFFERENCE_LISTS_PREFIX } from '../constants/services.const';
+import { DEFAULT_GAME_TIME, DEFAULT_PENALTY_TIME, DEFAULT_REWARD_TIME, DIFFERENCE_LISTS_FOLDER, DIFFERENCE_LISTS_PREFIX, GAME_CONSTS_PATH, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME } from '../constants/services.const';
 import { DifferenceDetectionService } from '../difference-detection/difference-detection.service';
 import { ImageService } from '../images/image.service';
 import { GameService } from './game.service';
@@ -416,6 +418,148 @@ describe('Game Service tests', () => {
             });
 
             expect(gameService['saveGameInDatabase'](undefined, undefined)).rejects.toThrow();
+        });
+    });
+
+    it('getGameConstants returns global game constants', () => {
+        const stubGameConstants: GameConstants = {
+            penalty: 0,
+            reward: 0,
+            time: 0,
+        }
+        gameService['globalGameConstants'] = stubGameConstants;
+
+        expect(gameService.getGameConstants()).toEqual(stubGameConstants);
+    });
+
+    describe('updateConstants', () => {
+        let validateGameConstantsSpy: jest.SpyInstance;
+        let saveGameConstantsSpy: jest.SpyInstance;
+        let stubConstantsInput: GameConstantsInput = {
+            time: '60',
+            penalty: '10',
+            reward: '5',
+        }
+        let stubConstantsToNumbers: GameConstants = {
+            time: 60,
+            penalty: 10,
+            reward: 5,
+        }
+        beforeEach(() => {
+            validateGameConstantsSpy = jest.spyOn(gameService as any, 'validateGameConstants').mockImplementation(() => true);
+            saveGameConstantsSpy = jest.spyOn(gameService as any, 'saveGameConstants').mockImplementation();
+        });
+
+        it('validates input after converting them to numbers', () => {
+            gameService.updateConstants(stubConstantsInput);
+            
+            expect(validateGameConstantsSpy).toBeCalledWith(stubConstantsToNumbers);
+        });
+
+        it('saves constants when valid', () => {
+            gameService.updateConstants(stubConstantsInput);
+            
+            expect(saveGameConstantsSpy).toBeCalled();
+        });
+
+        it('throws error and does not save constants when invalid', () => {
+            validateGameConstantsSpy.mockImplementationOnce(() => false);
+            
+            expect(() => { gameService.updateConstants(stubConstantsInput) }).toThrow();
+            expect(saveGameConstantsSpy).not.toBeCalled();
+        });
+    });
+
+    describe('loadGameConstants', () => {
+        let readFileSyncSpy: jest.SpyInstance;
+        const stubGameConstants: GameConstants = {
+            penalty: 0,
+            reward: 0,
+            time: 0,
+        }
+        let stubConstantsRead = JSON.stringify(stubGameConstants);
+        beforeEach(() => {
+            readFileSyncSpy = jest.spyOn(fs, 'readFileSync').mockImplementation(() => stubConstantsRead);
+        });
+
+        it('reads constants from correct path', () => {
+            gameService['globalGameConstants'] = undefined;
+            gameService['loadGameConstants']();
+
+            expect(readFileSyncSpy).toBeCalledWith(GAME_CONSTS_PATH);
+            expect(gameService['globalGameConstants']).toEqual(stubGameConstants);
+        });
+
+        it('sets default constants when read fails', () => {
+            readFileSyncSpy.mockImplementationOnce(() => {
+                throw new Error();
+            })
+            gameService['globalGameConstants'] = undefined;
+            gameService['loadGameConstants']();
+
+            expect(gameService['globalGameConstants']).toEqual({
+                time: DEFAULT_GAME_TIME,
+                reward: DEFAULT_REWARD_TIME,
+                penalty: DEFAULT_PENALTY_TIME,
+            });
+        });
+    });
+
+    describe('saveGameConstants', () => {
+        let writeFileSyncSpy: jest.SpyInstance;
+        const stubGameConstants: GameConstants = {
+            penalty: 0,
+            reward: 0,
+            time: 0,
+        }
+
+        beforeEach(() => {
+            writeFileSyncSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation();
+        });
+
+        it('writes constants to correct path', () => {
+            gameService['globalGameConstants'] = stubGameConstants;
+            gameService['saveGameConstants']();
+
+            expect(writeFileSyncSpy).toBeCalledWith(GAME_CONSTS_PATH, JSON.stringify(stubGameConstants));
+        });
+
+        it('throws error when write fails', () => {
+            gameService['globalGameConstants'] = stubGameConstants;
+            writeFileSyncSpy.mockImplementationOnce(() => {
+                throw new Error();
+            })
+            expect(() => { gameService['saveGameConstants'](); }).toThrow();
+        });
+    });
+
+    describe('validateGameConstants', () => {
+        it('returns true when values are all in bounds', () => {
+            const gameConsts: GameConstants = {
+                time: MIN_GAME_TIME,
+                penalty: MIN_PENALTY_TIME + 1,
+                reward: MAX_REWARD_TIME,
+            };
+
+            expect(gameService['validateGameConstants'](gameConsts)).toBeTruthy();
+        });
+
+        it('returns false when values are out of bounds', () => {
+            let gameConsts: GameConstants = {
+                time: MIN_GAME_TIME - 1,
+                penalty: MIN_PENALTY_TIME,
+                reward: MAX_REWARD_TIME,
+            };
+
+            expect(gameService['validateGameConstants'](gameConsts)).toBeFalsy();
+
+            gameConsts = {
+                time: MIN_GAME_TIME,
+                penalty: MIN_PENALTY_TIME,
+                reward: MAX_REWARD_TIME + 1,
+            };
+
+            expect(gameService['validateGameConstants'](gameConsts)).toBeFalsy();
         });
     });
 });
