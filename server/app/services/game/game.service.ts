@@ -35,9 +35,9 @@ import mongoose, { Model } from 'mongoose';
 @Injectable()
 export class GameService {
     prototype: unknown;
-    
-    private globalGameConstants : GameConstants;
-    
+
+    private globalGameConstants: GameConstants;
+
     // eslint-disable-next-line max-params -- Nécessaire pour le fonctionnement
     constructor(
         @InjectModel('Game') private gameModel: Model<GameDocument>,

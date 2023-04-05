@@ -5,7 +5,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { SECOND_IN_MILLISECONDS } from '@app/gateway/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
-import { stubGame } from '@app/services/game/game.service.spec.const';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
 import { Clue } from '@common/clue';
@@ -80,6 +79,13 @@ describe('SessionGateway', () => {
         const allSocketsStub = new Set([stubSocket.id, secondStubSocket.id]);
         logSpy = jest.spyOn(logger, 'log').mockImplementation(() => {});
         logErrorSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+        jest.spyOn(gameService, 'getGameConstants').mockImplementation(() => {
+            return {
+                time: 100,
+                penalty: 10,
+                reward: 10,
+            };
+        });
 
         serverEmitSpy = jest.fn(() => {});
         serverAllSocketsSpy = jest.fn(() => {
@@ -122,11 +128,9 @@ describe('SessionGateway', () => {
 
     describe('handleClueRequest', () => {
         let findSessionByClientIdSpy: jest.SpyInstance;
-        let findGameByIdSpy: jest.SpyInstance;
         let getClueSpy: jest.SpyInstance;
         beforeEach(() => {
             findSessionByClientIdSpy = jest.spyOn(sessionService, 'findByClientId').mockImplementation(() => stubSession);
-            findGameByIdSpy = jest.spyOn(gameService, 'findById').mockImplementation(async () => stubGame);
             getClueSpy = jest.spyOn(stubSession, 'getClue').mockImplementation(async () => {
                 return {
                     coordinates: [{ x: 0, y: 0 }],
@@ -138,12 +142,11 @@ describe('SessionGateway', () => {
         it('should call sessionService.findByClientId & gameService.findById', async () => {
             await gateway.handleClueRequest(stubSocket);
             expect(findSessionByClientIdSpy).toBeCalled();
-            expect(findGameByIdSpy).toBeCalled();
         });
 
         it('should getClue from the correct session', async () => {
             await gateway.handleClueRequest(stubSocket);
-            expect(getClueSpy).toBeCalledWith(stubGame.penalty);
+            expect(getClueSpy).toBeCalledWith(gameService.getGameConstants().penalty);
         });
     });
 
