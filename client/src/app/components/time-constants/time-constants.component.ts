@@ -10,7 +10,11 @@ import { GameConstants } from '@common/game-constants';
     styleUrls: ['./time-constants.component.scss'],
 })
 export class TimeConstantsComponent implements OnInit {
-    gameConstants: GameConstants;
+    gameConstants: GameConstants = {
+        time: undefined,
+        penalty: undefined,
+        reward: undefined,
+    };
     modifiedGameConstants: GameConstants;
     editingConstants = false;
 
