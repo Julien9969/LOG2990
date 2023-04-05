@@ -67,3 +67,10 @@ export const DEFAULT_GAME_LEADERBOARD: [string, number][] = [
  * Constante de gestion de Session;
  */
 export const SESSION_ID_CAP = 10000;
+
+/**
+ * Constantes de ClueService
+ */
+
+export const DIVIDER_FIRST_CLUE = 4;
+export const DIVIDER_SECOND_CLUE = 16;

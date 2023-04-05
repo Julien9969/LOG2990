@@ -1,23 +1,26 @@
-import { ALLOWED_NB_CLUES, TIME_CONST } from '@app/services/constants/services.const';
+import { TIME_CONST } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
-import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 
 export class Session {
     gameID: string;
     id: number;
+
     nGuesses: number = 0;
     nPenalties: number = 0;
+    penaltyTime: number;
+
     nDifferences: number;
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
     differencesFoundByPlayer: [userSocketId: string, differencesFound: number[]][] = [];
+
     timeElapsed: number = 0;
     timerId: NodeJS.Timeout;
 
     nbCluesRequested: number = 0;
 
-    constructor(gameID: string, firstSocketId: string, secondSocketId?: string) {
+    constructor(gameID: string, firstSocketId: string, secondSocketId: string = undefined) {
         this.differencesFoundByPlayer.push([firstSocketId, []]);
         if (secondSocketId) {
             this.differencesFoundByPlayer.push([secondSocketId, []]);
@@ -53,23 +56,6 @@ export class Session {
      */
     stopTimer() {
         clearInterval(this.timerId);
-    }
-
-    /**
-     * Offre un indice sous la forme d'une liste de pixels
-     * dans laquelle une des différences non-trouvé s'y trouve
-     *
-     * @return la liste de pixel correspondant à l'indice (pixels qui changerons de couleur sur l'écran)
-     */
-    async getClue(penalty: number): Promise<Clue | void> {
-        if (this.nbCluesRequested >= 3) return;
-        this.nbCluesRequested++;
-        this.timeElapsed += penalty;
-        const clue: Clue = {
-            coordinates: [{ x: 0, y: 0 } as Coordinate],
-            nbCluesLeft: ALLOWED_NB_CLUES - this.nbCluesRequested,
-        };
-        return clue;
     }
 
     /**
@@ -147,6 +133,20 @@ export class Session {
         if (this.nDifferences / 2 <= this.differencesFoundByPlayer[0][1].length) return this.differencesFoundByPlayer[0][0];
         if (this.nDifferences / 2 <= this.differencesFoundByPlayer[1][1].length) return this.differencesFoundByPlayer[1][0];
         return;
+    }
+
+    /**
+     * handle clue request to apply penalty to session timer,
+     * count the clue request and
+     * verify if the session is allowed to give out any more clues
+     *
+     * @returns boolean that indicates if the clue is allowed
+     */
+    handleClueRequest(): boolean {
+        this.nbCluesRequested++;
+        const clueIsAllowed = this.nbCluesRequested <= 3;
+        if (clueIsAllowed) this.timeElapsed += 5;
+        return clueIsAllowed;
     }
 
     /**

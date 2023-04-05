@@ -166,6 +166,11 @@ export class GameService {
         }
     }
 
+    async getPenaltyTime(id: string) {
+        const game: Game = await this.findById(id);
+        return game ? game.penalty : null;
+    }
+
     private verifyGameId(id: string): void {
         if (!mongoose.isValidObjectId(id)) {
             throw new Error(`Le ID "${id}" n'est pas un ID valide (format non-valide)`);

@@ -1,11 +1,16 @@
+import { ClueService } from '@app/services/clue/clue.service';
 import { SESSION_ID_CAP } from '@app/services/constants/services.const';
+import { GameService } from '@app/services/game/game.service';
 import { Session } from '@app/services/session/session';
+import { Clue } from '@common/clue';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SessionService {
     activeSessions: Session[] = [];
     socketIdToName = {};
+
+    constructor(private readonly gameService: GameService, private readonly clueService: ClueService) {}
 
     getName(socketId: string): string {
         return this.socketIdToName[socketId];
@@ -24,10 +29,11 @@ export class SessionService {
      * @param id L'identifiant du jeu voulu
      * @returns L'identifiant de la session créée
      */
-    createNewSession(id: string, firstSocketId: string, secondSocketId: string = undefined): number {
+    async createNewSession(gameId: string, firstSocketId: string, secondSocketId: string = undefined): Promise<number> {
         let newSession: Session;
-        if (secondSocketId) newSession = new Session(id, firstSocketId, secondSocketId);
-        else newSession = new Session(id, firstSocketId);
+        if (secondSocketId) newSession = new Session(gameId, firstSocketId, secondSocketId);
+        else newSession = new Session(gameId, firstSocketId);
+        newSession.penaltyTime = await this.gameService.getPenaltyTime(gameId);
         return this.addToList(newSession);
     }
 
@@ -74,6 +80,11 @@ export class SessionService {
      */
     findBySessionId(id: number): Session | undefined {
         return this.activeSessions.find((session: Session) => session.id === id);
+    }
+
+    generateClue(clientId: string): Clue {
+        const session = this.findByClientId(clientId);
+        return this.clueService.generateClue(session);
     }
 
     /**

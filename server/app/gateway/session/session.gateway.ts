@@ -43,9 +43,7 @@ export class SessionGateway {
      */
     @SubscribeMessage(SessionEvents.AskForClue)
     async handleClueRequest(client: Socket) {
-        const session = this.sessionService.findByClientId(client.id);
-        const game = await this.gameService.findById(session.gameID);
-        return await session.getClue(game.penalty);
+        return this.sessionService.generateClue(client.id);
     }
 
     /**
@@ -81,7 +79,7 @@ export class SessionGateway {
 
         this.logger.log(`Client ${client.id} asked for session id`);
         if (isSolo) {
-            const sessionId = this.sessionService.createNewSession(gameId, client.id);
+            const sessionId = await this.sessionService.createNewSession(gameId, client.id);
             this.startSessionTimer(client, sessionId);
             this.logger.log(`solo session ${sessionId} was created by ${client.id}`);
             return sessionId;
@@ -91,7 +89,7 @@ export class SessionGateway {
                 const clientsInRoom = await this.server.in(roomId).allSockets();
                 if (clientsInRoom.size === 2) {
                     const [firstClientId, secondClientId] = clientsInRoom;
-                    const sessionId = this.sessionService.createNewSession(gameId, firstClientId, secondClientId);
+                    const sessionId = await this.sessionService.createNewSession(gameId, firstClientId, secondClientId);
                     this.startSessionTimer(client, sessionId);
                     this.server.to(roomId).emit(SessionEvents.SessionId, sessionId);
                     this.logger.log(`multiplayer session ${sessionId} was created by client ${client.id}`);
