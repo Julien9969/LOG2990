@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
-
+import { GameActionLoggingService } from './gameActionLogging.service';
 @Injectable({
     providedIn: 'root',
 })
 export class SocketClientService {
     private socket: Socket;
-
+    constructor(public loggingService: GameActionLoggingService) {}
     isSocketAlive() {
         return this.socket && this.socket.connected;
     }
@@ -21,7 +21,12 @@ export class SocketClientService {
     }
 
     on<T>(event: string, action: (data: T) => void): void {
-        this.socket.on(event, action);
+        const newActionAndLog = (data: T) => {
+            action(data);
+            this.loggingService.logAction(event, data);
+        };
+
+        this.socket.on(event, newActionAndLog);
     }
 
     sendAndCallBack<T, U>(event: string, data: T, action: (data: U) => void): void {

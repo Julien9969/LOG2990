@@ -4,7 +4,6 @@ import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
-
 @Injectable({
     providedIn: 'root',
 })

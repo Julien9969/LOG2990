@@ -34,7 +34,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
     constructor(
         private readonly dialog: MatDialog,
         private readonly communicationService: CommunicationService,
-        private readonly socket: InGameService,
+        readonly socket: InGameService,
         private readonly socketClient: SocketClientService,
     ) {
         this.isLoaded = false;
