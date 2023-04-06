@@ -28,7 +28,10 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
     }
 
     ngAfterViewChecked() {
-        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+        if (this.chatService.newMessage) {
+            this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+            this.chatService.newMessage = false;
+        }
     }
 
     formatedTime(time: number): string {

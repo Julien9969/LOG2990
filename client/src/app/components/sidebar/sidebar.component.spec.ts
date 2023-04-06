@@ -1,3 +1,4 @@
+import { ElementRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SidebarComponent } from '@app/components/sidebar/sidebar.component';
@@ -23,6 +24,7 @@ describe('SidebarComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(SidebarComponent);
         component = fixture.componentInstance;
+        component.chatContainer = new ElementRef(document.createElement('div'));
         fixture.detectChanges();
     });
 
@@ -58,5 +60,15 @@ describe('SidebarComponent', () => {
             time: 1234,
             message: 'blah',
         });
+    });
+
+    it('ngAfterViewChecked should set scrollTop to scrollHeight if chat service.newMessage is true', () => {
+        const scrollHeight = 1234;
+        chatServiceSpy.newMessage = true;
+        const scrollSpy = spyOnProperty(component.chatContainer.nativeElement, 'scrollHeight', 'get').and.returnValue(scrollHeight);
+        const scrollTopSpy = spyOnProperty(component.chatContainer.nativeElement, 'scrollTop', 'set');
+        component.ngAfterViewChecked();
+        expect(scrollSpy).toHaveBeenCalled();
+        expect(scrollTopSpy).toHaveBeenCalledWith(scrollHeight);
     });
 });
