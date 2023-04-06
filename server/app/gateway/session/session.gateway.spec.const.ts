@@ -22,4 +22,5 @@ export const stubSession: Session = {
     gameID: 'game-id',
     stopTimer: () => {},
     tryGuess: (coord, id) => {},
+    getClue: (penality: number) => {},
 } as Session;

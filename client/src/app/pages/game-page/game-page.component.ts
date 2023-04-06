@@ -64,7 +64,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     async handleClueRequest() {
         if (!this.nbCluesLeft || !this.isSolo) return;
         const clue = await this.inGameSocket.retrieveClue();
-        console.log(clue.coordinates);
         this.nbCluesLeft = clue.nbCluesLeft;
     }
 
