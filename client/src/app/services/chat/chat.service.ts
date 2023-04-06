@@ -59,8 +59,10 @@ export class ChatService {
     }
 
     receiveMessage(message: Message) {
-        this.messageList.push(message);
-        this.newMessage = true;
+        if (!this.newMessage) {
+            this.messageList.push(message);
+            this.newMessage = true;
+        }
     }
 
     async listenForSystemMessage() {
