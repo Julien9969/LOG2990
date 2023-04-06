@@ -11,6 +11,7 @@ import { SystemMessage } from '@common/systemMessage';
 export class ChatService {
     messageList: Message[];
     clientId: string;
+    newMessage: boolean;
 
     constructor(public socketService: SocketClientService) {
         this.start();
@@ -59,6 +60,7 @@ export class ChatService {
 
     receiveMessage(message: Message) {
         this.messageList.push(message);
+        this.newMessage = true;
     }
 
     async listenForSystemMessage() {
