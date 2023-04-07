@@ -25,6 +25,8 @@ export class ImageOperationService {
     private cheatImagesData: ImageData;
     private allDifferencesList: Coordinate[][];
 
+    private cluePixels: Coordinate[];
+
     constructor(private readonly inGameService: InGameService) {}
 
     get contextOriginal(): CanvasRenderingContext2D {
@@ -146,6 +148,17 @@ export class ImageOperationService {
 
             await this.cheatBlink();
         }
+    }
+
+    /**
+     * Met en place l'affichage de l'indice
+     */
+    async handleClue(differences: Coordinate[]) {
+        if (this.isChatFocused) return;
+
+        this.highlightPixels(differences);
+        this.cluePixels = differences;
+        if (this.cluePixels) return;
     }
 
     /**

@@ -12,7 +12,7 @@
             </mat-toolbar>
         </div>
         <div id="game-container">
-            <app-play-image
+            <app-play-image #appPlayImage
                 (diffFoundUpdate)="handleDiffFoundUpdate($event)"
                 [sessionID]="sessionId"
                 [imageMainId]="gameInfos.imageMain"

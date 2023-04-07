@@ -42,7 +42,7 @@ export class SessionGateway {
      * @return l'indice
      */
     @SubscribeMessage(SessionEvents.AskForClue)
-    async handleClueRequest(client: Socket) {
+    handleClueRequest(client: Socket) {
         return this.sessionService.generateClue(client.id);
     }
 

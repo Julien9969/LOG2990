@@ -1,5 +1,6 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { PlayImageComponent } from '@app/components/play-image/play-image.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { HistoryService } from '@app/services/history.service';
@@ -15,6 +16,8 @@ import { WinnerInfo } from '@common/winner-info';
     styleUrls: ['./game-page.component.scss'],
 })
 export class GamePageComponent implements OnInit, OnDestroy {
+    @ViewChild('appPlayImage') playImageComponent: PlayImageComponent;
+
     userSocketId: string;
 
     playerName: string;
@@ -60,10 +63,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
         event.returnValue = false;
     }
 
-    @HostListener('window:keydown.i', ['$event'])
+    @HostListener('window:keydown.i')
     async handleClueRequest() {
         if (!this.nbCluesLeft || !this.isSolo) return;
         const clue = await this.inGameSocket.retrieveClue();
+        console.log(clue);
+        this.playImageComponent.handleClue(clue.coordinates);
         this.nbCluesLeft = clue.nbCluesLeft;
     }
 
