@@ -79,13 +79,15 @@ export class TimeConstantsComponent implements OnInit {
     async updateGameConstants() {
         if (!this.validateGameConstants()) return;
 
-        this.gameConstants = { ...this.gameConstants, ...this.modifiedGameConstants };
-        await this.gameService.updateGameConstants(this.gameConstants);
+        await this.gameService.updateGameConstants({ ...this.gameConstants, ...this.modifiedGameConstants });
+        this.gameConstants = await this.gameService.getGameConstants();
         this.editingConstants = false;
     }
 
     // Wrapper de Number pour y acceder dans le HTML
-    convertToNumber(value: string): number {
+    convertToNumber(value: string): number | undefined {
+        // La fonction Number convertit une chaine vide en 0, mais undefined est plus approprié dans notre cas
+        if(value === '') return undefined;
         return Number(value);
     }
 }

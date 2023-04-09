@@ -158,4 +158,8 @@ describe('TimeConstantsComponent', () => {
         expect(component.convertToNumber('1')).toEqual(1);
         expect(component.convertToNumber('a')).toEqual(Number('a'));
     });
+
+    it('convertToNumber returns undefined when empty input', () => {
+        expect(component.convertToNumber('')).toEqual(undefined);
+    });
 });
