@@ -19,8 +19,9 @@ describe('TimeConstantsComponent', () => {
                 return {};
             },
             updateGameConstants: async () => {},
+            // eslint-disable-next-line @typescript/no-explicit-any
         } as any;
-        
+
         await TestBed.configureTestingModule({
             declarations: [TimeConstantsComponent],
             imports: [MatIconModule],
@@ -38,9 +39,9 @@ describe('TimeConstantsComponent', () => {
                 time: 10,
                 penalty: 10,
                 reward: 10,
-            }
+            };
         });
-        gameServiceUpdateConstantsSpy = spyOn(gameServiceMock, 'updateGameConstants').and.callFake(async () => {})
+        gameServiceUpdateConstantsSpy = spyOn(gameServiceMock, 'updateGameConstants').and.callFake(async () => {});
     });
 
     it('should create the component', () => {
@@ -106,21 +107,20 @@ describe('TimeConstantsComponent', () => {
     describe('formControlIsValid', () => {
         it('checks if pattern, min and max validators have no error', () => {
             const stubFormControl: FormControl = {
-                hasError: (code: string) => false
+                hasError: (code: string) => false,
             } as FormControl;
             const hasErrorSpy = spyOn(stubFormControl, 'hasError');
-            
+
             const result = component.formControlIsValid(stubFormControl);
 
             expect(result).toEqual(true);
-            
+
             expect(hasErrorSpy).toHaveBeenCalledTimes(3);
             expect(hasErrorSpy).toHaveBeenCalledWith('pattern');
             expect(hasErrorSpy).toHaveBeenCalledWith('min');
             expect(hasErrorSpy).toHaveBeenCalledWith('max');
         });
     });
-
 
     describe('updateGameConstants', () => {
         it('calls gameService updateGameConstants with updatedConstants when present', () => {

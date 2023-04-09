@@ -65,15 +65,15 @@ export class TimeConstantsComponent implements OnInit {
     }
 
     validateGameConstants(): boolean {
-        return this.formControlIsValid(this.timeFormControl) &&
-        this.formControlIsValid(this.rewardFormControl) &&
-        this.formControlIsValid(this.penaltyFormControl)
+        return (
+            this.formControlIsValid(this.timeFormControl) &&
+            this.formControlIsValid(this.rewardFormControl) &&
+            this.formControlIsValid(this.penaltyFormControl)
+        );
     }
-    
+
     formControlIsValid(formControl: FormControl): boolean {
-        return !formControl.hasError('pattern') &&
-        !formControl.hasError('min') &&
-        !formControl.hasError('max');
+        return !formControl.hasError('pattern') && !formControl.hasError('min') && !formControl.hasError('max');
     }
 
     async updateGameConstants() {
@@ -87,7 +87,7 @@ export class TimeConstantsComponent implements OnInit {
     // Wrapper de Number pour y acceder dans le HTML
     convertToNumber(value: string): number | undefined {
         // La fonction Number convertit une chaine vide en 0, mais undefined est plus approprié dans notre cas
-        if(value === '') return undefined;
+        if (value === '') return undefined;
         return Number(value);
     }
 }
