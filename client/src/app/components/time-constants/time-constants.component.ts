@@ -10,12 +10,8 @@ import { GameConstants } from '@common/game-constants';
     styleUrls: ['./time-constants.component.scss'],
 })
 export class TimeConstantsComponent implements OnInit {
-    gameConstants: GameConstants = {
-        time: undefined,
-        penalty: undefined,
-        reward: undefined,
-    };
-    modifiedGameConstants: GameConstants;
+    gameConstants: GameConstants = {};
+    modifiedGameConstants: GameConstants = {};
     editingConstants = false;
 
     timeFormControl = new FormControl('', [
@@ -54,12 +50,11 @@ export class TimeConstantsComponent implements OnInit {
     }
 
     async ngOnInit() {
-        await this.loadGameConstants();
-    }
-
-    async loadGameConstants() {
-        this.gameConstants = await this.gameService.getGameConstants();
-        this.modifiedGameConstants = {};
+        try {
+            this.gameConstants = await this.gameService.getGameConstants();
+        } catch (err) {
+            this.gameConstants = {};
+        }
     }
 
     openEditPopup(): void {
@@ -71,12 +66,6 @@ export class TimeConstantsComponent implements OnInit {
         this.editingConstants = false;
         this.modifiedGameConstants = this.gameConstants;
     }
-
-    updateDisplay(updatedGameConsts: GameConstants) {
-        this.gameConstants = updatedGameConsts;
-    }
-
-    // Fonctions pour le popup de modification de constantes
 
     validateGameConstants(): boolean {
         return this.constantsAreValidNumbers() && this.constantsAreInRange();

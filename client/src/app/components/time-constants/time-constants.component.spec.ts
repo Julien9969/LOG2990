@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME, MIN_REWARD_TIME } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
-import { GameConstants } from '@common/game-constants';
 import { TimeConstantsComponent } from './time-constants.component';
 
 describe('UploadImageSquareComponent', () => {
@@ -30,8 +29,8 @@ describe('UploadImageSquareComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('loadGameConstants should get gameService constants', async () => {
-        await component.loadGameConstants();
+    it('ngOnInit should get gameService constants', async () => {
+        await component.ngOnInit();
 
         expect(gameServiceSpy.getGameConstants).toHaveBeenCalled();
     });
@@ -57,18 +56,6 @@ describe('UploadImageSquareComponent', () => {
             MIN_REWARD_TIME,
             MAX_REWARD_TIME,
         ]);
-    });
-
-    it('updateDisplay sets gameConstants', () => {
-        const stubConsts: GameConstants = {
-            time: 100,
-            penalty: 10,
-            reward: 10,
-        };
-        component.gameConstants = {};
-
-        component.updateDisplay(stubConsts);
-        expect(component.gameConstants).toEqual(stubConsts);
     });
 
     describe('validateGameConstants', () => {
