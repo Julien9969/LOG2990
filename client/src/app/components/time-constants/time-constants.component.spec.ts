@@ -5,10 +5,10 @@ import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PE
 import { GameService } from '@app/services/game/game.service';
 import { TimeConstantsComponent } from './time-constants.component';
 
-describe('UploadImageSquareComponent', () => {
+describe('TimeConstantsComponent', () => {
     let component: TimeConstantsComponent;
     let fixture: ComponentFixture<TimeConstantsComponent>;
-    let gameServiceSpy: GameService;
+    let gameServiceSpy: jasmine.SpyObj<GameService>;
 
     beforeEach(async () => {
         gameServiceSpy = jasmine.createSpyObj('GameServiceMock', ['getGameConstants', 'updateGameConstants']);
@@ -59,68 +59,13 @@ describe('UploadImageSquareComponent', () => {
     });
 
     describe('validateGameConstants', () => {
-        it('checks if numbers valid and in range', () => {
-            const constantsAreValidNumbersSpy = spyOn(component, 'constantsAreValidNumbers').and.callFake(() => true);
-            const constantsAreInRangeSpy = spyOn(component, 'constantsAreInRange').and.callFake(() => true);
+        it('checks if formControls have no error', () => {
+            const formControlIsValidSpy = spyOn(component, 'formControlIsValid').and.callFake(() => true);
 
             expect(component.validateGameConstants()).toBeTrue();
 
-            constantsAreValidNumbersSpy.and.callFake(() => false);
-            constantsAreInRangeSpy.and.callFake(() => true);
-
+            formControlIsValidSpy.and.callFake(() => false);
             expect(component.validateGameConstants()).toBeFalse();
-        });
-
-        describe('constantsAreInRange', () => {
-            it('returns true when values are all in bounds (or undefined)', () => {
-                component.modifiedGameConstants = {
-                    time: undefined,
-                    penalty: MIN_PENALTY_TIME + 1,
-                    reward: MAX_REWARD_TIME,
-                };
-
-                expect(component.constantsAreInRange()).toBeTrue();
-            });
-
-            it('returns false when values are out of bounds', () => {
-                component.modifiedGameConstants = {
-                    time: MIN_GAME_TIME - 1,
-                    penalty: MIN_PENALTY_TIME,
-                    reward: MAX_REWARD_TIME,
-                };
-
-                expect(component.constantsAreInRange()).toBeFalse();
-
-                component.modifiedGameConstants = {
-                    time: MIN_GAME_TIME,
-                    penalty: MIN_PENALTY_TIME,
-                    reward: MAX_REWARD_TIME + 1,
-                };
-
-                expect(component.constantsAreInRange()).toBeFalse();
-            });
-        });
-
-        describe('constantsAreValidNumbers', () => {
-            it('returns true when all consts are numbers or undefined', () => {
-                component.modifiedGameConstants = {
-                    time: undefined,
-                    penalty: 0,
-                    reward: 0,
-                };
-
-                expect(component.constantsAreValidNumbers()).toBeTrue();
-            });
-
-            it('returns false when a constant is not a number', () => {
-                component.modifiedGameConstants = {
-                    time: NaN,
-                    penalty: NaN,
-                    reward: 0,
-                };
-
-                expect(component.constantsAreValidNumbers()).toBeFalse();
-            });
         });
     });
 
@@ -153,11 +98,11 @@ describe('UploadImageSquareComponent', () => {
         });
     });
 
-    it('parseInt wraps around basic parseInt', () => {
-        expect(component.parseInt('0')).toEqual(parseInt('0', 10));
-        expect(component.parseInt('0')).toEqual(0);
-        expect(component.parseInt('1')).toEqual(parseInt('1', 10));
-        expect(component.parseInt('1')).toEqual(1);
-        expect(component.parseInt('a')).toEqual(parseInt('a', 10));
+    it('convertToNumber wraps around basic Number()', () => {
+        expect(component.convertToNumber('0')).toEqual(Number('0'));
+        expect(component.convertToNumber('0')).toEqual(0);
+        expect(component.convertToNumber('1')).toEqual(Number('1'));
+        expect(component.convertToNumber('1')).toEqual(1);
+        expect(component.convertToNumber('a')).toEqual(Number('a'));
     });
 });

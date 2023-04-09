@@ -26,9 +26,9 @@
                     #timerInput
                     type="text"
                     autofocus
-                    (keyup)="this.modifiedGameConstants.time = parseInt(timerInput.value)"
+                    (keyup)="this.modifiedGameConstants.time = convertToNumber(timerInput.value)"
                     matInput
-                    [placeholder]="'Entre ' + this.timeConstantBounds.minTime + ' et ' + this.timeConstantBounds.maxTime"
+                    [placeholder]="this.gameConstants.time + 's \t (Entre ' + this.timeConstantBounds.minTime + ' et ' + this.timeConstantBounds.maxTime + ')'"
                     [formControl]="this.timeFormControl"
                     />
                     <mat-error *ngIf="this.timeFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>
@@ -40,9 +40,9 @@
                     #rewardInput
                     type="text"
                     autofocus
-                    (keyup)="this.modifiedGameConstants.reward = parseInt(rewardInput.value)"
+                    (keyup)="this.modifiedGameConstants.reward = convertToNumber(rewardInput.value)"
                     matInput
-                    [placeholder]="'Entre ' + this.timeConstantBounds.minReward + ' et ' + this.timeConstantBounds.maxReward"
+                    [placeholder]="this.gameConstants.reward + 's \t (Entre ' + this.timeConstantBounds.minReward + ' et ' + this.timeConstantBounds.maxReward + ')'"
                     [formControl]="this.rewardFormControl"
                 />
                 <mat-error *ngIf="this.rewardFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>
@@ -54,9 +54,9 @@
                     #penaltyInput
                     type="text"
                     autofocus
-                    (keyup)="this.modifiedGameConstants.penalty = parseInt(penaltyInput.value)"
+                    (keyup)="this.modifiedGameConstants.penalty = convertToNumber(penaltyInput.value)"
                     matInput
-                    [placeholder]="'Entre ' + this.timeConstantBounds.minPenalty + ' et ' + this.timeConstantBounds.maxPenalty"
+                    [placeholder]="this.gameConstants.penalty + 's \t (Entre ' + this.timeConstantBounds.minPenalty + ' et ' + this.timeConstantBounds.maxPenalty + ')'"
                     [formControl]="this.penaltyFormControl"
                 />
                 <mat-error *ngIf="this.penaltyFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>
