@@ -19,7 +19,7 @@ describe('TimeConstantsComponent', () => {
                 return {};
             },
             updateGameConstants: async () => {},
-            // eslint-disable-next-line @typescript/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Any utilisé pour créer notre propre mock
         } as any;
 
         await TestBed.configureTestingModule({
@@ -107,6 +107,7 @@ describe('TimeConstantsComponent', () => {
     describe('formControlIsValid', () => {
         it('checks if pattern, min and max validators have no error', () => {
             const stubFormControl: FormControl = {
+                // eslint-disable-next-line no-unused-vars -- Le parametere est necessaire pour coller au typage de la fonction
                 hasError: (code: string) => false,
             } as FormControl;
             const hasErrorSpy = spyOn(stubFormControl, 'hasError');

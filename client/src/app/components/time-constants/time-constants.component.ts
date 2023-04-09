@@ -14,18 +14,21 @@ export class TimeConstantsComponent implements OnInit {
     modifiedGameConstants: GameConstants = {};
     editingConstants = false;
 
+    // eslint-disable-next-line prettier/prettier -- Le linter crée des lignes trop longues avec les Validators
     timeFormControl = new FormControl('', [
         Validators.pattern('[0-9]*'),
         Validators.min(MIN_GAME_TIME),
         Validators.max(MAX_GAME_TIME),
     ]);
 
+    // eslint-disable-next-line prettier/prettier
     rewardFormControl = new FormControl('', [
         Validators.pattern('[0-9]*'),
         Validators.min(MIN_REWARD_TIME),
         Validators.max(MAX_REWARD_TIME),
     ]);
 
+    // eslint-disable-next-line prettier/prettier
     penaltyFormControl = new FormControl('', [
         Validators.pattern('[0-9]*'),
         Validators.min(MIN_PENALTY_TIME),
