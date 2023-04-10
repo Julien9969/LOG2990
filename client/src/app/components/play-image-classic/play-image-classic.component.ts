@@ -6,22 +6,20 @@ import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { Coordinate } from '@common/coordinate';
-import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 
 @Component({
-    selector: 'app-play-image',
-    templateUrl: './play-image.component.html',
-    styleUrls: ['./play-image.component.scss'],
+    selector: 'app-play-image-classic',
+    templateUrl: './play-image-classic.component.html',
+    styleUrls: ['./play-image-classic.component.scss'],
 })
-export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
+export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestroy {
     @ViewChild('canvas1', { static: false }) imageCanvas1!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas2', { static: false }) imageCanvas2!: ElementRef<HTMLCanvasElement>;
 
     @Input() sessionID!: number;
     @Input() imageMainId!: number;
     @Input() imageAltId!: number;
-    @Input() isTimeLimited: boolean = false;
 
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
@@ -72,29 +70,16 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
-        this.socket.listenNewGame((data: [Game, number]) => {
-            this.receiveNewGame(data[0]);
-        });
     }
 
     async ngAfterViewInit(): Promise<void> {
-        // if (this.isTimeLimited) {
-        //     await this.requestNewGame();
-        // } else {
         await this.loadImage(this.canvasContext1, this.imageMainId);
         await this.loadImage(this.canvasContext2, this.imageAltId);
         this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
-        // }
     }
 
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
-        if (this.isTimeLimited) this.submitLimitedTimeCoordinates();
-        else if (this.lastDifferenceFound.differencesByPlayer.length !== 2) this.submitSoloCoordinates();
-        else this.submitMultiCoordinates();
-    }
-
-    submitSoloCoordinates() {
         this.socket
             .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
             .then((response: GuessResult) => {
@@ -105,44 +90,20 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
             });
     }
 
-    submitMultiCoordinates() {
-        this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
-    }
-
-    submitLimitedTimeCoordinates() {
-        this.socket.submitCoordinatesLimitedTime(this.sessionID, this.mouseService.mousePosition);
-    }
-
     /**
      * Met a jours les scores lorsque l'utilisateur locale trouve une différence
      *
      * @param guessResult résultat du serveur après avoir demander de valider les coordonnés de la différence trouvé
      */
     updateDiffFound(guessResult: GuessResult): void {
-        if (guessResult.isCorrect) {
+        if (guessResult.isCorrect && this.hasNbDifferencesChanged(guessResult.differencesByPlayer)) {
             this.lastDifferenceFound = guessResult;
             this.audioService.playAudio('success');
             this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
             this.errorCounter = 0;
-            // if (this.isTimeLimited) this.requestNewGame();
-            if (!this.isTimeLimited) this.imageOperationService.pixelBlink(guessResult.differencePixelList);
+            this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
             this.handleErrorGuess();
-        }
-    }
-
-    async receiveNewGame(newGame: Game) {
-        try {
-            if (!newGame) return;
-            console.log('receivedNewGame from server, its imageMainId is', this.imageMainId);
-            this.imageMainId = newGame.imageMain;
-            this.imageAltId = newGame.imageAlt;
-            await this.loadImage(this.canvasContext1, this.imageMainId);
-            await this.loadImage(this.canvasContext2, this.imageAltId);
-            this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            alert(error.message);
         }
     }
 
@@ -175,7 +136,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     drawImageOnCanvas(canvasContext: CanvasRenderingContext2D, img: HTMLImageElement): void {
-        console.log('we are drawing a new image');
         canvasContext.drawImage(img, 0, 0);
     }
 

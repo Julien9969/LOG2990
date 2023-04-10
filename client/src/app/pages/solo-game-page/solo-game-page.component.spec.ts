@@ -5,12 +5,12 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-classes-per-file */
 import { Component, Input } from '@angular/core';
-import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
-import { PlayImageComponent } from '@app/components/play-image/play-image.component';
+import { PlayImageComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication.service';
 import { SocketClientService } from '@app/services/socket-client.service';
