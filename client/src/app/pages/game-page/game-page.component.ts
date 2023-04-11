@@ -54,9 +54,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     @HostListener('window:beforeunload', ['$event'])
     unloadHandler(event: BeforeUnloadEvent) {
         event.preventDefault();
-        if (this.isSolo && this.nDiffFoundMainPlayer !== this.gameInfos.differenceCount) {
-            this.historyService.playerQuit(this.time, this.isSolo);
-        }
+        this.historyService.playerQuit(this.time, this.isSolo);
         event.returnValue = false;
     }
 
@@ -144,6 +142,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
         this.inGameSocket.disconnect();
+        if (this.isSolo) this.historyService.playerQuit(this.time, this.isSolo);
     }
 
     private initHistory() {

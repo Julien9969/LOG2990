@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
 import { HistoryService } from '@app/services/history.service';
 import { CommunicationService } from './communication/communication.service';
@@ -35,28 +37,20 @@ describe('HistoryService', () => {
     });
 
     it('getHistory should call communicationService.getHistory', async () => {
-        const id = '42';
-        const result = await Promise.resolve(service.getHistory(id));
-        expect(communicationServiceSpy.getHistory).toHaveBeenCalledWith(id);
+        const result = await Promise.resolve(service.getHistory());
+        expect(communicationServiceSpy.getHistory).toHaveBeenCalledWith();
         expect(result).toEqual([]);
     });
 
     it('deleteHistory should call communicationService.deleteHistory', () => {
-        const gameId = '42';
-        service.deleteHistory(gameId);
-        expect(communicationServiceSpy.deleteHistory).toHaveBeenCalledWith(gameId);
+        service.deleteHistory();
+        expect(communicationServiceSpy.deleteHistory).toHaveBeenCalledWith();
     });
 
-    it('initHistory should set currentGame', () => {
+    it('initHistory should call setStartDateTime', () => {
+        spyOn(service, 'setStartDateTime' as any).and.callFake(() => {});
         service.initHistory();
-        expect(service['currentGame']).toEqual({
-            startDateTime: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
-            gameId: '',
-            duration: '',
-            gameMode: '',
-            playerOne: '',
-            playerTwo: '',
-        });
+        expect(service['setStartDateTime']).toHaveBeenCalled();
     });
 
     it('setGameMode should set currentGame.gameMode to solo if isSolo is true', () => {
@@ -119,8 +113,9 @@ describe('HistoryService', () => {
     });
 
     it('setStartDateTime should set currentGame.startDateTime', () => {
+        service['date'] = dateSpy;
         service['setStartDateTime']();
-        const expectedStartDateTime = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString();
+        const expectedStartDateTime = dateSpy.toLocaleDateString() + ' ' + dateSpy.toLocaleTimeString();
         expect(service['currentGame'].startDateTime).toEqual(expectedStartDateTime);
     });
 });

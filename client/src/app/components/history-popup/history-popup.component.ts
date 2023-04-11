@@ -1,5 +1,5 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, OnInit } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
 import { HistoryService } from '@app/services/history.service';
 import { GameHistory } from '@common/game-history';
 
@@ -12,15 +12,9 @@ export class HistoryPopupComponent implements OnInit {
     gameId: string;
     gamesHistory: GameHistory[];
 
-    constructor(
-        @Inject(MAT_DIALOG_DATA) public data: string,
-        public dialogRef: MatDialogRef<HistoryPopupComponent>,
-        public historyService: HistoryService,
-    ) {
-        this.gameId = data;
-    }
+    constructor(public dialogRef: MatDialogRef<HistoryPopupComponent>, public historyService: HistoryService) {}
 
     async ngOnInit(): Promise<void> {
-        this.gamesHistory = await this.historyService.getHistory(this.gameId);
+        this.gamesHistory = await this.historyService.getHistory();
     }
 }

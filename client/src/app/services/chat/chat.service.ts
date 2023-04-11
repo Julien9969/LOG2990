@@ -1,4 +1,4 @@
-import { ElementRef, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { SystemCode } from '@app/services/constantes.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { ChatEvents } from '@common/chat.gateway.events';
@@ -10,8 +10,8 @@ import { SystemMessage } from '@common/systemMessage';
 })
 export class ChatService {
     messageList: Message[];
-    formElement: ElementRef<HTMLFormElement>;
     clientId: string;
+    newMessage: boolean;
 
     constructor(public socketService: SocketClientService) {
         this.start();
@@ -21,11 +21,13 @@ export class ChatService {
         this.listenForMessage();
         this.listenForSystemMessage();
         this.listenForId();
+        this.listenForNewHighScore();
     }
 
     giveNameToServer(playerName: string) {
         this.socketService.send(SessionEvents.GiveName, playerName);
     }
+
     readSystemMessage(systemCode: string, playerName: string): string {
         switch (systemCode) {
             case SystemCode.MistakeGuess:
@@ -47,6 +49,7 @@ export class ChatService {
             message: this.readSystemMessage(systemCode, playerName),
         };
     }
+
     isFromMe(message: Message): boolean {
         return message.socketId === this.clientId;
     }
@@ -56,12 +59,12 @@ export class ChatService {
     }
 
     receiveMessage(message: Message) {
-        this.messageList.push(message);
-        this.scrollToBottom();
+        if (!this.newMessage) {
+            this.messageList.push(message);
+            this.newMessage = true;
+        }
     }
-    scrollToBottom() {
-        this.formElement.nativeElement.scrollIntoView();
-    }
+
     async listenForSystemMessage() {
         this.socketService.on(ChatEvents.SystemMessageFromServer, (systemMessage: SystemMessage) => {
             this.receiveMessage(this.createSystemMessage(systemMessage.systemCode, systemMessage.playerName));
@@ -76,6 +79,19 @@ export class ChatService {
     async listenForId() {
         this.socketService.on(ChatEvents.GiveClientID, (receivedId: string) => {
             this.clientId = receivedId;
+        });
+    }
+
+    async listenForNewHighScore() {
+        this.socketService.on(ChatEvents.BroadcastNewHighScore, (message: string) => {
+            this.receiveMessage({
+                time: new Date().getTime(),
+                author: 'Classement',
+                isFromSystem: false,
+                socketId: 'unknown',
+                sessionID: -1,
+                message,
+            });
         });
     }
 }

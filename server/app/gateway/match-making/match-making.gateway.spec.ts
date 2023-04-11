@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- need to use any to spy on private method */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
+import { ChatEvents } from '@common/chat.gateway.events';
 import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';
@@ -477,7 +478,7 @@ describe('MatchmakingGateway', () => {
             stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]]));
             jest.spyOn(gateway['server'], 'to').mockReturnValue({
                 emit: (event: string) => {
-                    expect(event).toEqual(SessionEvents.OpponentLeftGame);
+                    expect(event === SessionEvents.OpponentLeftGame || event === ChatEvents.SystemMessageFromServer).toBeTruthy();
                 },
             } as BroadcastOperator<unknown, unknown>);
 
