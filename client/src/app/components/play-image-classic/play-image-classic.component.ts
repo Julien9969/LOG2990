@@ -80,14 +80,18 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
 
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
-        this.socket
-            .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
-            .then((response: GuessResult) => {
-                this.updateDiffFound(response);
-            })
-            .catch((e) => {
-                alert(e.message);
-            });
+        if (this.isSolo()) {
+            this.socket
+                .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
+                .then((response: GuessResult) => {
+                    this.updateDiffFound(response);
+                })
+                .catch((e) => {
+                    alert(e.message);
+                });
+        } else {
+            this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
+        }
     }
 
     /**
@@ -150,6 +154,11 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
                 }
             }
         }
+        return false;
+    }
+
+    isSolo(): boolean {
+        // return this.lastDifferenceFound.differencePixelList.length === 1;
         return false;
     }
 

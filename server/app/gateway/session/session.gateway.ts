@@ -167,6 +167,7 @@ export class SessionGateway {
 
     @SubscribeMessage(SessionEvents.SubmitCoordinatesMultiGame)
     handleCoordinatesSubmissionMulti(client: Socket, data: [number, Coordinate]) {
+        console.log('on utilise le handle submission multi');
         const [sessionId, coordinates] = data;
         let result: GuessResult;
         let session: ClassicSession;
