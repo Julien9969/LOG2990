@@ -23,4 +23,13 @@
             <button mat-button matDialogClose routerLink="/home" aria-label="OUI">Retourner à l'accueil</button>
         </div>
     </div>
+
+    <div *ngSwitchCase="'delete'">
+        <h1 mat-dialog-title class="warning">{{this.deleteMessage}}</h1>
+        <div class="button-row">
+            <!-- <button mat-button (click)="playerQuit()" routerLink="/home" aria-label="OUI">OUI</button> -->
+            <button mat-button matDialogClose (click)="this.buttonCallback()" aria-label="OUI">OUI</button>
+            <button mat-button matDialogClose aria-label="NON">NON</button>
+        </div>
+    </div>
 </ng-container>
