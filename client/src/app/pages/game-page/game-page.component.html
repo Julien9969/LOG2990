@@ -30,7 +30,7 @@
                 <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span>
                 <button *ngIf="isSolo" mat-button (click)="handleClueRequest()" id="clue-button" aria-label="Indice">
                     <mat-icon>highlight</mat-icon>
-                    Indices: {{ nbCluesLeft }} (-{{ gameInfos.penalty }} sec)
+                    Indices: {{ nbCluesLeft }} (-{{ 0 }} sec)
                 </button>
             </mat-toolbar>
         </div>

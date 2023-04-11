@@ -4,6 +4,7 @@ import { Coordinate } from '@common/coordinate';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
+import { GameConstants } from '@common/game-constants';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -164,6 +165,20 @@ export class CommunicationService {
             if (response.ok && this.instanceOfImageComparisonResult(response.body)) return response.body;
         }
         throw new Error("l'image n'a pas pu être comparé");
+    }
+
+    async getGameConstants(): Promise<GameConstants> {
+        const observer = this.http
+            .get<GameConstants>(`${this.baseUrl}/games/constants`)
+            .pipe(catchError(this.handleError<GameConstants>('Erreur lors du chargement des constantes de jeu.')));
+        return firstValueFrom(observer);
+    }
+
+    async patchGameConstants(gameConsts: GameConstants) {
+        const observer = this.http
+            .patch<void>(`${this.baseUrl}/games/constants`, gameConsts, { observe: 'response' })
+            .pipe(catchError(this.handleError<void>('Erreur lors de la modification des constantes de jeu.')));
+        return await firstValueFrom(observer);
     }
 
     /**

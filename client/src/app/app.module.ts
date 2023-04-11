@@ -21,6 +21,7 @@ import { ImageDifferencePopupComponent } from './components/image-difference-pop
 import { LimitedTimeSelectionComponent } from './components/limited-time-selection/limited-time-selection.component';
 import { MatchMakingDialogComponent } from './components/match-making-dialog/match-making-dialog.component';
 import { PopupDialogComponent } from './components/popup-dialog/popup-dialog.component';
+import { TimeConstantsComponent } from './components/time-constants/time-constants.component';
 import { UploadImageSquareComponent } from './components/upload-image-square/upload-image-square.component';
 import { ConfigurationGameComponent } from './pages/configuration-game-page/configuration-game-page.component';
 import { GameCreationPageComponent } from './pages/game-creation-page/game-creation-page.component';
@@ -53,6 +54,7 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         ImageDifferencePopupComponent,
         DrawBottomBarComponent,
         LimitedTimeSelectionComponent,
+        TimeConstantsComponent,
     ],
     imports: [
         AppMaterialModule,

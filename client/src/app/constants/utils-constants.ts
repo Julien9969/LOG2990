@@ -89,3 +89,14 @@ export const PATH_TO_VALID_IMAGE = '/assets/test-assets/image_empty.bmp';
 export const PATH_TO_WRONG_BIT_DEPTH_IMAGE = '/assets/test-assets/image_wrong_bit_depth.bmp';
 export const PATH_TO_WRONG_RES_IMAGE = '/assets/test-assets/image_wrong_res.bmp';
 export const VALID_IMAGE_ID = 1999;
+
+// for game timer constants
+
+export const MAX_GAME_TIME = 120;
+export const MIN_GAME_TIME = 10;
+
+export const MAX_PENALTY_TIME = 15;
+export const MIN_PENALTY_TIME = 0;
+
+export const MAX_REWARD_TIME = 30;
+export const MIN_REWARD_TIME = 0;

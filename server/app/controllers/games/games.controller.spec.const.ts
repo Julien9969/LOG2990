@@ -25,9 +25,6 @@ export const exampleGame: Game = {
     isHard: true,
     differenceCount: 7,
     radius: 3,
-    penalty: 0,
-    reward: 0,
-    time: 0,
 };
 
 export const exampleInputGame = {
