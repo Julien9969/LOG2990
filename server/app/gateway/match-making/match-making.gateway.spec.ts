@@ -478,7 +478,7 @@ describe('MatchmakingGateway', () => {
             stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]]));
             jest.spyOn(gateway['server'], 'to').mockReturnValue({
                 emit: (event: string) => {
-                    expect(event === SessionEvents.OpponentLeftGame || event === ChatEvents.SystemMessageFromServer ).toBeTruthy();
+                    expect(event === SessionEvents.OpponentLeftGame || event === ChatEvents.SystemMessageFromServer).toBeTruthy();
                 },
             } as BroadcastOperator<unknown, unknown>);
 
