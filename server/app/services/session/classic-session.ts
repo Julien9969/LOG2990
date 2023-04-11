@@ -113,8 +113,18 @@ export class ClassicSession implements Session {
             winnerName: this.verifyGameWon(),
         };
 
-        if (!this.isSolo) guessResult.differencesByPlayer.push([this.players[0].socketId, this.players[0].differencesFound.length]);
-
+        if (!this.isSolo) guessResult.differencesByPlayer.push([this.players[1].socketId, this.players[1].differencesFound.length]);
+        console.log(
+            'buildGuessResult returns the guessResult with these infos: (isCorrect = ',
+            guessResult.isCorrect,
+            '), (differenceByPlayer = ',
+            guessResult.differencesByPlayer,
+            '), ( differencePixelList = ',
+            guessResult.differencePixelList,
+            '), (winnerName = ',
+            guessResult.winnerName,
+            ')',
+        );
         return guessResult;
     }
 

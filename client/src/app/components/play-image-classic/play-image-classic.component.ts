@@ -20,6 +20,7 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
     @Input() sessionID!: number;
     @Input() imageMainId!: number;
     @Input() imageAltId!: number;
+    @Input() isSolo: boolean;
 
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
@@ -80,7 +81,7 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
 
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
-        if (this.isSolo()) {
+        if (this.isSolo) {
             this.socket
                 .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
                 .then((response: GuessResult) => {
@@ -154,11 +155,6 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
                 }
             }
         }
-        return false;
-    }
-
-    isSolo(): boolean {
-        // return this.lastDifferenceFound.differencePixelList.length === 1;
         return false;
     }
 

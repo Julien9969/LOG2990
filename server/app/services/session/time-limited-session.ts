@@ -7,13 +7,14 @@ import { GuessResult } from '@common/guess-result';
 import { Player } from '@common/player';
 import { Session } from './session';
 
+const MAXIMUM_GAME_TIME = 120;
 export class LimitedTimeSession implements Session {
     gameID: string;
     id: number;
     nGuesses: number = 0;
     nPenalties: number = 0;
     nDifferencesFound: number = 0;
-    time: number = 0;
+    time: number = MAXIMUM_GAME_TIME;
     timerId: NodeJS.Timeout;
     playedGames: Game[] = [];
     gameService: GameService;
@@ -35,7 +36,7 @@ export class LimitedTimeSession implements Session {
      */
     get formatedTime(): string {
         const minutes = Math.floor(this.time / TIME_CONST.minute);
-        const seconds = this.time % TIME_CONST.secondInMilliseconds;
+        const seconds = this.time % TIME_CONST.minute;
         return minutes + ':' + seconds.toString().padStart(2, '0');
     }
 
@@ -127,7 +128,13 @@ export class LimitedTimeSession implements Session {
             }) !== undefined
         );
     }
+
     async noMoreGames(): Promise<boolean> {
         return this.playedGames.length === (await this.gameService.getNumberOfGames());
+    }
+
+    timerFinished(): boolean {
+        console.log('time: ', this.time);
+        return this.time <= 0;
     }
 }

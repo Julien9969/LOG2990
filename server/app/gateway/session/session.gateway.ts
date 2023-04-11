@@ -71,7 +71,7 @@ export class SessionGateway {
         this.logger.log(`Client ${client.id} asked for session id`);
         if (isSolo) {
             const sessionId = this.sessionService.createNewClassicSession(gameId, client.id);
-            this.startSessionTimer(client, sessionId);
+            this.startClassicSessionTimer(client, sessionId);
             this.logger.log(`solo session ${sessionId} was created by ${client.id}`);
             return sessionId;
         }
@@ -80,8 +80,10 @@ export class SessionGateway {
                 const clientsInRoom = await this.server.in(roomId).allSockets();
                 if (clientsInRoom.size === 2) {
                     const [firstClientId, secondClientId] = clientsInRoom;
+                    console.log('startClassicSession firstClientId = ', firstClientId);
+                    console.log('startClassicSession secondClientId = ', secondClientId);
                     const sessionId = this.sessionService.createNewClassicSession(gameId, firstClientId, secondClientId);
-                    this.startSessionTimer(client, sessionId);
+                    this.startClassicSessionTimer(client, sessionId);
                     this.server.to(roomId).emit(SessionEvents.SessionId, sessionId);
                     this.logger.log(`multiplayer session ${sessionId} was created by client ${client.id}`);
                 }
@@ -106,7 +108,7 @@ export class SessionGateway {
             const sessionId = this.sessionService.createNewLimitedTimeSession(client.id);
             const session: LimitedTimeSession = this.getSession(sessionId) as LimitedTimeSession;
             this.sendNewGame(client, session);
-            this.startSessionTimer(client, sessionId);
+            this.startLimitedTimeSessionTimer(client, sessionId);
             this.logger.log(`solo session ${sessionId} was created by ${client.id}`);
             return sessionId;
         }
@@ -116,7 +118,9 @@ export class SessionGateway {
                 if (clientsInRoom.size === 2) {
                     const [firstClientId, secondClientId] = clientsInRoom;
                     const sessionId = this.sessionService.createNewLimitedTimeSession(firstClientId, secondClientId);
-                    this.startSessionTimer(client, sessionId);
+                    const session: LimitedTimeSession = this.getSession(sessionId) as LimitedTimeSession;
+                    this.sendNewGame(client, session);
+                    this.startLimitedTimeSessionTimer(client, sessionId);
                     this.server.to(roomId).emit(SessionEvents.SessionId, sessionId);
                     this.logger.log(`multiplayer session ${sessionId} was created by client ${client.id}`);
                 }
@@ -175,6 +179,7 @@ export class SessionGateway {
         try {
             session = this.getSession(sessionId) as ClassicSession;
             result = session.tryGuess(coordinates, client.id);
+            console.log(result.differencesByPlayer);
             if (result.isCorrect) {
                 this.notifyPlayersOfDiffFound(client, result);
                 this.sendSystemMessage(client, 'guess_good');
@@ -261,8 +266,6 @@ export class SessionGateway {
     }
 
     async sendNewGame(client: Socket, session: LimitedTimeSession) {
-        // const allGames: Promise<Game[]> = this.gameService.findAll();
-        // const newGame: Game = allGames[0];
         console.log(session.id);
         const chosenGame = await session.decideNewGame();
         if (!chosenGame) {
@@ -287,7 +290,7 @@ export class SessionGateway {
      * @param client Le client qui a fait la demande de démarrage du timer
      * @param sessionId L'identifiant de la session pour laquelle le timer doit être démarré
      */
-    startSessionTimer(client: Socket, sessionId: number) {
+    startClassicSessionTimer(client: Socket, sessionId: number) {
         this.logger.log(`Client ${client.id} started the timer`);
         const session = this.sessionService.findBySessionId(sessionId);
         if (session) {
@@ -305,6 +308,43 @@ export class SessionGateway {
                         }, SECOND_IN_MILLISECONDS);
                     }
                 });
+            }
+        }
+    }
+
+    /**
+     * Commence le timer pour une session donnée, stocke l'id du timer dans la session
+     * et envoie le temps (toutes les secondes) aux joueurs dans la session
+     *
+     * @param client Le client qui a fait la demande de démarrage du timer
+     * @param sessionId L'identifiant de la session pour laquelle le timer doit être démarré
+     */
+    startLimitedTimeSessionTimer(client: Socket, sessionId: number) {
+        this.logger.log(`Client ${client.id} started the timer`);
+        const session: LimitedTimeSession = this.sessionService.findBySessionId(sessionId) as LimitedTimeSession;
+        if (session) {
+            if (session.isSolo) {
+                session.timerId = setInterval(() => {
+                    session.time--;
+                    if (session.timerFinished()) {
+                        session.stopTimer();
+                        this.limitedTimeGameEnded(client, true);
+                    }
+                    client.emit(SessionEvents.TimerUpdate, session.formatedTime);
+                }, SECOND_IN_MILLISECONDS);
+            } else {
+                session.timerId = setInterval(() => {
+                    session.time--;
+                    if (session.timerFinished()) {
+                        session.stopTimer();
+                        this.limitedTimeGameEnded(client, true);
+                    }
+                    client.rooms.forEach((roomId) => {
+                        if (roomId.startsWith('gameRoom')) {
+                            this.server.to(roomId).emit(SessionEvents.TimerUpdate, session.formatedTime);
+                        }
+                    });
+                }, SECOND_IN_MILLISECONDS);
             }
         }
     }
@@ -390,7 +430,7 @@ export class SessionGateway {
         this.server.to(this.getGameRoom(client)).emit('systemMessageFromServer', { playerName, systemCode });
     }
 
-    limitedTimeGameEnded(client: Socket, timer?: boolean) {
+    limitedTimeGameEnded(client: Socket, timer: boolean) {
         client.emit(SessionEvents.EndedGame, timer);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {

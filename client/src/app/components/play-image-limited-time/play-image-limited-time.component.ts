@@ -91,7 +91,6 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
             this.audioService.playAudio('success');
             this.diffFoundUpdate.emit(guessResult.differencesByPlayer);
             this.errorCounter = 0;
-            this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
             this.handleErrorGuess();
         }

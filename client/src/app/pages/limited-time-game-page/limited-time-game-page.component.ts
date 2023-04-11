@@ -25,7 +25,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
 
     nDiffFound: number;
 
-    time: string = '0:00';
+    time: string = '2:00';
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
@@ -60,7 +60,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
             this.userSocketId = userSocketId;
         });
         this.socket.listenOpponentLeaves(() => {
-            this.openDialog(SessionEvents.OpponentLeftGame);
+            this.isSolo = true;
         });
         this.socket.listenGameEnded((timerFinished: boolean) => {
             this.endGameDialog(timerFinished);
@@ -75,17 +75,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         });
     }
 
-    // getGameInfos(): void {
-    //     this.socket
-    //         .requestNewGame()
-    //         .then((response: Game) => {
-    //             this.gameInfos = response;
-    //         })
-    //         .catch((e) => {
-    //             alert(e.message);
-    //         });
-    // }
-
     playerExited() {
         this.socket.playerExited(this.sessionId);
     }
@@ -94,7 +83,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         let message = '';
         if (timerFinished) {
             message = `Vous n'avez plus de temps, vous avez trouvé ${this.nDiffFound} différences`;
-        } else message = `Vous avez joué à tous les jeux, vous avez trouvé ${this.nDiffFound} différences`;
+        } else message = `Vous avez joué à tous les jeux, vous avez trouvé ${this.nDiffFound + 1} différences`;
         this.dialog.closeAll();
         this.dialog.open(PopupDialogComponent, {
             closeOnNavigation: true,
