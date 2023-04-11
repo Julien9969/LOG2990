@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { GROUP_SIZE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { Game } from '@common/game';
+import { GameConstants } from '@common/game-constants';
 
 @Injectable({
     providedIn: 'root',
@@ -57,5 +58,13 @@ export class GameService {
 
     async deleteGame(id: string): Promise<void> {
         await this.communicationService.deleteRequest(`games/${id}`);
+    }
+
+    async updateGameConstants(gameConsts: GameConstants) {
+        await this.communicationService.patchGameConstants(gameConsts);
+    }
+
+    async getGameConstants(): Promise<GameConstants> {
+        return await this.communicationService.getGameConstants();
     }
 }

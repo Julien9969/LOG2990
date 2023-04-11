@@ -69,9 +69,6 @@ describe('GamePageComponent', () => {
                 isValid: false,
                 isHard: false,
                 differenceCount: 2,
-                time: 0,
-                penalty: 0,
-                reward: 0,
             }),
         );
         inGameServiceSpy = jasmine.createSpyObj('inGameService', [
@@ -289,9 +286,6 @@ describe('GamePageComponent', () => {
             isValid: false,
             isHard: false,
             differenceCount: 2,
-            time: 0,
-            penalty: 0,
-            reward: 0,
         });
     });
 

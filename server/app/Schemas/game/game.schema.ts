@@ -36,12 +36,6 @@ export class GameClass extends Document implements UnsavedGame {
     differenceCount: number;
     @Prop({ required: true })
     radius?: number;
-    @Prop({ required: true })
-    time: number;
-    @Prop({ required: true })
-    penalty: number;
-    @Prop({ required: true })
-    reward: number;
 }
 
 export const gameSchema = SchemaFactory.createForClass(GameClass);
