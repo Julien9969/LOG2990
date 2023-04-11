@@ -1,4 +1,4 @@
-<div id="time-infos">
+<span class="horizontal-bar" id="time-infos">
     <p>
         Constantes de jeu: 
     </p>
@@ -15,7 +15,7 @@
         Pénalité : {{ this.gameConstants.penalty }}s
     </div>
     <button mat-raised-button color="primary" (click)="openEditPopup()">Modifier constantes</button>
-</div>
+</span>
 
 <div *ngIf="this.editingConstants" id="constants-edit">
     <h1 id="title" mat-dialog-title>Modification des constantes de jeu.</h1>
