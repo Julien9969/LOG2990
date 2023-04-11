@@ -4,4 +4,5 @@ export enum ChatEvents {
     SystemMessageFromServer = 'systemMessageFromServer',
     GiveClientID = 'giveClientID',
     MessageFromClient = 'messageFromClient',
+    BroadcastNewHighScore = 'broadcastNewHighScore',
 }

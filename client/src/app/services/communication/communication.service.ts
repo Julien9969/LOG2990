@@ -130,15 +130,15 @@ export class CommunicationService {
         return await firstValueFrom(observer);
     }
 
-    async getHistory(gameId: string): Promise<GameHistory[]> {
+    async getHistory(): Promise<GameHistory[]> {
         const observer = this.http
-            .get<GameHistory[]>(`${this.baseUrl}/history/${gameId}`)
+            .get<GameHistory[]>(`${this.baseUrl}/history`)
             .pipe(catchError(this.handleError<GameHistory[]>('error getting history')));
         return await firstValueFrom(observer);
     }
 
-    async deleteHistory(gameId: string) {
-        const observer = this.http.delete(`${this.baseUrl}/history/${gameId}`, { observe: 'response' });
+    async deleteHistory() {
+        const observer = this.http.delete(`${this.baseUrl}/history`, { observe: 'response' });
         return await firstValueFrom(observer);
     }
 

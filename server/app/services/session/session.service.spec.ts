@@ -5,6 +5,7 @@ import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { DifferenceValidationService } from '../difference-validation/difference-validation.service';
 import { Session } from './session';
 import { SessionService } from './session.service';
+import { Coordinate } from '@common/coordinate';
 let sessionService: SessionService;
 // let session: Session;
 
@@ -542,39 +543,22 @@ describe('Session Service tests', () => {
         });
     });
 
-    // TODO: compléter le test après la Demo (Sébastien)
+    it('session getNotFoundDifferences should return a list of difference', () => {
+        const gameId = 'gameId';
+        const firstSocketId = 'firstSocketId';
+        const secondSocketId = 'secondSocketId';
 
-    // describe('delete', () => {
-    //     let stubSession: SinonStubbedInstance<Session>;
-    //     let findBySessionIdSpy: jest.SpyInstance;
-    //     let stopTimerSpy: jest.SpyInstance;
-    //     const sessionId = 1234;
+        jest.spyOn(DifferenceValidationService.prototype, 'loadDifferences').mockImplementation(() => {});
+        const sessionMulti = new Session(gameId, firstSocketId, secondSocketId);
 
-    //     beforeEach(() => {
-    //         findBySessionIdSpy = jest.spyOn(sessionService, 'delete');
-    //         stopTimerSpy = jest.spyOn(stubSession, 'stopTimer');
-    //         stubSession = createStubInstance<Session>(Session);
-    //         stubSession.id = sessionId;
-    //         sessionService.activeSessions.push(stubSession);
-    //     });
-
-    //     it('should call findBySessionId', () => {
-    //         findBySessionIdSpy.mockImplementation(() => {
-    //             return stubGame;
-    //         });
-    //         sessionService.delete(sessionId);
-    //         expect(findBySessionIdSpy).lastCalledWith(sessionId);
-    //     });
-
-    //     it("should throw error if the session doesn't exist", () => {
-    //         sessionService.activeSessions.pop();
-    //         expect(sessionService.delete).toThrow();
-    //     });
-
-    //     it('should stop timer before removing session from activeSessions', () => {
-    //         let findBySessionIdSpy: jest.SpyInstance;
-    //     });
-    // });
+        sessionMulti.differenceValidationService = { differenceCoordLists: [[], []] } as any;
+        sessionMulti.differencesFoundByPlayer = [
+            [firstSocketId, []],
+            [secondSocketId, []],
+        ];
+        const result: Coordinate[][] = sessionMulti.getNotFoundDifferences();
+        expect(result).toEqual([[], []]);
+    });
 
     describe('findBy', () => {
         const session2: SinonStubbedInstance<Session> = createStubInstance<Session>(Session);
