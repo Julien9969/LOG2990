@@ -112,7 +112,11 @@ export class LimitedTimeSession implements Session {
         this.playedGames.push(newGame);
         this.gameID = newGame.id;
         // console.log('decideNewGame:', this.gameID);
-        this.differenceValidationService.loadDifferences(this.gameID.toString());
+        try {
+            this.differenceValidationService.loadDifferences(this.gameID.toString());
+        } catch (e: unknown) {
+            return this.decideNewGame();
+        }
         return newGame;
     }
 

@@ -27,12 +27,7 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
 
     errorMsgPosition: Coordinate;
     errorCounter: number = 0;
-    lastDifferenceFound: GuessResult = {
-        isCorrect: false,
-        differencesByPlayer: [],
-        differencePixelList: [{ x: 0, y: 0 }],
-        winnerName: undefined,
-    };
+
     errorGuess: boolean = false;
 
     // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
@@ -63,12 +58,6 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
 
     ngOnInit(): void {
         this.errorCounter = 0;
-        this.lastDifferenceFound = {
-            isCorrect: false,
-            differencesByPlayer: [],
-            differencePixelList: [{ x: 0, y: 0 }],
-            winnerName: undefined,
-        };
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
@@ -78,35 +67,14 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
     }
 
     async ngAfterViewInit(): Promise<void> {
-        // if (this.isTimeLimited) {
-        //     await this.requestNewGame();
-        // } else {
         await this.loadImage(this.canvasContext1, this.imageMainId);
         await this.loadImage(this.canvasContext2, this.imageAltId);
         this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
-        // }
     }
 
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
-        if (this.isTimeLimited) this.submitLimitedTimeCoordinates();
-        else if (this.lastDifferenceFound.differencesByPlayer.length !== 2) this.submitSoloCoordinates();
-        else this.submitMultiCoordinates();
-    }
-
-    submitSoloCoordinates() {
-        this.socket
-            .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
-            .then((response: GuessResult) => {
-                this.updateDiffFound(response);
-            })
-            .catch((e) => {
-                alert(e.message);
-            });
-    }
-
-    submitMultiCoordinates() {
-        this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
+        this.submitLimitedTimeCoordinates();
     }
 
     submitLimitedTimeCoordinates() {
@@ -120,12 +88,10 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
      */
     updateDiffFound(guessResult: GuessResult): void {
         if (guessResult.isCorrect) {
-            this.lastDifferenceFound = guessResult;
             this.audioService.playAudio('success');
-            this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
+            this.diffFoundUpdate.emit(guessResult.differencesByPlayer);
             this.errorCounter = 0;
-            // if (this.isTimeLimited) this.requestNewGame();
-            if (!this.isTimeLimited) this.imageOperationService.pixelBlink(guessResult.differencePixelList);
+            this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
             this.handleErrorGuess();
         }
@@ -177,20 +143,6 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
     drawImageOnCanvas(canvasContext: CanvasRenderingContext2D, img: HTMLImageElement): void {
         console.log('we are drawing a new image');
         canvasContext.drawImage(img, 0, 0);
-    }
-
-    hasNbDifferencesChanged(differencesByPlayer: [userSocketId: string, nDifferences: number][]): boolean {
-        if (this.lastDifferenceFound.differencesByPlayer.length < differencesByPlayer.length) {
-            return true;
-        }
-        if (this.lastDifferenceFound.differencesByPlayer.length === differencesByPlayer.length) {
-            for (let i = 0; i < differencesByPlayer.length; i++) {
-                if (this.lastDifferenceFound.differencesByPlayer[i][1] !== differencesByPlayer[i][1]) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     ngOnDestroy(): void {

@@ -10,7 +10,7 @@ import { InGameService } from '@app/services/in-game/in-game.service';
 import { MouseService } from '@app/services/mouse/mouse.service';
 import { GuessResult } from '@common/guess-result';
 import { of } from 'rxjs';
-import { PlayImageComponent } from './play-image.component';
+import { PlayImageComponent } from './play-image-classic.component';
 
 export class StubImage {
     src: string;
