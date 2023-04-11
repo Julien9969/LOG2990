@@ -44,8 +44,7 @@ export class SessionGateway {
     @SubscribeMessage(SessionEvents.AskForClue)
     async handleClueRequest(client: Socket) {
         const session = this.sessionService.findByClientId(client.id);
-        const game = await this.gameService.findById(session.gameID);
-        return await session.getClue(game.penalty);
+        return await session.getClue(this.gameService.getGameConstants().penalty);
     }
 
     /**
