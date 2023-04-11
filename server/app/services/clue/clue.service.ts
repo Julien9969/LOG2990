@@ -30,7 +30,8 @@ export class ClueService {
     private getRandomCluePosition(session: Session): Coordinate {
         const allDiffLeftToFind = session.getNotFoundDifferences();
         const randomIndex = Math.floor(Math.random() * allDiffLeftToFind.length);
-        return allDiffLeftToFind[randomIndex][0];
+        const randomDifference = allDiffLeftToFind[randomIndex];
+        return randomDifference[0];
     }
 
     /**

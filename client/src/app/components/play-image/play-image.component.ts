@@ -59,8 +59,8 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         await this.imageOperationService.handleCheat(this.sessionID);
     }
 
-    async handleClue(differencesInOneList: Coordinate[]) {
-        await this.imageOperationService.handleClue(differencesInOneList);
+    async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
+        await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);
     }
 
     ngOnInit(): void {
