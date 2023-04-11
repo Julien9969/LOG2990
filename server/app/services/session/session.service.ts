@@ -33,7 +33,7 @@ export class SessionService {
         let newSession: Session;
         if (secondSocketId) newSession = new Session(gameId, firstSocketId, secondSocketId);
         else newSession = new Session(gameId, firstSocketId);
-        newSession.penaltyTime = await this.gameService.getPenaltyTime(gameId);
+        newSession.penaltyTime = await this.gameService.getGameConstants().penalty;
         return this.addToList(newSession);
     }
 
