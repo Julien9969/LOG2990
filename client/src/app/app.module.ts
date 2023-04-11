@@ -13,6 +13,7 @@ import { AppRoutingModule } from '@app/modules/app-routing.module';
 import { AppMaterialModule } from '@app/modules/material.module';
 import { AppComponent } from '@app/pages/app/app.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
+import { DataResetComponent } from './components/data-reset/data-reset.component';
 import { DrawBottomBarComponent } from './components/draw-bottom-bar/draw-bottom-bar.component';
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
 import { GameCreationFormComponent } from './components/game-creation-form/game-creation-form.component';
@@ -55,6 +56,7 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         DrawBottomBarComponent,
         LimitedTimeSelectionComponent,
         TimeConstantsComponent,
+        DataResetComponent,
     ],
     imports: [
         AppMaterialModule,
