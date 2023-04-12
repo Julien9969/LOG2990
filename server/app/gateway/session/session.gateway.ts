@@ -1,12 +1,12 @@
 import { SECOND_IN_MILLISECONDS } from '@app/gateway/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
 import { SessionService } from '@app/services/session/session.service';
+import { ChatEvents } from '@common/chat.gateway.events';
 import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
-import { Game } from '@common/game';
-import { ChatEvents } from '@common/chat.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
 import { WinnerInfo } from '@common/winner-info';
 import { Logger } from '@nestjs/common';
@@ -45,6 +45,7 @@ export class SessionGateway {
      */
     @SubscribeMessage(SessionEvents.AskForClue)
     handleClueRequest(client: Socket) {
+        this.sendSystemMessage(client, 'useClue');
         return this.sessionService.generateClue(client.id);
     }
 
