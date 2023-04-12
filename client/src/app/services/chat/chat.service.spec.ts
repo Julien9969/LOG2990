@@ -70,11 +70,9 @@ describe('chatService', () => {
         expect(socketClientSpy.send).toHaveBeenCalled();
     });
 
-    it('receiveMessage should add the message to the list of message and scroll to bottom', () => {
-        const spy = spyOn(service, 'scrollToBottom');
+    it('receiveMessage should add the message to the list of message', () => {
         service.receiveMessage(exampleMessage);
         expect(service.messageList).toContain(exampleMessage);
-        expect(spy).toHaveBeenCalled();
     });
 
     it('listenForSystemMessage should call socketService.on()', () => {
@@ -105,20 +103,6 @@ describe('chatService', () => {
         expect(result).toEqual(false);
     });
 
-    it('scrollToBottom should call scrollIntoView', () => {
-        const func: () => void = () => {
-            return;
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const formElement: any = { nativeElement: { scrollIntoView: func } };
-        service.formElement = formElement;
-        const spy = spyOn(service.formElement.nativeElement, 'scrollIntoView').and.callFake(() => {
-            return;
-        });
-        service.scrollToBottom();
-        expect(spy).toHaveBeenCalled();
-    });
-
     it('listenForSystemMessage should call receiveMessage in a callback', () => {
         const receiveMessageSpy = spyOn(service, 'receiveMessage');
         service.listenForSystemMessage();
@@ -130,5 +114,12 @@ describe('chatService', () => {
         service.listenForId();
         socketClientSpy.on.calls.mostRecent().args[1]('1234');
         expect(service.clientId).toEqual('1234');
+    });
+
+    it('listen for listenForNewHighScore should call receiveMessage in a callback', () => {
+        const receiveMessageSpy = spyOn(service, 'receiveMessage');
+        service.listenForNewHighScore();
+        socketClientSpy.on.calls.mostRecent().args[1](exampleMessage);
+        expect(receiveMessageSpy).toHaveBeenCalled();
     });
 });

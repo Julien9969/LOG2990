@@ -5,6 +5,8 @@ import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
+import { Game } from '@common/game';
+import { ChatEvents } from '@common/chat.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
 import { WinnerInfo } from '@common/winner-info';
 import { Logger } from '@nestjs/common';
@@ -181,10 +183,9 @@ export class SessionGateway {
         this.logger.log(`Client ${client.id} exited the game`);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
+                this.sendSystemMessage(client, 'userDisconnected');
                 this.logger.log(`Client ${client.id} emited that he left the game to ${roomId}`);
-                this.sendSystemMessage(client, 'userDisconnected');
                 this.server.to(roomId).except(client.id).emit(SessionEvents.OpponentLeftGame);
-                this.sendSystemMessage(client, 'userDisconnected');
                 this.server.socketsLeave(roomId);
             }
         });
@@ -264,7 +265,15 @@ export class SessionGateway {
             const winnerInfo: WinnerInfo = { name: playerName, socketId: client.id };
             const finishedGame: FinishedGame = { winner: winnerName, time: seconds, solo: isSolo } as FinishedGame;
             try {
-                await this.gameService.addToScoreboard(gameId, finishedGame);
+                const positionInScoreBoard = await this.gameService.addToScoreboard(gameId, finishedGame);
+                if (positionInScoreBoard) {
+                    await this.gameService.findById(gameId).then((game: Game) => {
+                        const hightScoreMessage = `${new Date().toTimeString().split(' ')[0]} - 
+                                ${winnerName} obtient la ${positionInScoreBoard} place dans les meilleurs temps du jeu ${game.name} en 
+                            ${session.isSolo ? 'solo' : 'multijoueur'}`;
+                        this.server.emit(ChatEvents.BroadcastNewHighScore, hightScoreMessage);
+                    });
+                }
             } catch (error) {
                 this.logger.error('error while adding to scoreboard : game is deleted');
             }
@@ -296,7 +305,7 @@ export class SessionGateway {
 
     sendSystemMessage(client: Socket, systemCode: string) {
         const playerName: string = this.sessionService.getName(client.id);
-        this.server.to(this.getGameRoom(client)).emit('systemMessageFromServer', { playerName, systemCode });
+        this.server.to(this.getGameRoom(client)).emit(ChatEvents.SystemMessageFromServer, { playerName, systemCode });
     }
 
     handleDisconnect(client: Socket) {

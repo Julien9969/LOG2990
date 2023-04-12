@@ -164,19 +164,24 @@ export class GameService {
         return game ? game.scoreBoardMulti : null;
     }
 
-    async addToScoreboard(gameId: string, finishedGame: FinishedGame) {
+    async addToScoreboard(gameId: string, finishedGame: FinishedGame): Promise<number> {
         const scoreBoard: [string, number][] = finishedGame.solo ? await this.getSoloScoreboard(gameId) : await this.getMultiScoreboard(gameId);
 
         if (!scoreBoard) return;
 
-        scoreBoard.push([finishedGame.winner, finishedGame.time]);
-        scoreBoard.sort((a, b) => {
-            return a[1] - b[1];
-        });
-        if (scoreBoard.length > 3) scoreBoard.pop();
+        let scoreBoardPosition = 0;
+        for (let i = 0; i < scoreBoard.length; i++) {
+            if (scoreBoard[i][1] > finishedGame.time) {
+                scoreBoard.splice(i, 0, [finishedGame.winner, finishedGame.time]);
+                scoreBoardPosition = i + 1;
+                scoreBoard.pop();
+                break;
+            }
+        }
 
         try {
             this.gameModel.updateOne({ _id: gameId }, finishedGame.solo ? { scoreBoardSolo: scoreBoard } : { scoreBoardMulti: scoreBoard }).exec();
+            return scoreBoardPosition;
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }

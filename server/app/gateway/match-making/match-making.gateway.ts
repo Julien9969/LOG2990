@@ -8,6 +8,7 @@ import { Server, Socket } from 'socket.io';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GameDocument } from '@app/Schemas/game/game.schema';
+import { ChatEvents } from '@common/chat.gateway.events';
 
 @WebSocketGateway({ cors: true })
 @Injectable()
@@ -216,6 +217,8 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
         this.serverRooms.forEach((socketIds, roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 if (socketIds.size < 2 && !this.waitingRooms.find(roomId) && !this.acceptingRooms.find(roomId)) {
+                    const message = { playerName: "l'adversaire ", systemCode: 'userDisconnected' };
+                    this.server.to(roomId).emit(ChatEvents.SystemMessageFromServer, message);
                     this.server.to(roomId).emit(SessionEvents.OpponentLeftGame);
                     this.logger.log(`Client ${client.id} left room : ${roomId}`);
                 }
