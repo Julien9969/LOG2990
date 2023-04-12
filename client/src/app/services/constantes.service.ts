@@ -4,3 +4,9 @@ export enum SystemCode {
     MistakeGuess = 'guess_bad',
     UseClue = 'useClue',
 }
+
+/**
+ * constantes image-operation service
+ */
+
+export const RATIO_POINTER_IMAGE = 0.4;

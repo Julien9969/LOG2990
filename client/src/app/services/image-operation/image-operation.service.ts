@@ -10,6 +10,7 @@ import {
     RGB_GREEN,
     RGB_RED,
 } from '@app/constants/utils-constants';
+import { RATIO_POINTER_IMAGE } from '@app/services/constantes.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 
@@ -272,11 +273,23 @@ export class ImageOperationService {
                 resolve();
             };
         });
-        const pointerHeight = Math.floor(IMAGE_HEIGHT * 0.4);
-        const pointerWidth = Math.floor(IMAGE_WIDTH * 0.4);
+        const pointerHeight = Math.floor(IMAGE_HEIGHT * RATIO_POINTER_IMAGE);
+        const pointerWidth = Math.floor(IMAGE_WIDTH * RATIO_POINTER_IMAGE);
 
-        contextOriginalImg.drawImage(pointer, difference.x - pointerWidth, difference.y - pointerHeight * 0.4, pointerWidth, pointerHeight);
-        contextModifiedImg.drawImage(pointer, difference.x - pointerWidth, difference.y - pointerHeight * 0.4, pointerWidth, pointerHeight);
+        contextOriginalImg.drawImage(
+            pointer,
+            difference.x - pointerWidth,
+            difference.y - pointerHeight * RATIO_POINTER_IMAGE,
+            pointerWidth,
+            pointerHeight,
+        );
+        contextModifiedImg.drawImage(
+            pointer,
+            difference.x - pointerWidth,
+            difference.y - pointerHeight * RATIO_POINTER_IMAGE,
+            pointerWidth,
+            pointerHeight,
+        );
 
         this.clueOriginalImageData = contextOriginalImg.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
         this.clueModifiedImageData = contextModifiedImg.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
