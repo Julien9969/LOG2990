@@ -31,6 +31,7 @@ export class StubPlayImageComponent {
     @Input() imageAltId!: string;
     @Input() sessionID!: number;
     playerName: string;
+    handleClue() {}
 }
 
 @Component({
@@ -95,7 +96,6 @@ describe('GamePageComponent', () => {
         socketClientServiceSpy = jasmine.createSpyObj('SocketClientMock', ['send']);
         historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
 
-        playImageComponentSpy = jasmine.createSpyObj('PlayImageComponentMock', ['playAudio']);
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
         TestBed.configureTestingModule({
