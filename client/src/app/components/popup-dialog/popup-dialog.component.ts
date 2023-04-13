@@ -17,7 +17,7 @@ export class PopupDialogComponent implements OnInit {
     playerWon = false;
 
     deleteMessage = "";
-    buttonCallback = () => {};
+    buttonCallback = async () => {};
 
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: string[],

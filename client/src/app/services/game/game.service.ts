@@ -63,8 +63,23 @@ export class GameService {
     async updateGameConstants(gameConsts: GameConstants) {
         await this.communicationService.patchGameConstants(gameConsts);
     }
-
+    
     async getGameConstants(): Promise<GameConstants> {
         return await this.communicationService.getGameConstants();
+    }
+    
+    async deleteAllGames() {
+        alert("coming soon 1");
+        // TODO: create new DELETE api/games/
+    }
+
+    async resetAllLeaderboards() {
+        alert("coming soon 2");
+        // TODO: create new DELETE api/games/leaderboards
+    }
+
+    async resetTimeConstants() {
+        alert("coming soon 3");
+        //TODO: call Patch api/games/constants with defaults
     }
 }
