@@ -76,3 +76,25 @@ span.horizontal-bar {
     justify-content: center;
     align-items: center;
 }
+
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    background-color: black;
+    color: #ffffff;
+    text-align: center;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 6px;
+    position: fixed;
+    z-index: 3;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}

@@ -32,7 +32,7 @@ mat-icon {
 }
 
 mat-icon:hover {
-    color: rgb(255, 0, 0);
+    color: rgba(215, 13, 13, 0.858);
 }
 
 .tooltip {
@@ -42,6 +42,7 @@ mat-icon:hover {
 
 .tooltip .tooltiptext {
     visibility: hidden;
+    font-size: 60px;
     background-color: black;
     color: #e24f4f;
     text-align: center;

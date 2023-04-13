@@ -1,19 +1,28 @@
 <span class="horizontal-bar" id="time-infos">
-    <p>
-        Constantes de jeu: 
-    </p>
-    <div class="info">
-        <a><mat-icon>alarm</mat-icon></a>
-        Temps initial : {{ this.gameConstants.time }}s
-    </div>
-    <div class="info">
-        <a><mat-icon>alarm_add</mat-icon></a>
-        Récompense : {{ this.gameConstants.reward }}s
-    </div>
-    <div class="info">
-        <a><mat-icon>alarm_off</mat-icon></a>
-        Pénalité : {{ this.gameConstants.penalty }}s
-    </div>
+    
+    <span class="tooltip">
+        <p>
+            Constantes de jeu: 
+        </p>
+        <span class="tooltiptext">
+
+            <div class="info">
+                <a><mat-icon>alarm</mat-icon></a>
+                Temps initial : {{ this.gameConstants.time }}s
+            </div>
+            <div class="info">
+                <a><mat-icon>alarm_add</mat-icon></a>
+                Récompense : {{ this.gameConstants.reward }}s
+            </div>
+            <div class="info">
+                <a><mat-icon>alarm_off</mat-icon></a>
+                Pénalité : {{ this.gameConstants.penalty }}s
+            </div>
+
+        </span>
+    </span>
+
+
     <button mat-raised-button color="primary" (click)="openEditPopup()">Modifier constantes</button>
 </span>
 
@@ -21,42 +30,42 @@
     <h1 id="title" mat-dialog-title>Modification des constantes de jeu.</h1>
         <form class="constants-form">            
             <mat-form-field class="full-width">
-                <mat-label>Temps initial du compte à rebours</mat-label>
+                <mat-label> <strong>{{this.gameConstants.time}}s</strong> - Temps initial du compte à rebours</mat-label>
                 <input
                     #timerInput
                     type="text"
                     autofocus
                     (keyup)="this.modifiedGameConstants.time = convertToNumber(timerInput.value)"
                     matInput
-                    [placeholder]="this.gameConstants.time + 's \t (Entre ' + this.timeConstantBounds.minTime + ' et ' + this.timeConstantBounds.maxTime + ')'"
+                    [placeholder]="'(Entre ' + this.timeConstantBounds.minTime + ' et ' + this.timeConstantBounds.maxTime + 's)'"
                     [formControl]="this.timeFormControl"
                     />
                     <mat-error *ngIf="this.timeFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>
                     <mat-error *ngIf="!this.timeFormControl.hasError('pattern') && (this.timeFormControl.hasError('min') || this.timeFormControl.hasError('max'))"> Les valeurs doivent être dans les plages autorisées.</mat-error>
                 </mat-form-field>
             <mat-form-field class="full-width">
-                <mat-label>Temps gagné avec la découverte d’une différence</mat-label>
+                <mat-label> <strong>{{this.gameConstants.reward}}s</strong> - Temps gagné avec la découverte d’une différence</mat-label>
                 <input
                     #rewardInput
                     type="text"
                     autofocus
                     (keyup)="this.modifiedGameConstants.reward = convertToNumber(rewardInput.value)"
                     matInput
-                    [placeholder]="this.gameConstants.reward + 's \t (Entre ' + this.timeConstantBounds.minReward + ' et ' + this.timeConstantBounds.maxReward + ')'"
+                    [placeholder]="'(Entre ' + this.timeConstantBounds.minReward + ' et ' + this.timeConstantBounds.maxReward + 's)'"
                     [formControl]="this.rewardFormControl"
                 />
                 <mat-error *ngIf="this.rewardFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>
                 <mat-error *ngIf="!this.rewardFormControl.hasError('pattern') && (this.rewardFormControl.hasError('min') || this.rewardFormControl.hasError('max'))"> Les valeurs doivent être dans les plages autorisées.</mat-error>
             </mat-form-field>
             <mat-form-field class="full-width">
-                <mat-label>Temps de pénalité par indice</mat-label>
+                <mat-label> <strong>{{this.gameConstants.penalty}}s</strong> - Temps de pénalité par indice</mat-label>
                 <input
                     #penaltyInput
                     type="text"
                     autofocus
                     (keyup)="this.modifiedGameConstants.penalty = convertToNumber(penaltyInput.value)"
                     matInput
-                    [placeholder]="this.gameConstants.penalty + 's \t (Entre ' + this.timeConstantBounds.minPenalty + ' et ' + this.timeConstantBounds.maxPenalty + ')'"
+                    [placeholder]="'(Entre ' + this.timeConstantBounds.minPenalty + ' et ' + this.timeConstantBounds.maxPenalty + 's)'"
                     [formControl]="this.penaltyFormControl"
                 />
                 <mat-error *ngIf="this.penaltyFormControl.hasError('pattern')"> Entrez un nombre entier positif.</mat-error>
