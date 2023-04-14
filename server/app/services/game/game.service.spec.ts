@@ -5,21 +5,23 @@ import { GameConstantsInput } from '@app/interfaces/game-constants-input';
 import { FinishedGame } from '@common/finishedGame';
 import { Game } from '@common/game';
 import { GameConstants } from '@common/game-constants';
+import {
+    DEFAULT_GAME_TIME,
+    DEFAULT_PENALTY_TIME,
+    DEFAULT_REWARD_TIME,
+    MAX_REWARD_TIME,
+    MIN_GAME_TIME,
+    MIN_PENALTY_TIME,
+} from '@common/game-constants-values';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
 import {
-    DEFAULT_GAME_TIME,
-    DEFAULT_PENALTY_TIME,
-    DEFAULT_REWARD_TIME,
     DIFFERENCE_LISTS_FOLDER,
     DIFFERENCE_LISTS_PREFIX,
     GAME_CONSTS_PATH,
-    MAX_REWARD_TIME,
-    MIN_GAME_TIME,
-    MIN_PENALTY_TIME,
 } from '../constants/services.const';
 import { DifferenceDetectionService } from '../difference-detection/difference-detection.service';
 import { ImageService } from '../images/image.service';

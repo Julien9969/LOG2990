@@ -2,8 +2,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME, MIN_REWARD_TIME } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
+import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME, MIN_REWARD_TIME } from '@common/game-constants-values';
 import { TimeConstantsComponent } from './time-constants.component';
 
 describe('TimeConstantsComponent', () => {
