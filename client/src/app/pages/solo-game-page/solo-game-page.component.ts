@@ -1,19 +1,21 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { PlayImageComponent } from '@app/components/play-image/play-image.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication.service';
+import { GameActionLoggingService } from '@app/services/gameActionLogging.service';
 import { InGameService } from '@app/services/in-game.service';
 import { SocketClientService } from '@app/services/socket-client.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
-
 @Component({
     selector: 'app-solo-game-page',
     templateUrl: './solo-game-page.component.html',
     styleUrls: ['./solo-game-page.component.scss'],
 })
 export class SoloGamePageComponent implements OnInit, OnDestroy {
+    @ViewChild(PlayImageComponent) playImageComponent: PlayImageComponent;
     userSocketId: string;
 
     playerName: string;
@@ -36,6 +38,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         private readonly communicationService: CommunicationService,
         readonly socket: InGameService,
         private readonly socketClient: SocketClientService,
+        private loggingService: GameActionLoggingService,
     ) {
         this.isLoaded = false;
 
@@ -71,6 +74,9 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         this.socket.listenTimerUpdate((time: string) => {
             this.time = time;
         });
+        this.loggingService.timerUpdateFunction = (time: string) => {
+            this.time = time;
+        };
         this.socket.listenProvideName(this.playerName);
     }
 
@@ -125,7 +131,10 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: ['opponentLeft'] });
         }
     }
-
+    async replay() {
+        await this.playImageComponent.reset();
+        this.socket.socketService.loggingService.replayAllAction();
+    }
     ngOnDestroy(): void {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);

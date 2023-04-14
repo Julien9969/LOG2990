@@ -30,7 +30,12 @@ export class SocketClientService {
     }
 
     sendAndCallBack<T, U>(event: string, data: T, action: (data: U) => void): void {
-        this.socket.emit(event, data, action);
+        const newActionAndLog = (newData: U) => {
+            action(newData);
+            this.loggingService.logAction(event, newData);
+        };
+        this.loggingService.logAction(event, data);
+        this.socket.emit(event, data, newActionAndLog);
     }
 
     send<T>(event: string, data?: T): void {

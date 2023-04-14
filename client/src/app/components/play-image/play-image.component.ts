@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input
 import { TIME_CONST } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio.service';
 import { CommunicationService } from '@app/services/communication.service';
+import { GameActionLoggingService } from '@app/services/gameActionLogging.service';
 import { ImageOperationService } from '@app/services/image-operation.service';
 import { InGameService } from '@app/services/in-game.service';
 import { MouseService } from '@app/services/mouse.service';
@@ -40,6 +41,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         private readonly audioService: AudioService,
         private readonly imageOperationService: ImageOperationService,
         private readonly socket: InGameService,
+        private loggingService: GameActionLoggingService,
     ) {}
 
     get mouse(): MouseService {
@@ -70,6 +72,12 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
+        this.loggingService.diffFoundFunction = (guessResult: GuessResult) => {
+            this.updateDiffFound(guessResult);
+        };
+        this.loggingService.cheatFunction = () => {
+            this.imageOperationService.handleCheat(this.sessionID);
+        };
     }
 
     async ngAfterViewInit(): Promise<void> {
@@ -77,7 +85,10 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         await this.loadImage(this.canvasContext2, this.imageAltId);
         this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
     }
-
+    async reset() {
+        this.ngOnInit();
+        await this.ngAfterViewInit();
+    }
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
         this.socket

@@ -57,10 +57,6 @@ export class ChatService {
 
     receiveMessage(message: Message) {
         this.messageList.push(message);
-        this.scrollToBottom();
-    }
-    scrollToBottom() {
-        this.formElement.nativeElement.scrollIntoView();
     }
     async listenForSystemMessage() {
         this.socketService.on(ChatEvents.SystemMessageFromServer, (systemMessage: SystemMessage) => {
