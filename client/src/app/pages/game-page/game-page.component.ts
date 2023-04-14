@@ -146,7 +146,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
         this.inGameSocket.disconnect();
-        if (this.isSolo) this.historyService.playerQuit(this.time, this.isSolo);
     }
 
     private initHistory() {
