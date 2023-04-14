@@ -3,6 +3,7 @@ import { GROUP_SIZE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { Game } from '@common/game';
 import { GameConstants } from '@common/game-constants';
+import { DEFAULT_GAME_TIME, DEFAULT_PENALTY_TIME, DEFAULT_REWARD_TIME } from '@common/game-constants-values';
 
 @Injectable({
     providedIn: 'root',
@@ -69,17 +70,19 @@ export class GameService {
     }
     
     async deleteAllGames() {
-        alert("coming soon 1");
-        // TODO: create new DELETE api/games/
+        await this.communicationService.deleteRequest(`games`);
     }
 
     async resetAllLeaderboards() {
-        alert("coming soon 2");
-        // TODO: create new DELETE api/games/leaderboards
+        await this.communicationService.deleteRequest('games/leaderboards');
     }
 
     async resetTimeConstants() {
-        alert("coming soon 3");
-        //TODO: call Patch api/games/constants with defaults
+        const defaultGameConsts: GameConstants = {
+            time: DEFAULT_GAME_TIME,
+            reward: DEFAULT_REWARD_TIME,
+            penalty: DEFAULT_PENALTY_TIME,
+        }
+        await this.communicationService.patchGameConstants(defaultGameConsts);
     }
 }
