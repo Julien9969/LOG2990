@@ -72,7 +72,6 @@ export class ClueService {
         return {
             coordinates: [cluePosition],
             nbCluesLeft: 0,
-            isLastClue: true,
         } as Clue;
     }
 
