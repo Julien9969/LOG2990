@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
@@ -12,19 +13,35 @@ import { WinnerInfo } from '@common/winner-info';
 export class InGameService {
     constructor(public socketService: SocketClientService) {}
 
-    /**
-     * Valide les coordonnées de la tentative du joueur
-     *
-     * @param sessionID L'identifiant de session dans laquelle je joueur se trouve
-     * @param coordinates les coordonnées de la tentative
-     */
-    async submitCoordinates(sessionID: number, coordinates: Coordinate): Promise<GuessResult> {
+    async submitCoordinatesSolo(sessionID: number, coordinates: Coordinate): Promise<GuessResult> {
         const data: [number, Coordinate] = [sessionID, coordinates];
         return new Promise<GuessResult>((resolve) => {
-            this.socketService.sendAndCallBack(SessionEvents.SubmitCoordinates, data, (response: GuessResult) => {
+            this.socketService.sendAndCallBack(SessionEvents.SubmitCoordinatesSoloGame, data, (response: GuessResult) => {
                 resolve(response);
             });
         });
+    }
+
+    /**
+     * validates the coordinates from the guess of the player for a multi game
+     *
+     * @param sessionID the id of the session where the player is playing
+     * @param coordinates the coordinates of the guess
+     */
+    async submitCoordinatesMulti(sessionID: number, coordinates: Coordinate): Promise<void> {
+        const data: [number, Coordinate] = [sessionID, coordinates];
+        this.socketService.send(SessionEvents.SubmitCoordinatesMultiGame, data);
+    }
+
+    /**
+     * validates the coordinates from the guess of the player for a limited time games
+     *
+     * @param sessionID the id of the session where the player is playing
+     * @param coordinates the coordinates of the guess
+     */
+    async submitCoordinatesLimitedTime(sessionID: number, coordinates: Coordinate): Promise<void> {
+        const data: [number, Coordinate] = [sessionID, coordinates];
+        this.socketService.send(SessionEvents.SubmitCoordinatesLimitedTime, data);
     }
 
     /**
@@ -133,6 +150,28 @@ export class InGameService {
     listenPlayerWon(callback: (winnerInfo: WinnerInfo) => void) {
         this.socketService.on(SessionEvents.PlayerWon, (winnerInfo: WinnerInfo) => {
             callback(winnerInfo);
+        });
+    }
+
+    /**
+     * listen to the server for when a game in limited time ends
+     *
+     * @param callback the callback function that handles a game ending
+     */
+    listenGameEnded(callback: (timerFinished: boolean) => void) {
+        this.socketService.on(SessionEvents.EndedGame, (timerFinished: boolean) => {
+            callback(timerFinished);
+        });
+    }
+
+    /**
+     * listen to the server for a new game in limited time games
+     *
+     * @param callback the callback function that handles a new game
+     */
+    listenNewGame(callback: (data: [Game, number]) => void) {
+        this.socketService.on(SessionEvents.NewGame, (data: [Game, number]) => {
+            callback(data);
         });
     }
 }

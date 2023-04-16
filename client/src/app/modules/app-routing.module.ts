@@ -4,6 +4,7 @@ import { ConfigurationGameComponent } from '@app/pages/configuration-game-page/c
 import { GameCreationPageComponent } from '@app/pages/game-creation-page/game-creation-page.component';
 import { GamePageComponent } from '@app/pages/game-page/game-page.component';
 import { GameSelectionPageComponent } from '@app/pages/game-selection-page/game-selection-page.component';
+import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 
 const routes: Routes = [
@@ -11,6 +12,7 @@ const routes: Routes = [
     { path: 'home', component: MainPageComponent },
     { path: 'selection-view', component: GameSelectionPageComponent },
     { path: 'solo-game', component: GamePageComponent },
+    { path: 'limited-time-game', component: LimitedTimeGamePageComponent },
     { path: 'game-creation', component: GameCreationPageComponent },
     { path: 'config', component: ConfigurationGameComponent },
     { path: '**', redirectTo: '/home' },
