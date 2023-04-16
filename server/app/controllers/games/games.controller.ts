@@ -106,7 +106,7 @@ export class GamesController {
     }
 
     /**
-     * Supprime les meilleurs temps de tous les jeux en persistance
+     * Réinitialise les meilleurs temps de tous les jeux en persistance
      */
     @Delete('leaderboards')
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -115,7 +115,7 @@ export class GamesController {
     }
 
     /**
-     * Supprime les meilleurs temps d'un jeu du id donné
+     * Réinitialise les meilleurs temps d'un jeu du id donné
      * 
      * @param id L'identifiant du jeu
      */

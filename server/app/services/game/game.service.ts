@@ -207,10 +207,14 @@ export class GameService {
     /**
      * Réinitialise les meilleurs temps d'un jeu de la persistance
      *
-     * @param id L'identifiant du jeu à réinitialiser
+     * @param gameId L'identifiant du jeu à réinitialiser
      */
-    async resetLeaderboard(id: string) {
-        
+    async resetLeaderboard(gameId: string) {
+        try {
+            this.gameModel.updateOne({ _id: gameId }, { scoreBoardSolo: DEFAULT_GAME_LEADERBOARD, scoreBoardMulti: DEFAULT_GAME_LEADERBOARD }).exec();
+        } catch (err) {
+            throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
