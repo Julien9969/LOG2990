@@ -89,6 +89,11 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
         this.reloadWindow();
     }
 
+    async resetLeaderboard(gameId: string): Promise<void> {
+        await this.gameService.resetLeaderboard(gameId);
+        this.reloadWindow();
+    }
+
     baseMatchMakingFeatures(): void {
         this.matchMaking.updateRoomView(async () => {
             await this.reachableGames();
