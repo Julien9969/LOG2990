@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClient } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Game } from '@common/game';
+import { GameConstants } from '@common/game-constants';
 import { GameService } from './game.service';
 
 describe('GameService', () => {
@@ -22,9 +24,6 @@ describe('GameService', () => {
             isValid: false,
             isHard: false,
             differenceCount: 0,
-            time: 0,
-            penalty: 0,
-            reward: 0,
         };
     });
     it('should be created', () => {
@@ -65,5 +64,32 @@ describe('GameService', () => {
         spyOn(service['communicationService'], 'deleteRequest').and.stub();
         service.deleteGame('0');
         expect(service['communicationService'].deleteRequest).toHaveBeenCalledWith('games/' + gameId);
+    });
+
+    it('getGameConstants returns communicationService game constant result', async () => {
+        const stubGameConstants: GameConstants = {
+            time: 100,
+            penalty: 10,
+            reward: 10,
+        };
+        const getGameConstantsSpy = spyOn(service['communicationService'], 'getGameConstants').and.callFake(async () => stubGameConstants);
+
+        const result = await service.getGameConstants();
+
+        expect(getGameConstantsSpy).toHaveBeenCalled();
+        expect(result).toEqual(stubGameConstants);
+    });
+
+    it('updateGameConstants calls communicationService patchGameConstants', async () => {
+        const stubGameConstants: GameConstants = {
+            time: 100,
+            penalty: 10,
+            reward: 10,
+        };
+        const patchGameConstantsSpy = spyOn(service['communicationService'], 'patchGameConstants').and.callFake(async () => {});
+
+        await service.updateGameConstants(stubGameConstants);
+
+        expect(patchGameConstantsSpy).toHaveBeenCalled();
     });
 });

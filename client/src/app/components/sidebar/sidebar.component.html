@@ -1,19 +1,21 @@
 <div class="container flex">
-    <div class="chat-container">
+    <div #chatContainer class="chat-container">
         <div
             *ngFor="let message of chatService.messageList"
             class="message"
             [ngClass]="{
                 systemMessage: message.isFromSystem,
-                otherUserMessage: !message.isFromSystem && !chatService.isFromMe(message)
+                otherUserMessage: !message.isFromSystem && !chatService.isFromMe(message),
+                classementEvent: message.author === 'Classement'
             }"
         >
             <div class="datetime">
                 {{ formatedTime(message.time) }}
             </div>
             <br />
-            <p>
-                <b>{{ message.author }}: <br /> </b>{{ message.message }}
+            <p class="flex-column">
+                <b id="sender">{{ message.author }}:</b>
+                {{ message.message }}
             </p>
         </div>
 

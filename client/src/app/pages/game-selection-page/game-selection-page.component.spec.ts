@@ -6,6 +6,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { GameSelectionPageComponent } from './game-selection-page.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-square-interface',
@@ -19,11 +20,13 @@ export class StubSquareInterfaceComponent {
 describe('GameSelectionPageComponent', () => {
     let component: GameSelectionPageComponent;
     let fixture: ComponentFixture<GameSelectionPageComponent>;
+    const dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [GameSelectionPageComponent, StubSquareInterfaceComponent],
             imports: [MatIconModule, MatToolbarModule],
+            providers: [{ provide: MatDialog, useValue: dialogSpy }],
         }).compileComponents();
     });
 

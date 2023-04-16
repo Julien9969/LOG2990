@@ -1,13 +1,14 @@
-import { MatchMakingEvents } from '@common/match-making.gateway.events';
+import { GameDocument } from '@app/Schemas/game/game.schema';
 import { Rooms } from '@app/gateway/match-making/rooms';
+import { ChatEvents } from '@common/chat.gateway.events';
+import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common/decorators';
-import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
 import { InjectModel } from '@nestjs/mongoose';
+import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Model } from 'mongoose';
-import { GameDocument } from '@app/Schemas/game/game.schema';
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({ cors: true })
 @Injectable()
@@ -216,6 +217,8 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
         this.serverRooms.forEach((socketIds, roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 if (socketIds.size < 2 && !this.waitingRooms.find(roomId) && !this.acceptingRooms.find(roomId)) {
+                    const message = { playerName: "l'adversaire ", systemCode: 'userDisconnected' };
+                    this.server.to(roomId).emit(ChatEvents.SystemMessageFromServer, message);
                     this.server.to(roomId).emit(SessionEvents.OpponentLeftGame);
                     this.logger.log(`Client ${client.id} left room : ${roomId}`);
                 }

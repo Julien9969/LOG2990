@@ -46,9 +46,6 @@ describe('SquareInterfaceComponent', () => {
             isValid: false,
             isHard: false,
             differenceCount: 0,
-            time: 0,
-            penalty: 0,
-            reward: 0,
         };
 
         fixture = TestBed.createComponent(SquareInterfaceComponent);

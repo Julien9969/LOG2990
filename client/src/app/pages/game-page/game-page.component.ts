@@ -36,7 +36,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     constructor(
         private readonly dialog: MatDialog,
         private readonly communicationService: CommunicationService,
-        private readonly socket: InGameService,
+        private readonly inGameSocket: InGameService,
         private readonly socketClient: SocketClientService,
         private readonly historyService: HistoryService,
     ) {
@@ -54,10 +54,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
     @HostListener('window:beforeunload', ['$event'])
     unloadHandler(event: BeforeUnloadEvent) {
         event.preventDefault();
-        if (this.isSolo && this.nDiffFoundMainPlayer !== this.gameInfos.differenceCount) {
-            this.historyService.playerQuit(this.time, this.isSolo);
-        }
+        this.historyService.playerQuit(this.time, this.isSolo);
         event.returnValue = false;
+    }
+
+    @HostListener('window:keydown.i', ['$event'])
+    async handleClueRequest() {
+        if (!this.nbCluesLeft) return;
+        const clue = await this.inGameSocket.retrieveClue();
+        this.nbCluesLeft = clue.nbCluesLeft;
     }
 
     async ngOnInit(): Promise<void> {
@@ -65,20 +70,20 @@ export class GamePageComponent implements OnInit, OnDestroy {
             window.location.replace('/home');
         }
         this.getGameInfos();
-        this.socket.retrieveSocketId().then((userSocketId) => {
+        this.inGameSocket.retrieveSocketId().then((userSocketId) => {
             this.userSocketId = userSocketId;
         });
-        this.socket.listenOpponentLeaves(() => {
+        this.inGameSocket.listenOpponentLeaves(() => {
             this.historyService.playerQuit(this.time);
             this.openDialog(SessionEvents.OpponentLeftGame);
         });
-        this.socket.listenPlayerWon((winnerInfo: WinnerInfo) => {
+        this.inGameSocket.listenPlayerWon((winnerInfo: WinnerInfo) => {
             this.endGameDialog(winnerInfo);
         });
-        this.socket.listenTimerUpdate((time: string) => {
+        this.inGameSocket.listenTimerUpdate((time: string) => {
             this.time = time;
         });
-        this.socket.listenProvideName(this.playerName);
+        this.inGameSocket.listenProvideName(this.playerName);
 
         this.initHistory();
     }
@@ -103,11 +108,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     playerExited() {
-        this.socket.playerExited(this.sessionId);
-    }
-
-    async handleClueRequest() {
-        alert((await this.socket.retrieveClue(this.sessionId)).isClue);
+        this.inGameSocket.playerExited(this.sessionId);
     }
 
     endGameDialog(winnerInfo: WinnerInfo) {
@@ -140,7 +141,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
-        this.socket.disconnect();
+        this.inGameSocket.disconnect();
+        if (this.isSolo) this.historyService.playerQuit(this.time, this.isSolo);
     }
 
     private initHistory() {

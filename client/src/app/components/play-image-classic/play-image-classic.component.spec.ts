@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClientModule, HttpResponse } from '@angular/common/http';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
@@ -10,7 +11,6 @@ import { InGameService } from '@app/services/in-game/in-game.service';
 import { MouseService } from '@app/services/mouse/mouse.service';
 import { GuessResult } from '@common/guess-result';
 import { of } from 'rxjs';
-import { PlayImageComponent } from './play-image.component';
 
 export class StubImage {
     src: string;
@@ -19,8 +19,8 @@ export class StubImage {
 }
 
 describe('PlayImageComponent', () => {
-    let component: PlayImageComponent;
-    let fixture: ComponentFixture<PlayImageComponent>;
+    let component: PlayImageClassicComponent;
+    let fixture: ComponentFixture<PlayImageClassicComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
     let mouseServiceSpy: jasmine.SpyObj<MouseService>;
     let imageOperationServiceSpy: jasmine.SpyObj<ImageOperationService>;
@@ -33,7 +33,8 @@ describe('PlayImageComponent', () => {
         communicationServiceSpy.getImageURL.and.returnValue('assets/tests/image.bmp');
         audioServiceSpy = jasmine.createSpyObj('AudioServiceMock', ['playAudio']);
         inGameServiceSpy = jasmine.createSpyObj('InGameServiceMock', [
-            'submitCoordinates',
+            'submitCoordinatesSolo',
+            'submitCoordinatesMulti',
             'retrieveSocketId',
             'sendDifferenceFound',
             'listenDifferenceFound',
@@ -71,7 +72,7 @@ describe('PlayImageComponent', () => {
         ]);
         TestBed.configureTestingModule({
             imports: [HttpClientModule],
-            declarations: [PlayImageComponent],
+            declarations: [PlayImageClassicComponent],
             providers: [
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: MouseService, useValue: mouseServiceSpy },
@@ -84,7 +85,7 @@ describe('PlayImageComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(PlayImageComponent);
+        fixture = TestBed.createComponent(PlayImageClassicComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -96,6 +97,12 @@ describe('PlayImageComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('handleCheat should call imageOperationService.handleCheat', async () => {
+        imageOperationServiceSpy.handleCheat.and.returnValue(Promise.resolve());
+        await component.handleCheat();
+        expect(imageOperationServiceSpy.handleCheat).toHaveBeenCalled();
     });
 
     describe('get', () => {
@@ -135,17 +142,12 @@ describe('PlayImageComponent', () => {
         expect(component.loadImage).toHaveBeenCalledTimes(1);
     });
 
-    it('handleCheat should call imageOperationService.handleCheat', async () => {
-        imageOperationServiceSpy.handleCheat.and.returnValue(Promise.resolve());
-        await component.handleCheat();
-        expect(imageOperationServiceSpy.handleCheat).toHaveBeenCalled();
-    });
-
     describe('sendPosition', () => {
         it('sendPosition should call the right functions', fakeAsync(() => {
+            component.isSolo = true;
             const event = new MouseEvent('event');
             const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
-            inGameServiceSpy.submitCoordinates.and.callFake(async () => {
+            inGameServiceSpy.submitCoordinatesSolo.and.callFake(async () => {
                 return Promise.resolve({ isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' });
             });
             component.sendPosition(event);
@@ -162,7 +164,7 @@ describe('PlayImageComponent', () => {
         }));
         it('sendPosition should catch the error in the promise', fakeAsync(() => {
             const event = new MouseEvent('event');
-            inGameServiceSpy.submitCoordinates.and.callFake(async () => {
+            inGameServiceSpy.submitCoordinatesSolo.and.callFake(async () => {
                 throw new Error();
             });
             component.sendPosition(event);
@@ -219,6 +221,7 @@ describe('PlayImageComponent', () => {
             expect(handleErrorGuessSpy).toHaveBeenCalled();
         });
     });
+
     describe('hasNbDifferencesChanged', () => {
         it('should return false when did not changed', () => {
             component.lastDifferenceFound.differencesByPlayer = [

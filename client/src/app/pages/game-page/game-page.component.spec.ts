@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-with */
@@ -10,11 +11,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
-import { PlayImageComponent } from '@app/components/play-image/play-image.component';
+import { PlayImageLimitedTimeComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { HistoryService } from '@app/services/history.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
+import { Clue } from '@common/clue';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
 import { GamePageComponent } from './game-page.component';
@@ -43,13 +46,14 @@ export class StubAppSidebarComponent {
     isSolo: boolean;
 }
 
-describe('SoloGamePageComponent', () => {
+describe('GamePageComponent', () => {
     let component: GamePageComponent;
     let fixture: ComponentFixture<GamePageComponent>;
     let dialogSpy: jasmine.SpyObj<MatDialog>;
     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
-    let socketServiceSpy: jasmine.SpyObj<SocketClientService>;
+    let inGameServiceSpy: jasmine.SpyObj<InGameService>;
+    let socketClientServiceSpy: jasmine.SpyObj<SocketClientService>;
     let historyServiceSpy: jasmine.SpyObj<HistoryService>;
 
     beforeEach(async () => {
@@ -65,12 +69,31 @@ describe('SoloGamePageComponent', () => {
                 isValid: false,
                 isHard: false,
                 differenceCount: 2,
-                time: 0,
-                penalty: 0,
-                reward: 0,
             }),
         );
-        socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['send', 'on', 'sendAndCallBack', 'connect', 'isSocketAlive']);
+        inGameServiceSpy = jasmine.createSpyObj('inGameService', [
+            'retrieveClue',
+            'retrieveSocketId',
+            'listenOpponentLeaves',
+            'listenPlayerWon',
+            'listenTimerUpdate',
+            'listenProvideName',
+            'playerExited',
+            'disconnect',
+            'socketService',
+        ]);
+        inGameServiceSpy.retrieveSocketId.and.callFake(async () => {
+            return Promise.resolve('socketId');
+        });
+        inGameServiceSpy.retrieveClue.and.callFake(async () => {
+            return Promise.resolve({
+                coordinates: [{ x: 0, y: 0 }],
+                nbCluesLeft: 0,
+            } as Clue);
+        });
+
+        socketClientServiceSpy = jasmine.createSpyObj('SocketClientMock', ['send']);
+        historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
 
         historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
 
@@ -82,9 +105,10 @@ describe('SoloGamePageComponent', () => {
             imports: [MatIconModule, MatToolbarModule],
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },
-                { provide: PlayImageComponent, useValue: playImageComponentSpy },
+                { provide: PlayImageLimitedTimeComponent, useValue: playImageComponentSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
-                { provide: SocketClientService, useValue: socketServiceSpy },
+                { provide: InGameService, useValue: inGameServiceSpy },
+                { provide: SocketClientService, useValue: socketClientServiceSpy },
                 { provide: HistoryService, useValue: historyServiceSpy },
             ],
         }).compileComponents();
@@ -110,11 +134,9 @@ describe('SoloGamePageComponent', () => {
         const newComponent = TestBed.createComponent(GamePageComponent);
         expect(newComponent.componentInstance.opponentName).toBeDefined();
     });
+
     describe('onInit', () => {
         it('should call  getGameInfos, ', () => {
-            spyOn(component['socket'], 'listenOpponentLeaves').and.callFake(() => {
-                return;
-            });
             component.sessionId = 123;
             component.gameID = '123';
             spyOn(component, 'getGameInfos');
@@ -122,54 +144,55 @@ describe('SoloGamePageComponent', () => {
             expect(component.getGameInfos).toHaveBeenCalled();
             expect(component.gameInfos).toBeDefined();
         });
-        it('should call listenProvideName', () => {
-            const listenProvideNameSpy = spyOn(component['socket'], 'listenProvideName').and.callFake(() => {});
-            component.ngOnInit();
 
-            expect(listenProvideNameSpy).toHaveBeenCalledWith(component.playerName);
+        it('should call listenProvideName', () => {
+            component.ngOnInit();
+            expect(inGameServiceSpy.listenProvideName).toHaveBeenCalledWith(component.playerName);
         });
+
         it('should get the socketId', fakeAsync(() => {
             const socketId = 'socketId';
-            const socketRetrieveSocketIdSpy = spyOn(component['socket'], 'retrieveSocketId').and.callFake(async () => {
-                return Promise.resolve(socketId);
-            });
+            inGameServiceSpy.retrieveSocketId.and.returnValue(Promise.resolve(socketId));
             component.ngOnInit();
             tick(3000);
-            expect(socketRetrieveSocketIdSpy).toHaveBeenCalled();
+            expect(inGameServiceSpy.retrieveSocketId).toHaveBeenCalled();
             expect(component.userSocketId).toEqual(socketId);
             flush();
         }));
+
         it('should listen for opponent leaving', () => {
-            const listenOpponentLeaves = spyOn(component['socket'], 'listenOpponentLeaves').and.callFake((callback: () => void) => {
+            inGameServiceSpy.listenOpponentLeaves.and.callFake((callback: () => void) => {
                 callback();
             });
             const openDialogSpy = spyOn(component, 'openDialog').and.callFake(() => {});
             component.ngOnInit();
 
-            expect(listenOpponentLeaves).toHaveBeenCalled();
+            expect(inGameServiceSpy.listenOpponentLeaves).toHaveBeenCalled();
             expect(openDialogSpy).toHaveBeenCalled();
         });
+
         it('should listen for a player winning', () => {
-            const listenPlayerWonSpy = spyOn(component['socket'], 'listenPlayerWon').and.callFake((callback: (winnerInfo: WinnerInfo) => void) => {
+            inGameServiceSpy.listenPlayerWon.and.callFake((callback: (winnerInfo: WinnerInfo) => void) => {
                 callback({ name: 'name', socketId: 'socketId' });
             });
             const endGameDialogSpy = spyOn(component, 'endGameDialog').and.callFake(() => {});
             component.ngOnInit();
 
-            expect(listenPlayerWonSpy).toHaveBeenCalled();
+            expect(inGameServiceSpy.listenPlayerWon).toHaveBeenCalled();
             expect(endGameDialogSpy).toHaveBeenCalledWith({ name: 'name', socketId: 'socketId' });
         });
+
         it('should listen for time update', () => {
-            const listenTimerUpdateSpy = spyOn(component['socket'], 'listenTimerUpdate').and.callFake((callback: (time: string) => void) => {
+            inGameServiceSpy.listenTimerUpdate.and.callFake((callback: (time: string) => void) => {
                 callback('35:12');
             });
             component.time = '31:12';
             component.ngOnInit();
 
-            expect(listenTimerUpdateSpy).toHaveBeenCalled();
+            expect(inGameServiceSpy.listenTimerUpdate).toHaveBeenCalled();
             expect(component.time).toEqual('35:12');
         });
-        fit('should call initHistory', () => {
+        it('should call initHistory', () => {
             component.ngOnInit();
             expect(historyServiceSpy.initHistory).toHaveBeenCalled();
         });
@@ -265,9 +288,6 @@ describe('SoloGamePageComponent', () => {
             isValid: false,
             isHard: false,
             differenceCount: 2,
-            time: 0,
-            penalty: 0,
-            reward: 0,
         });
     });
 
@@ -287,6 +307,24 @@ describe('SoloGamePageComponent', () => {
         component.unloadHandler(event);
         // eslint-disable-next-line deprecation/deprecation
         expect(event.returnValue).toEqual(true);
+    });
+
+    describe('handleClueRequest', () => {
+        beforeEach(() => {
+            component.nbCluesLeft = 3;
+        });
+
+        it('should call retrieveClue', async () => {
+            await component.handleClueRequest();
+            expect(inGameServiceSpy.retrieveClue).toHaveBeenCalled();
+            expect(component.nbCluesLeft).toEqual(0);
+        });
+
+        it('should not call retrieveClue when nbCluesLeft <= 0', () => {
+            component.nbCluesLeft = 0;
+            component.handleClueRequest();
+            expect(inGameServiceSpy.retrieveClue).not.toHaveBeenCalled();
+        });
     });
 
     it('unloadHandler should call historyService.playerQuit is in solo and game not over', () => {
@@ -320,8 +358,7 @@ describe('SoloGamePageComponent', () => {
     });
 
     it('ngOnDestroy should call socketClientService with leaveRoom', () => {
-        socketServiceSpy.send.and.callFake(<T>() => {});
         component.ngOnDestroy();
-        expect(socketServiceSpy.send).toHaveBeenCalledWith('leaveRoom');
+        expect(socketClientServiceSpy.send).toHaveBeenCalledWith('leaveRoom');
     });
 });

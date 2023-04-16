@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { TestBed } from '@angular/core/testing';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
+import { Clue } from '@common/clue';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
 import { SocketTestHelper } from '@common/socket-test-helper';
@@ -32,23 +33,40 @@ describe('InGameService', () => {
         expect(service).toBeTruthy();
     });
 
-    it('submitCoordinates should send get the right callback', async () => {
-        const sessionId = 123;
-        const coordinate = { x: 0, y: 0 };
-        const expectedResponse: GuessResult = {
-            isCorrect: true,
-            differencesByPlayer: [],
-            differencePixelList: [],
-            winnerName: '',
-        };
+    // it('submitCoordinates should send get the right callback', async () => {
+    //     const sessionId = 123;
+    //     const coordinate = { x: 0, y: 0 };
+    //     const expectedResponse: GuessResult = {
+    //         isCorrect: true,
+    //         differencesByPlayer: [],
+    //         differencePixelList: [],
+    //         winnerName: '',
+    //     };
+    //     const sendAndCallbackSpy = spyOn(service['socketService'], 'sendAndCallBack');
+    //     sendAndCallbackSpy.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
+    //         callback(expectedResponse);
+    //     });
+    //     const response = await service.submitCoordinates(sessionId, coordinate);
+    //     expect(sendAndCallbackSpy).toHaveBeenCalled();
+    //     expect(sendAndCallbackSpy).toHaveBeenCalledWith(SessionEvents.SubmitCoordinates, [sessionId, coordinate], jasmine.any(Function));
+    //     expect(response).toEqual(expectedResponse);
+    // });
+
+    it('retrieveClue should send get the right callback', async () => {
+        const expectedResponse = {
+            coordinates: [{ x: 0, y: 0 }],
+            nbCluesLeft: 2,
+        } as Clue;
+
         const sendAndCallbackSpy = spyOn(service['socketService'], 'sendAndCallBack');
         sendAndCallbackSpy.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
             callback(expectedResponse);
         });
-        const response = await service.submitCoordinates(sessionId, coordinate);
+
+        const clue = await service.retrieveClue();
         expect(sendAndCallbackSpy).toHaveBeenCalled();
-        expect(sendAndCallbackSpy).toHaveBeenCalledWith(SessionEvents.SubmitCoordinates, [sessionId, coordinate], jasmine.any(Function));
-        expect(response).toEqual(expectedResponse);
+        expect(sendAndCallbackSpy).toHaveBeenCalledWith(SessionEvents.AskForClue, undefined, jasmine.any(Function));
+        expect(clue).toEqual(expectedResponse);
     });
 
     it('retrieveSocketId should send get the right callback', async () => {

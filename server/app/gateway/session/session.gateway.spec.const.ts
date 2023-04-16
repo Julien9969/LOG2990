@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars, @typescript-eslint/no-empty-function */
-import { Session } from '@app/services/session/session';
+import { ClassicSession } from '@app/services/session/classic-session';
 import { Socket } from 'socket.io';
 
 export const stubSocket: Socket = {
@@ -17,9 +17,13 @@ export const secondStubSocket: Socket = {
 
 export const stubGameId = 11;
 
-export const stubSession: Session = {
-    timeElapsed: 100,
+export const stubSession: ClassicSession = {
+    time: 100,
     gameID: 'game-id',
     stopTimer: () => {},
     tryGuess: (coord, id) => {},
-} as Session;
+    getClue: (penality: number) => {},
+    id: 0,
+    nGuesses: 0,
+    nPenalties: 0,
+} as ClassicSession;

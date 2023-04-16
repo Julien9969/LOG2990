@@ -4,6 +4,7 @@ import { Coordinate } from '@common/coordinate';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
+import { GameConstants } from '@common/game-constants';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -118,6 +119,7 @@ export class CommunicationService {
      * @returns l'url de l'image
      */
     getImageURL(id: number) {
+        // console.log('id of the image:', id);
         return `${this.baseUrl}/images/${id}`;
     }
 
@@ -129,15 +131,15 @@ export class CommunicationService {
         return await firstValueFrom(observer);
     }
 
-    async getHistory(gameId: string): Promise<GameHistory[]> {
+    async getHistory(): Promise<GameHistory[]> {
         const observer = this.http
-            .get<GameHistory[]>(`${this.baseUrl}/history/${gameId}`)
+            .get<GameHistory[]>(`${this.baseUrl}/history`)
             .pipe(catchError(this.handleError<GameHistory[]>('error getting history')));
         return await firstValueFrom(observer);
     }
 
-    async deleteHistory(gameId: string) {
-        const observer = this.http.delete(`${this.baseUrl}/history/${gameId}`, { observe: 'response' });
+    async deleteHistory() {
+        const observer = this.http.delete(`${this.baseUrl}/history`, { observe: 'response' });
         return await firstValueFrom(observer);
     }
 
@@ -164,6 +166,20 @@ export class CommunicationService {
             if (response.ok && this.instanceOfImageComparisonResult(response.body)) return response.body;
         }
         throw new Error("l'image n'a pas pu être comparé");
+    }
+
+    async getGameConstants(): Promise<GameConstants> {
+        const observer = this.http
+            .get<GameConstants>(`${this.baseUrl}/games/constants`)
+            .pipe(catchError(this.handleError<GameConstants>('Erreur lors du chargement des constantes de jeu.')));
+        return firstValueFrom(observer);
+    }
+
+    async patchGameConstants(gameConsts: GameConstants) {
+        const observer = this.http
+            .patch<void>(`${this.baseUrl}/games/constants`, gameConsts, { observe: 'response' })
+            .pipe(catchError(this.handleError<void>('Erreur lors de la modification des constantes de jeu.')));
+        return await firstValueFrom(observer);
     }
 
     /**

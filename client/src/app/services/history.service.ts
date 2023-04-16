@@ -7,19 +7,19 @@ import { GameHistory } from '@common/game-history';
 })
 export class HistoryService {
     private currentGame: GameHistory;
-
+    private date: Date = new Date();
     constructor(private readonly communicationService: CommunicationService) {}
 
     set gameId(gameId: string) {
         this.currentGame.gameId = gameId;
     }
 
-    async getHistory(id: string): Promise<GameHistory[]> {
-        return await this.communicationService.getHistory(id);
+    async getHistory(): Promise<GameHistory[]> {
+        return await this.communicationService.getHistory();
     }
 
-    deleteHistory(gameId: string): void {
-        this.communicationService.deleteHistory(gameId);
+    deleteHistory(): void {
+        this.communicationService.deleteHistory();
     }
 
     initHistory(): void {
@@ -59,7 +59,6 @@ export class HistoryService {
     }
 
     private setStartDateTime(): void {
-        const date = new Date();
-        this.currentGame.startDateTime = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        this.currentGame.startDateTime = this.date.toLocaleDateString() + ' ' + this.date.toLocaleTimeString();
     }
 }
