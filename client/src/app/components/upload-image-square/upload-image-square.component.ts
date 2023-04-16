@@ -24,12 +24,12 @@ export class UploadImageSquareComponent implements AfterViewInit {
     foregroundCanvas: HTMLCanvasElement;
     emptyBackground: HTMLCanvasElement;
 
-    bgImage: HTMLImageElement;
+    backgroundImage: HTMLImageElement;
 
     constructor(readonly drawService: DrawService, readonly validateImageService: ValidateImageService) {
         this.initEmptyBackground();
-        this.bgImage = new Image(IMAGE_WIDTH, IMAGE_HEIGHT);
-        this.bgImage.src = this.emptyBackground.toDataURL();
+        this.backgroundImage = new Image(IMAGE_WIDTH, IMAGE_HEIGHT);
+        this.backgroundImage.src = this.emptyBackground.toDataURL();
 
         this.foregroundCanvas = document.createElement('canvas');
         this.foregroundCanvas.height = IMAGE_HEIGHT;
@@ -44,7 +44,7 @@ export class UploadImageSquareComponent implements AfterViewInit {
         return this.drawCanvas.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
     }
 
-    get fgContext(): CanvasRenderingContext2D {
+    get foregroundContext(): CanvasRenderingContext2D {
         return this.foregroundCanvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
     }
 
@@ -79,13 +79,12 @@ export class UploadImageSquareComponent implements AfterViewInit {
                 bitmap[bitmapPos + 2] = imageData[canvasPos + 2];
             }
         }
-
         return new File([bitmap], 'image.bmp');
     }
 
     clearBackground() {
         this.imageInput.nativeElement.value = '';
-        this.bgImage.src = this.emptyBackground.toDataURL();
+        this.backgroundImage.src = this.emptyBackground.toDataURL();
         this.canvasContext.clearRect(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
         this.drawForeground();
     }
@@ -97,21 +96,21 @@ export class UploadImageSquareComponent implements AfterViewInit {
         }
 
         const obj = URL.createObjectURL((imgInput.files as FileList)[0]);
-        this.bgImage.src = obj;
-        this.bgImage.onload = () => {
+        this.backgroundImage.src = obj;
+        this.backgroundImage.onload = async () => {
             this.updateCanvas();
         };
     }
 
     updateCanvas() {
-        this.canvasContext.drawImage(this.bgImage, 0, 0);
+        this.canvasContext.drawImage(this.backgroundImage, 0, 0);
         this.drawForeground();
     }
 
     drawForeground() {
         const fgImage = new Image();
         fgImage.src = this.foregroundCanvas.toDataURL();
-        fgImage.onload = () => {
+        fgImage.onload = async () => {
             this.canvasContext.drawImage(fgImage, 0, 0);
         };
     }

@@ -110,7 +110,7 @@ export class ImageService {
      */
     private generateId(): number {
         let id: number;
-        while (id === undefined || this.imageExists(id)) {
+        while (!id || this.imageExists(id)) {
             id = Math.floor(Math.random() * IMAGE_ID_CAP);
         }
         return id;

@@ -15,22 +15,22 @@ import { WinnerInfo } from '@common/winner-info';
     styleUrls: ['./game-page.component.scss'],
 })
 export class GamePageComponent implements OnInit, OnDestroy {
-    userSocketId: string;
-
     playerName: string;
     opponentName: string;
     isLoaded: boolean;
     isSolo: boolean;
 
     sessionId: number;
-    gameID: string;
     gameInfos: Game;
 
-    nDiffFoundMainPlayer: number = 0;
-    nDiffFoundOpponent: number = 0;
+    nDiffFoundMainPlayer: number;
+    nDiffFoundOpponent: number;
 
-    time: string = '0:00';
-    nbCluesLeft = 3;
+    time: string;
+    nbCluesLeft: number;
+
+    private gameID: string;
+    private userSocketId: string;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
@@ -40,6 +40,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private readonly socketClient: SocketClientService,
         private readonly historyService: HistoryService,
     ) {
+        this.time = '0:00';
+        this.nbCluesLeft = 3;
+        this.nDiffFoundMainPlayer = 0;
+        this.nDiffFoundOpponent = 0;
+
         this.isLoaded = false;
 
         this.isSolo = window.history.state.isSolo;
@@ -54,7 +59,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     @HostListener('window:beforeunload', ['$event'])
     unloadHandler(event: BeforeUnloadEvent) {
         event.preventDefault();
-        this.historyService.playerQuit(this.time, this.isSolo);
+        this.historyService.setPlayerQuit(this.time, this.isSolo);
+
         event.returnValue = false;
     }
 
@@ -66,7 +72,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     async ngOnInit(): Promise<void> {
-        if (this.sessionId === undefined || this.gameID === undefined) {
+        if (!this.sessionId || !this.gameID) {
             window.location.replace('/home');
         }
         this.getGameInfos();
@@ -74,7 +80,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.userSocketId = userSocketId;
         });
         this.inGameSocket.listenOpponentLeaves(() => {
-            this.historyService.playerQuit(this.time);
+            this.historyService.setPlayerQuit(this.time);
             this.openDialog(SessionEvents.OpponentLeftGame);
         });
         this.inGameSocket.listenPlayerWon((winnerInfo: WinnerInfo) => {
@@ -115,7 +121,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         let message = '';
         if (winnerInfo.socketId === this.userSocketId) {
             message = this.isSolo ? `Bravo! Vous avez gagné avec un temps de ${this.time}` : `Vous avez gagné, ${winnerInfo.name} est le vainqueur`;
-            this.historyService.playerWon(this.time);
+            this.historyService.setPlayerWon(this.time);
         } else message = `Vous avez perdu, ${winnerInfo.name} remporte la victoire`;
         this.dialog.closeAll();
         this.dialog.open(PopupDialogComponent, {
@@ -142,7 +148,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
         this.inGameSocket.disconnect();
-        if (this.isSolo) this.historyService.playerQuit(this.time, this.isSolo);
+        if (this.isSolo) this.historyService.setPlayerQuit(this.time, this.isSolo);
     }
 
     private initHistory() {

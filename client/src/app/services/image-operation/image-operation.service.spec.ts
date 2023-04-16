@@ -81,9 +81,9 @@ describe('ImageOperationService', () => {
 
     it('pixelBlink should call createBlinkInterval and increment currentTimerId', async () => {
         spyOn(service, 'createBlinkInterval').and.returnValue(Promise.resolve());
-        expect(service.newestTimerId).toEqual(0);
+        expect(service['newestTimerId']).toEqual(0);
         service.pixelBlink(differences);
-        expect(service.newestTimerId).toEqual(1);
+        expect(service['newestTimerId']).toEqual(1);
         expect(service.createBlinkInterval).toHaveBeenCalled();
     });
 
@@ -102,7 +102,7 @@ describe('ImageOperationService', () => {
         service['originalImageSave'] = canvasOriginal.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
         service.createBlinkInterval(differences).then(() => {
-            expect(service.intervalIds[service.oldestTimerId]).toBeDefined();
+            expect(service['intervalIds'][service['oldestTimerId']]).toBeDefined();
             expect(originalPixelSpy.calls.count()).toEqual(4);
             expect(highlightPixelsSpy.calls.count()).toEqual(4);
         });
@@ -111,7 +111,7 @@ describe('ImageOperationService', () => {
             jasmine.clock().tick(250);
         }
 
-        clearInterval(service.intervalIds[service.oldestTimerId]);
+        clearInterval(service['intervalIds'][service['oldestTimerId']]);
     }));
 
     it('highlightPixels should call putImageData and getImageData', () => {

@@ -13,7 +13,7 @@ import {
     // eslint-disable-next-line prettier/prettier
     WHITE_RGBA
 } from '@app/services/constants/services.const';
-import { CoordSetObject } from '@app/services/disjoint-sets/coord-set-object';
+import { DIRECT_NEIGHBORS_COORDINATES, CoordSetObject } from '@app/services/disjoint-sets/coord-set-object';
 import { DisjointSet } from '@app/services/disjoint-sets/disjoint-sets';
 import { Coordinate } from '@common/coordinate';
 import { ImageComparisonResult } from '@common/image-comparison-result';
@@ -26,35 +26,23 @@ import * as Jimp from 'jimp';
  */
 @Injectable()
 export class DifferenceDetectionService {
-    readonly directNeighboursCoordinates: CoordSetObject[] = [
-        { x: -1, y: -1 },
-        { x: 0, y: -1 },
-        { x: +1, y: -1 },
-        { x: -1, y: 0 },
-        { x: +1, y: 0 },
-        { x: -1, y: +1 },
-        { x: 0, y: +1 },
-        { x: +1, y: +1 },
-    ];
-
-    mainImage: Jimp;
-    altImage: Jimp;
-
     // Rayon d'élargissement de détection de différences
-    radius: number = 0;
+    private radius: number = 0;
     // Difficulté des différences
-    isDifficult: boolean = false;
+    private isDifficult: boolean = false;
     // Image des différences brutes de pixels entre les 2 images originales
-    rawDiffImage: Jimp;
-    diffProportion: number;
+    private rawDiffImage: Jimp;
+    private diffProportion: number;
     // Tableau des coordonnées de pixels différents suite à l'élargissement
     //      Contient un objet nul lorsque le pixel n'est pas une difference
-    extendedDiffs: CoordSetObject[][];
+    private extendedDiffs: CoordSetObject[][];
     // Structure d'ensembles disjoints, contenant les pixels d'une même
     //      différence contigue dans le même ensemble
-    contiguousDifferencesSet: DisjointSet;
+    private contiguousDifferencesSet: DisjointSet;
+    private extensionCoordinates: CoordSetObject[] = null;
 
-    extensionCoordinates: CoordSetObject[] = null;
+    private mainImage: Jimp;
+    private altImage: Jimp;
 
     /**
      * Compare 2 images, établissement leurs différences contigues
@@ -81,7 +69,7 @@ export class DifferenceDetectionService {
     }
 
     /**
-     * Calcule la difficulté d'un
+     * Calcule la difficulté d'un jeu
      */
     setDifficulty() {
         this.isDifficult = this.getDifferenceCount() >= HARD_GAME_MIN_DIFF_COUNT && this.diffProportion <= HARD_GAME_MAX_DIFF_PROPORTION;
@@ -219,7 +207,7 @@ export class DifferenceDetectionService {
                 // Lorsqu'on est sur un pixel de différence
                 if (pixel) {
                     this.contiguousDifferencesSet.add(pixel);
-                    this.getDirectNeighbours(pixel).forEach((neighbourCoords) => {
+                    this.getDirectNeighbors(pixel).forEach((neighbourCoords) => {
                         const neighbour = this.extendedDiffs[neighbourCoords.x][neighbourCoords.y];
                         if (neighbour) {
                             this.contiguousDifferencesSet.add(neighbour);
@@ -238,7 +226,7 @@ export class DifferenceDetectionService {
             const pixel = { x, y };
             if (this.isDifferent(pixel)) {
                 this.extendedDiffs[x][y] = pixel;
-                this.getExtensionNeighbours(pixel).forEach((neighbour) => {
+                this.getExtensionNeighbors(pixel).forEach((neighbour) => {
                     this.extendedDiffs[neighbour.x][neighbour.y] = neighbour;
                 });
             }
@@ -268,21 +256,21 @@ export class DifferenceDetectionService {
     }
 
     /* Détermine la liste des pixels directement adjacents à un certain pixel */
-    private getDirectNeighbours(pixel: CoordSetObject): CoordSetObject[] {
-        return this.getNeighbours(pixel, this.directNeighboursCoordinates);
+    private getDirectNeighbors(pixel: CoordSetObject): CoordSetObject[] {
+        return this.getNeighbors(pixel, DIRECT_NEIGHBORS_COORDINATES);
     }
 
     /* Détermine la liste des pixels à l'intérieur du cercle d'élargissement d'un certain pixel */
-    private getExtensionNeighbours(pixel: CoordSetObject): CoordSetObject[] {
+    private getExtensionNeighbors(pixel: CoordSetObject): CoordSetObject[] {
         // Si le rayon est de 0, alors on n'élargit pas
         if (this.radius === 0) {
             return [];
         }
-        return this.getNeighbours(pixel, this.extensionCoordinates);
+        return this.getNeighbors(pixel, this.extensionCoordinates);
     }
 
     /* Calcule les pixels voisins en fonction de coordonées relatives */
-    private getNeighbours(pixel: CoordSetObject, relativeCoordinates): CoordSetObject[] {
+    private getNeighbors(pixel: CoordSetObject, relativeCoordinates): CoordSetObject[] {
         // On rajoute les pixels adjacents, le pixel {x, y} sera donc le centre du rayon
         const neighbours: CoordSetObject[] = relativeCoordinates.map(({ x, y }) => {
             return {

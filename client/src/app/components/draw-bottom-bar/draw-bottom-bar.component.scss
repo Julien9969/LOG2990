@@ -28,7 +28,6 @@ mat-icon {
     font-size: 44px;
     padding: 20px;
     cursor: pointer;
-    // box-shadow: 0px 0px 10px 2px rgb(215 25 109 / 20%);
 }
 
 mat-icon:hover {
@@ -39,12 +38,8 @@ mat-icon.active {
     color:rgb(161, 0, 0);
 }
 
-// mat-icon.color {
-//     color: ;
-// }
 
 input#colorSelect {
     visibility: hidden;
     margin: 0;
-    // display: none;
 }

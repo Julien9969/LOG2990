@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { SystemCode } from '@app/services/constantes.service';
+import { SystemCode } from '@app/services/chat/system-code';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Message } from '@common/message';

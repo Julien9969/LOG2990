@@ -38,13 +38,13 @@ export class HistoryService {
         }
     }
 
-    playerWon(duration: string): void {
+    setPlayerWon(duration: string): void {
         this.currentGame.duration = duration;
         this.currentGame.playerOne = '<b>' + this.currentGame.playerOne + '</b>';
         this.postHistory();
     }
 
-    playerQuit(duration: string, isolo?: boolean): void {
+    setPlayerQuit(duration: string, isolo?: boolean): void {
         this.currentGame.duration = duration;
         if (!isolo) {
             this.currentGame.playerTwo = '<s>' + this.currentGame.playerTwo + '</s>';

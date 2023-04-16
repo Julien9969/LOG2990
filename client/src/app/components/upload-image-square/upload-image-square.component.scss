@@ -11,19 +11,13 @@ input.invisible {
     width: 640px;
     height: 480px;
 }
-// TODO: remove useless styles
 .imgContainer {
     border: 2px dashed black;
     width: 640px;
     height: 480px;
-    // min-width: $image-min-width;
-    // min-height: calc($image-min-width / $aspect-ratio);;
-    // width: $image-width;
-    // height: calc($image-width / $aspect-ratio);
-    // max-width: $image-max-width;
-    // max-height: calc($image-max-width / $aspect-ratio);
     position: relative;
     margin: 15px;
+    
     p {
         font-size: large;
     }

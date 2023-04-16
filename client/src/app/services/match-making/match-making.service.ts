@@ -20,7 +20,7 @@ export class MatchMakingService {
         this.socketService.send(MatchMakingEvents.StartMatchmaking, gameId);
     }
 
-    async someOneWaiting(gameId: string): Promise<boolean> {
+    async isSomeOneWaiting(gameId: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             this.socketService.sendAndCallBack(MatchMakingEvents.SomeOneWaiting, gameId, (response: boolean) => {
                 resolve(response);
@@ -28,7 +28,7 @@ export class MatchMakingService {
         });
     }
 
-    async roomCreatedForThisGame(gameId: string): Promise<boolean> {
+    async isRoomCreated(gameId: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             this.socketService.sendAndCallBack(MatchMakingEvents.RoomCreatedForThisGame, gameId, (response: boolean) => {
                 resolve(response);
@@ -36,13 +36,13 @@ export class MatchMakingService {
         });
     }
 
-    opponentJoined(callback: (opponentName: string) => void) {
+    onOpponentJoined(callback: (opponentName: string) => void) {
         this.socketService.on(MatchMakingEvents.OpponentJoined, (opponentName: string) => {
             callback(opponentName);
         });
     }
 
-    opponentLeft(callback: () => void) {
+    onOpponentLeft(callback: () => void) {
         this.socketService.on(MatchMakingEvents.OpponentLeft, () => {
             callback();
         });
@@ -64,13 +64,13 @@ export class MatchMakingService {
         });
     }
 
-    roomReachable(callback: () => void) {
+    onRoomReachable(callback: () => void) {
         this.socketService.on(MatchMakingEvents.RoomReachable, () => {
             callback();
         });
     }
 
-    sessionIdReceived(callback: (sessionId: number) => void) {
+    receiveSessionId(callback: (sessionId: number) => void) {
         this.socketService.on(SessionEvents.SessionId, (sessionId: number) => {
             callback(sessionId);
         });
@@ -115,7 +115,7 @@ export class MatchMakingService {
         });
     }
 
-    gameDeleted(callback: () => void) {
+    onGameDeleted(callback: () => void) {
         this.socketService.on(SessionEvents.GameDeleted, async () => {
             callback();
         });

@@ -38,9 +38,4 @@ describe('PopupDialogComponent', () => {
         component.ngOnInit();
         expect(audioServiceSpy.playAudio).toHaveBeenCalled();
     });
-
-    it('getClueNumber should return 10', () => {
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-        expect(component.getClueNumber()).toEqual(10);
-    });
 });

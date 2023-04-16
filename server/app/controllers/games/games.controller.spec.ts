@@ -117,7 +117,7 @@ describe('GameController tests', () => {
             });
             expect(async () => {
                 await controller.newGame(stubGameCreationBody, null);
-            }).rejects.toThrowError(new HttpException('Le jeu necessite 2 images et un rayon.', HttpStatus.BAD_REQUEST));
+            }).rejects.toThrowError(new HttpException('Le jeu nécessite 2 images et un rayon.', HttpStatus.BAD_REQUEST));
         });
 
         it('should return an error if the game isnt valid', () => {

@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AudioService } from '@app/services/audio/audio.service';
 
 /**
@@ -11,28 +11,15 @@ import { AudioService } from '@app/services/audio/audio.service';
     styleUrls: ['./popup-dialog.component.scss'],
 })
 export class PopupDialogComponent implements OnInit {
-    templateName: string;
-
+    templateName: string = this.data[0];
     message = '';
-    playerWon = false;
 
-    constructor(
-        @Inject(MAT_DIALOG_DATA) public data: string[],
-        public dialogRef: MatDialogRef<PopupDialogComponent>,
-        private audioService: AudioService,
-    ) {
-        this.templateName = data[0];
-    }
+    constructor(@Inject(MAT_DIALOG_DATA) public data: string[], private audioService: AudioService) {}
 
     ngOnInit(): void {
         if (this.templateName === 'endGame') {
             this.audioService.playAudio('win');
             this.message = this.data[1];
         }
-    }
-
-    getClueNumber(): number {
-        const noMagicNumber = 10;
-        return noMagicNumber;
     }
 }

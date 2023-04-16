@@ -162,7 +162,7 @@ export class CommunicationService {
         headers.append('Accept', 'application/json');
 
         const response = await this.postRequest('images/compare', formData, headers);
-        if (response instanceof HttpResponse && typeof response.body === 'object') {
+        if (typeof response.body === 'object') {
             if (response.ok && this.instanceOfImageComparisonResult(response.body)) return response.body;
         }
         throw new Error("l'image n'a pas pu être comparé");

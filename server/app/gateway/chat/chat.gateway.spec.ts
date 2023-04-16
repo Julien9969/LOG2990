@@ -2,7 +2,7 @@
 import { Message } from '@common/message';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { createStubInstance, SinonStubbedInstance } from 'sinon';
+import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { BroadcastOperator, Server } from 'socket.io';
 import { ChatGateway } from './chat.gateway';
 
@@ -67,7 +67,7 @@ describe('ChatGateway', () => {
                 expect(clientId).toEqual('1234');
             },
         } as BroadcastOperator<unknown, unknown>);
-        gateway.giveclientId(socket);
+        gateway.giveClientId(socket);
     });
     it('dispatchMessageToAllClients should set the isFromSystem attribute of message to false', () => {
         jest.spyOn(gateway, 'getGameRoom').mockImplementation(() => {

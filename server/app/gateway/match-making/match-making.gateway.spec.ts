@@ -56,13 +56,13 @@ describe('MatchmakingGateway', () => {
         it('serverRooms should return the rooms of the server', () => {
             const roomsStub = new Map([['roomId', new Set([socket.id])]]);
             stub(gateway as any, 'server').value({ sockets: { adapter: { rooms: roomsStub } } });
-            expect(gateway.serverRooms).toEqual(roomsStub);
+            expect(gateway['serverRooms']).toEqual(roomsStub);
         });
 
         it('connectedClients should return the sockets of the server', () => {
             const socketsStub = new Map([['socketId', socket]]);
             stub(gateway as any, 'server').value({ sockets: { sockets: socketsStub } });
-            expect(gateway.connectedClients).toEqual(socketsStub);
+            expect(gateway['connectedClients']).toEqual(socketsStub);
         });
     });
 
@@ -157,7 +157,7 @@ describe('MatchmakingGateway', () => {
             jest.spyOn(gateway['waitingRooms'], 'removeThisRoom');
 
             stub(socket, 'rooms').value(new Set([roomID]));
-            stub(gateway, 'serverRooms').value(new Map([[roomID, new Set([''])]]));
+            stub(gateway, 'serverRooms' as any).value(new Map([[roomID, new Set([''])]]));
 
             expect(gateway['waitingRooms'].length).toEqual(1);
             gateway.leaveWaitingRoom(socket, '124');
@@ -171,7 +171,7 @@ describe('MatchmakingGateway', () => {
             gateway['acceptingRooms'].push({ gameId: '124', roomId });
 
             stub(socket, 'rooms').value(new Set([roomId]));
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
+            stub(gateway, 'serverRooms' as any).value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
             jest.spyOn(gateway['acceptingRooms'], 'removeThisRoom');
             jest.spyOn(gateway['waitingRooms'], 'insertSortByDate');
 
@@ -271,7 +271,7 @@ describe('MatchmakingGateway', () => {
         it('should send "acceptOtherPlayer" call removeThisRoom on acceptingRooms and return true if the AcceptedPlayer is still in the room', () => {
             const roomId = 'gameRoom-124-123456789';
             stub(socket, 'rooms').value(new Set([roomId]));
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
+            stub(gateway, 'serverRooms' as any).value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
             jest.spyOn(gateway['acceptingRooms'], 'removeThisRoom');
 
             socket.to.returns({
@@ -290,7 +290,7 @@ describe('MatchmakingGateway', () => {
         it('should not send "acceptOtherPlayer" and return false if the AcceptedPlayer left the room', () => {
             const roomId = 'gameRoom-124-123456789';
             stub(socket, 'rooms').value(new Set([roomId]));
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]])); // 1 client in the room
+            stub(gateway, 'serverRooms' as any).value(new Map([[roomId, new Set(['1'])]])); // 1 client in the room
 
             const result = gateway.acceptOpponent(socket, 'name');
             expect(socket.to.calledWith(roomId)).toBeFalsy();
@@ -320,7 +320,7 @@ describe('MatchmakingGateway', () => {
         it('should send "rejectOtherPlayer" and put back the room in the waitingRooms and remove it from acceptingRooms', () => {
             const roomId = 'gameRoom-124-123456789';
             stub(socket, 'rooms').value(new Set([roomId]));
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
+            stub(gateway, 'serverRooms' as any).value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients in the room
 
             gateway['acceptingRooms'].push({ roomId, gameId: '124' });
 
@@ -368,13 +368,13 @@ describe('MatchmakingGateway', () => {
             },
         } as BroadcastOperator<unknown, unknown>);
 
-        stub(gateway, 'connectedClients').value(
+        stub(gateway, 'connectedClients' as any).value(
             new Map([
                 ['1', socket],
                 ['2', otherClient],
             ]),
         );
-        stub(gateway, 'serverRooms').value(
+        stub(gateway, 'serverRooms' as any).value(
             new Map([
                 [roomId, new Set(['1'])],
                 [otherRoomId, new Set(['2'])],
@@ -412,13 +412,13 @@ describe('MatchmakingGateway', () => {
             socket.join(roomId);
             otherClient.join(roomId);
 
-            stub(gateway, 'connectedClients').value(
+            stub(gateway, 'connectedClients' as any).value(
                 new Map([
                     ['1', socket],
                     ['2', otherClient],
                 ]),
             );
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients id
+            stub(gateway, 'serverRooms' as any).value(new Map([[roomId, new Set(['1', '2'])]])); // 2 clients id
 
             gateway['removeOtherPlayer'](socket, roomId);
 
@@ -428,7 +428,7 @@ describe('MatchmakingGateway', () => {
 
     describe('handleDisconnect', () => {
         it('should remove the room that are not in the server', () => {
-            stub(gateway, 'serverRooms').value(new Map([]));
+            stub(gateway, 'serverRooms' as any).value(new Map([]));
             const roomId = 'gameRoom-124-123456789';
             gateway['waitingRooms'].push({ gameId: '124', roomId });
             gateway.handleDisconnect(socket);
@@ -436,7 +436,7 @@ describe('MatchmakingGateway', () => {
         });
 
         it('should remove the acceptingRoom if not in server', () => {
-            stub(gateway, 'serverRooms').value(new Map([]));
+            stub(gateway, 'serverRooms' as any).value(new Map([]));
             const roomId = 'gameRoom-124-123456789';
             gateway['acceptingRooms'].push({ gameId: '124', roomId });
             expect(gateway['acceptingRooms']).toHaveLength(1);
@@ -446,7 +446,7 @@ describe('MatchmakingGateway', () => {
 
         it('should emit opponentLeft if the accepting room exist', () => {
             const roomId = 'gameRoom-124-123456789';
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]]));
+            stub(gateway, 'serverRooms' as any).value(new Map([[roomId, new Set(['1'])]]));
             stub(gateway['acceptingRooms'], 'find').returns({ gameId: '124', roomId });
             jest.spyOn(gateway['server'], 'to').mockReturnValue({
                 emit: (event: string) => {
@@ -467,7 +467,7 @@ describe('MatchmakingGateway', () => {
         });
 
         it('should emit UpdateRoomView', () => {
-            stub(gateway, 'serverRooms').value(new Map([]));
+            stub(gateway, 'serverRooms' as any).value(new Map([]));
             jest.spyOn(gateway['server'], 'emit');
             gateway.handleDisconnect(socket);
             expect(gateway['server'].emit).toHaveBeenCalledWith('updateRoomView');
@@ -475,7 +475,7 @@ describe('MatchmakingGateway', () => {
 
         it('should send SessionEvents.OpponentLeftGame if room have 1 players but not in waiting or accepting', () => {
             const roomId = 'gameRoom-124-123456789';
-            stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]]));
+            stub(gateway, 'serverRooms' as any).value(new Map([[roomId, new Set(['1'])]]));
             jest.spyOn(gateway['server'], 'to').mockReturnValue({
                 emit: (event: string) => {
                     expect(event === SessionEvents.OpponentLeftGame || event === ChatEvents.SystemMessageFromServer).toBeTruthy();
@@ -521,8 +521,8 @@ describe('MatchmakingGateway', () => {
         const roomId = 'gameRoom-124-123456789';
         gateway['waitingRooms'].push({ gameId: '124', roomId });
         gateway['acceptingRooms'].push({ gameId: '124', roomId });
-        stub(gateway, 'connectedClients').value(new Map([['1', socket]]));
-        stub(gateway, 'serverRooms').value(new Map([[roomId, new Set(['1'])]]));
+        stub(gateway, 'connectedClients' as any).value(new Map([['1', socket]]));
+        stub(gateway, 'serverRooms' as any).value(new Map([[roomId, new Set(['1'])]]));
 
         socket.join(roomId);
 

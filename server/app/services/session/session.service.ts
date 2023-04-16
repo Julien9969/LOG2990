@@ -67,7 +67,9 @@ export class SessionService {
     delete(id: number) {
         const game = this.findBySessionId(id);
         const index = this.activeSessions.indexOf(game);
-        if (this.activeSessions.length < index || index < 0) throw new Error(`Aucune session trouvee avec ce ID ${id}.`);
+        if (this.activeSessions.length < index || index < 0) {
+            throw new Error(`Aucune session trouvee avec ce ID ${id}.`);
+        }
 
         this.activeSessions[index].stopTimer();
         this.activeSessions.splice(index, 1);

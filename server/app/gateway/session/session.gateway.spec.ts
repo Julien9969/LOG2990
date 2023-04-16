@@ -37,7 +37,6 @@ describe('SessionGateway', () => {
 
     beforeEach(async () => {
         logger = createStubInstance<Logger>(Logger);
-        socket = createStubInstance<Socket>(Socket);
         socket = stubSocket;
         server = createStubInstance<Server>(Server);
         sessionService = createStubInstance<SessionService>(SessionService);

@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DELAY_FOCUS, INPUT_VALIDATION } from '@app/constants/utils-constants';
 import { MatchMakingService } from '@app/services/match-making/match-making.service';
+import { DialogInfos } from '@common/dialog-infos';
 import { GameSessionType } from '@common/game-session-type';
 
 /**
@@ -18,8 +19,8 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     @ViewChild('box') box: ElementRef<HTMLInputElement>;
     playerName: string;
     opponentName: string;
-    gameInfo: GameSessionType;
-    dialogInfos: { template: string; message: string };
+    gameInfo: GameSessionType = this.data;
+    dialogInfos: DialogInfos = { template: 'nameForm', message: '' };
 
     nameFormControl = new FormControl('', [
         Validators.required,
@@ -65,7 +66,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     async joinGame(): Promise<void> {
-        if (!(await this.matchMaking.someOneWaiting(this.gameInfo.id))) {
+        if (!(await this.matchMaking.isSomeOneWaiting(this.gameInfo.id))) {
             this.createGameAndWait();
         } else {
             this.askToJoin();
@@ -113,14 +114,14 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     navigateToMultiGame(sessionID: number): void {
-        this.router.navigateByUrl(this.routerLink, {
+        this.router.navigateByUrl('solo-game', {
             state: { isSolo: false, gameID: this.gameInfo.id, playerName: this.playerName, opponentName: this.opponentName, sessionId: sessionID },
         });
     }
 
     navigateToSoloGame(): void {
         this.matchMaking.startSoloSession(this.gameInfo.id, (newSessionId: number) => {
-            this.router.navigateByUrl(this.routerLink, {
+            this.router.navigateByUrl('solo-game', {
                 state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
             });
         });
@@ -138,11 +139,11 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     commonMatchMakingFeatures(): void {
-        this.matchMaking.sessionIdReceived((sessionId: number) => {
+        this.matchMaking.receiveSessionId((sessionId: number) => {
             this.navigateToMultiGame(sessionId);
         });
 
-        this.matchMaking.opponentJoined((opponentName: string) => {
+        this.matchMaking.onOpponentJoined((opponentName: string) => {
             if (this.gameInfo.id === 'limited-time') {
                 this.acceptOpponent();
             }
@@ -150,12 +151,12 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
             this.dialogInfos.template = 'acceptPairing';
         });
 
-        this.matchMaking.opponentLeft(() => {
+        this.matchMaking.onOpponentLeft(() => {
             this.dialogInfos.template = 'waitingRoom';
             this.dialogInfos.message = "l'adversaire précendent a quitté la recherche";
         });
 
-        this.matchMaking.roomReachable(() => {
+        this.matchMaking.onRoomReachable(() => {
             if (this.dialogInfos.template === 'waitingRoom') {
                 this.joinGame();
             }
@@ -171,7 +172,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
             this.dialogInfos.message = '';
         });
 
-        this.matchMaking.gameDeleted(() => {
+        this.matchMaking.onGameDeleted(() => {
             this.dialogInfos.template = 'gameDelete';
             this.dialogInfos.message = '';
         });

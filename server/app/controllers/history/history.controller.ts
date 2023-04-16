@@ -19,7 +19,7 @@ export class HistoryController {
      */
     @Post()
     async addToHistory(@Body() newHistoryEntry: GameHistory): Promise<GameHistory> {
-        if (!newHistoryEntry || !newHistoryEntry.gameId || !newHistoryEntry.playerOne || !newHistoryEntry.gameMode) {
+        if (this.isInvalideHistoryEntry(newHistoryEntry)) {
             throw new HttpException('Données manquantes.', HttpStatus.BAD_REQUEST);
         }
 
@@ -63,5 +63,9 @@ export class HistoryController {
         } catch (error) {
             throw new HttpException("Erreur lors de la suppression de l'historique.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private isInvalideHistoryEntry(newHistoryEntry: GameHistory): boolean {
+        return !newHistoryEntry || !newHistoryEntry.gameId || !newHistoryEntry.playerOne || !newHistoryEntry.gameMode;
     }
 }

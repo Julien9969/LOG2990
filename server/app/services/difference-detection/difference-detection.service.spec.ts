@@ -18,6 +18,7 @@ import {
     TEST_PIXEL,
     TEST_RADIUS_3_EXTENSION,
 } from './difference-detection.service.spec.const';
+import { DIRECT_NEIGHBORS_COORDINATES } from '@app/services/disjoint-sets/coord-set-object';
 
 /**
  * Constants for tests
@@ -50,8 +51,8 @@ describe('DifferenceDetection algorithms', () => {
         const validAltImage7Diff = await Jimp.read(TEST_7_DIFF_IMAGE);
 
         jest.spyOn(DifferenceDetectionService.prototype as any, 'loadImages').mockImplementation(() => {});
-        service.mainImage = emptyImage;
-        service.altImage = validAltImage7Diff;
+        service['mainImage'] = emptyImage;
+        service['altImage'] = validAltImage7Diff;
 
         service.compareImages(emptyImage.bitmap.data, validAltImage7Diff.bitmap.data);
         expect(service.getDifferenceCount()).toEqual(7);
@@ -64,14 +65,14 @@ describe('DifferenceDetection algorithms', () => {
         const invalidAltImage12Diff = await Jimp.read(TEST_12_DIFF_IMAGE);
 
         jest.spyOn(DifferenceDetectionService.prototype as any, 'loadImages').mockImplementation(() => {});
-        service.mainImage = emptyImage;
+        service['mainImage'] = emptyImage;
 
-        service.altImage = invalidAltImage2Diff;
+        service['altImage'] = invalidAltImage2Diff;
         service.compareImages(emptyImage.bitmap.data, invalidAltImage2Diff.bitmap.data);
         expect(service.getDifferenceCount()).toEqual(2);
         expect(service.isValidGame()).toBeFalsy();
 
-        service.altImage = invalidAltImage12Diff;
+        service['altImage'] = invalidAltImage12Diff;
         service.compareImages(emptyImage.bitmap.data, invalidAltImage12Diff.bitmap.data);
         expect(service.getDifferenceCount()).toEqual(12);
         expect(service.isValidGame()).toBeFalsy();
@@ -80,8 +81,8 @@ describe('DifferenceDetection algorithms', () => {
     it('Larger radius extension merges nearby differences', async () => {
         const emptyImage = await Jimp.read(TEST_EMPTY_IMAGE);
         const radius3Image = await Jimp.read(TEST_3_DIFF_WITH_RADIUS_IMAGE);
-        service.mainImage = emptyImage;
-        service.altImage = radius3Image;
+        service['mainImage'] = emptyImage;
+        service['altImage'] = radius3Image;
 
         jest.spyOn(DifferenceDetectionService.prototype as any, 'loadImages').mockImplementation(() => {});
 
@@ -99,10 +100,10 @@ describe('DifferenceDetection algorithms', () => {
         const numberOfDiffs = 8;
 
         const getExtensionNeighboursSpy = jest
-            .spyOn(DifferenceDetectionService.prototype as any, 'getExtensionNeighbours')
+            .spyOn(DifferenceDetectionService.prototype as any, 'getExtensionNeighbors')
             .mockImplementation(() => [{ x: 0, y: 0 }]);
 
-        service.rawDiffImage = rawDiffImg;
+        service['rawDiffImage'] = rawDiffImg;
         service['extendRawDifferences']();
         expect(getExtensionNeighboursSpy).toBeCalledTimes(numberOfDiffs);
     });
@@ -121,7 +122,7 @@ describe('DifferenceDetection algorithms', () => {
         ];
         const numberOfPixels = 5;
 
-        jest.spyOn(service.contiguousDifferencesSet, 'getSetLists').mockImplementation(() => {
+        jest.spyOn(service['contiguousDifferencesSet'], 'getSetLists').mockImplementation(() => {
             return testDifferenceList;
         });
 
@@ -173,20 +174,20 @@ describe('DifferenceDetection setup and saving', () => {
     });
 
     it('loadImages sets the appropriate attribute', async () => {
-        service.mainImage = undefined;
-        service.altImage = undefined;
+        service['mainImage'] = undefined;
+        service['altImage'] = undefined;
 
         testMainImage = new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT);
         testAltImage = new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT);
         service['loadImages'](testMainImage, testAltImage);
 
-        expect(service.mainImage).toEqual(testMainImage);
-        expect(service.altImage).toEqual(testAltImage);
+        expect(service['mainImage']).toEqual(testMainImage);
+        expect(service['altImage']).toEqual(testAltImage);
     });
 
     it('loadImages throws an error when images of invalid size', () => {
-        service.mainImage = undefined;
-        service.altImage = undefined;
+        service['mainImage'] = undefined;
+        service['altImage'] = undefined;
 
         expect(() => {
             service['loadImages'](new Jimp(10, 10), new Jimp(10, 10));
@@ -202,8 +203,8 @@ describe('DifferenceDetection setup and saving', () => {
                 { x: 0, y: 0 },
             ],
         ];
-        service.contiguousDifferencesSet = new DisjointSet();
-        jest.spyOn(service.contiguousDifferencesSet, 'getSetLists').mockImplementation(() => {
+        service['contiguousDifferencesSet'] = new DisjointSet();
+        jest.spyOn(service['contiguousDifferencesSet'], 'getSetLists').mockImplementation(() => {
             return differenceList;
         });
 
@@ -215,22 +216,22 @@ describe('DifferenceDetection setup and saving', () => {
         const getDiffCountSpy = jest.spyOn(service, 'getDifferenceCount').mockImplementation(() => {
             return 7;
         });
-        service.diffProportion = 0.15;
+        service['diffProportion'] = 0.15;
         service.setDifficulty();
-        expect(service.isDifficult).toBeTruthy();
+        expect(service['isDifficult']).toBeTruthy();
 
         getDiffCountSpy.mockImplementation(() => {
             return 9;
         });
-        service.diffProportion = 0.1;
+        service['diffProportion'] = 0.1;
         service.setDifficulty();
-        expect(service.isDifficult).toBeTruthy();
+        expect(service['isDifficult']).toBeTruthy();
     });
 
     it('isDifficultGame returns the right attribute', () => {
-        service.isDifficult = true;
+        service['isDifficult'] = true;
         expect(service['isDifficultGame']()).toBeTruthy();
-        service.isDifficult = false;
+        service['isDifficult'] = false;
         expect(service['isDifficultGame']()).toBeFalsy();
     });
 
@@ -285,10 +286,10 @@ describe('DifferenceDetection setup and saving', () => {
 
     it('differenceInitialization populates class attributes for image comparison', () => {
         const radius = 3;
-        service.radius = undefined;
-        service.extendedDiffs = undefined;
-        service.extensionCoordinates = undefined;
-        service.contiguousDifferencesSet = undefined;
+        service['radius'] = undefined;
+        service['extendedDiffs'] = undefined;
+        service['extensionCoordinates'] = undefined;
+        service['contiguousDifferencesSet'] = undefined;
 
         jest.spyOn(DifferenceDetectionService.prototype as any, 'computeRadiusExtension').mockImplementation(() => {
             return [];
@@ -299,16 +300,16 @@ describe('DifferenceDetection setup and saving', () => {
 
         service['differenceInitialization'](radius);
 
-        expect(service.radius).toBeDefined();
-        expect(service.extendedDiffs).toBeDefined();
-        expect(service.extensionCoordinates).toBeDefined();
-        expect(service.contiguousDifferencesSet).toBeDefined();
+        expect(service['radius']).toBeDefined();
+        expect(service['extendedDiffs']).toBeDefined();
+        expect(service['extensionCoordinates']).toBeDefined();
+        expect(service['contiguousDifferencesSet']).toBeDefined();
     });
 
     it('SaveDifferenceLists attempts to generate and save the difference lists', () => {
         const diffList: Coordinate[][] = [[{ x: 0, y: 0 }]];
-        service.contiguousDifferencesSet = new DisjointSet();
-        const getSetListsDifferenceListsSpy = jest.spyOn(service.contiguousDifferencesSet, 'getSetLists').mockImplementation(() => {
+        service['contiguousDifferencesSet'] = new DisjointSet();
+        const getSetListsDifferenceListsSpy = jest.spyOn(service['contiguousDifferencesSet'], 'getSetLists').mockImplementation(() => {
             return diffList;
         });
         const fsWriteFileSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
@@ -331,24 +332,24 @@ describe('DifferenceDetection utility functions', () => {
     });
 
     it('getExtensionNeighbours returns an empty array when radius of 0', () => {
-        service.radius = 0;
-        const neighbours = service['getExtensionNeighbours'](TEST_PIXEL);
+        service['radius'] = 0;
+        const neighbours = service['getExtensionNeighbors'](TEST_PIXEL);
         expect(neighbours.length).toEqual(0);
         expect(neighbours).toEqual([]);
     });
 
     it('getExtensionNeighbours returns all direct neighbours when radius of 1', () => {
-        service.radius = 1;
-        service['extensionCoordinates'] = service.directNeighboursCoordinates;
-        const neighbours = service['getExtensionNeighbours'](TEST_PIXEL);
+        service['radius'] = 1;
+        service['extensionCoordinates'] = DIRECT_NEIGHBORS_COORDINATES;
+        const neighbours = service['getExtensionNeighbors'](TEST_PIXEL);
         expect(neighbours.length).toEqual(TEST_ALL_RELATIVE_NEIGHBOURS.length);
         expect(neighbours).toEqual(TEST_ALL_RELATIVE_NEIGHBOURS);
     });
 
     it('getExtensionNeighbours with radius 3 only returns pixels with positive coordinates', () => {
-        service.radius = 3;
+        service['radius'] = 3;
         service['extensionCoordinates'] = TEST_RADIUS_3_EXTENSION;
-        const neighbours = service['getExtensionNeighbours']({ x: 0, y: 0 });
+        const neighbours = service['getExtensionNeighbors']({ x: 0, y: 0 });
         expect(neighbours.length).toEqual(14);
         expect(neighbours).toEqual([
             { x: 1, y: 0 },
@@ -369,16 +370,16 @@ describe('DifferenceDetection utility functions', () => {
     });
 
     it('getNeighbours returns all direct neighbours if radius of 1', () => {
-        service.radius = 1;
-        const neighbours = service['getNeighbours'](TEST_PIXEL, service.directNeighboursCoordinates);
+        service['radius'] = 1;
+        const neighbours = service['getNeighbors'](TEST_PIXEL, DIRECT_NEIGHBORS_COORDINATES);
         expect(neighbours.length).toEqual(TEST_ALL_RELATIVE_NEIGHBOURS.length);
         expect(neighbours).toEqual(TEST_ALL_RELATIVE_NEIGHBOURS);
     });
 
     it("getExtensionNeighbours with radius 3 only returns pixels in the picture's bounds", () => {
-        service.radius = 3;
+        service['radius'] = 3;
         service['extensionCoordinates'] = TEST_RADIUS_3_EXTENSION;
-        const neighbours = service['getExtensionNeighbours']({ x: IMAGE_WIDTH - 1, y: IMAGE_HEIGHT - 1 });
+        const neighbours = service['getExtensionNeighbors']({ x: IMAGE_WIDTH - 1, y: IMAGE_HEIGHT - 1 });
         expect(neighbours.length).toEqual(14);
         expect(neighbours).toEqual([
             { x: IMAGE_WIDTH - 3, y: IMAGE_HEIGHT - 4 },
@@ -399,13 +400,13 @@ describe('DifferenceDetection utility functions', () => {
     });
 
     it('getDirectNeighbours returns all direct neighbours with a 1 radius', () => {
-        const neighbours = service['getDirectNeighbours'](TEST_PIXEL);
+        const neighbours = service['getDirectNeighbors'](TEST_PIXEL);
         expect(neighbours.length).toEqual(TEST_ALL_RELATIVE_NEIGHBOURS.length);
         expect(neighbours).toEqual(TEST_ALL_RELATIVE_NEIGHBOURS);
     });
 
     it('getDirectNeighbours only returns pixels with positive coordinates', () => {
-        const neighbours = service['getDirectNeighbours']({ x: 0, y: 0 });
+        const neighbours = service['getDirectNeighbors']({ x: 0, y: 0 });
         expect(neighbours.length).toEqual(3);
         expect(neighbours).toEqual([
             { x: 1, y: 0 },
@@ -415,15 +416,15 @@ describe('DifferenceDetection utility functions', () => {
     });
 
     it('isDifferent returns true on a black pixel of the difference image', () => {
-        service.rawDiffImage = new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT);
-        jest.spyOn(service.rawDiffImage, 'getPixelColour').mockImplementation(() => BLACK_RGBA);
+        service['rawDiffImage'] = new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT);
+        jest.spyOn(service['rawDiffImage'], 'getPixelColour').mockImplementation(() => BLACK_RGBA);
         const result: boolean = service['isDifferent'](TEST_PIXEL);
         expect(result).toBeTruthy();
     });
 
     it('isDifferent returns false on a white pixel of the difference image', () => {
-        service.rawDiffImage = new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT);
-        jest.spyOn(service.rawDiffImage, 'getPixelColour').mockImplementation(() => WHITE_RGBA);
+        service['rawDiffImage'] = new Jimp(IMAGE_WIDTH, IMAGE_HEIGHT);
+        jest.spyOn(service['rawDiffImage'], 'getPixelColour').mockImplementation(() => WHITE_RGBA);
         const result: boolean = service['isDifferent'](TEST_PIXEL);
         expect(result).toBeFalsy();
     });
@@ -431,7 +432,7 @@ describe('DifferenceDetection utility functions', () => {
     it('computeExtensionRadius generates an empty list when radius of 0', () => {
         const radius = 3;
         service['computeRadiusExtension'](radius);
-        expect(service.extensionCoordinates).toEqual(TEST_RADIUS_3_EXTENSION);
+        expect(service['extensionCoordinates']).toEqual(TEST_RADIUS_3_EXTENSION);
     });
 
     it('emptyImageArray creates an array of the image size', () => {

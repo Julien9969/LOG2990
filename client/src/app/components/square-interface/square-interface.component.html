@@ -19,7 +19,7 @@
                                 <div *ngFor="let entry of gameData.scoreBoardSolo; index as i">{{ i + 1 }}. {{ entry[0] }} : {{ entry[1] }} s</div>
                             </div>
                             <div class="best-times">
-                                Classement multi joueur:
+                                Classement multijoueur:
                                 <div *ngFor="let entry of gameData.scoreBoardMulti; index as i">{{ i + 1 }}. {{ entry[0] }} : {{ entry[1] }} s</div>
                             </div>
                         </mat-card-content>
@@ -29,7 +29,6 @@
                         </mat-card-actions>
 
                         <mat-card-actions *ngIf="configPage" class="buttons">
-                            <button mat-raised-button color="primary" (click)="openHistoryDialog(gameData.id)">Historique</button>
                             <button (click)="deleteGame(gameData.id)" mat-raised-button color="primary">Supprimer</button>
                             <button mat-raised-button color="primary">Réinitialiser</button>
                         </mat-card-actions>

@@ -12,8 +12,7 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
     @Input() playerName: string;
     @Input() sessionID: number;
     @Input() isSolo: boolean;
-    @ViewChild('chatContainer') chatContainer: ElementRef<HTMLDivElement>;
-    @ViewChild('formGroup') formElement: ElementRef<HTMLFormElement>;
+    @ViewChild('chatContainer') private chatContainer: ElementRef<HTMLDivElement>;
 
     messageForm = this.formBuilder.group({
         text: '',
@@ -34,7 +33,7 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
         }
     }
 
-    formatedTime(time: number): string {
+    formatTime(time: number): string {
         return new Date(time).toUTCString();
     }
 

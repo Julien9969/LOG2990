@@ -56,7 +56,7 @@ export class ImageController {
         ]),
     )
     async compareImages(@UploadedFiles() files: GameImageInput, @Body() input: { radius: string }): Promise<ImageComparisonResult> {
-        if (!files || !files.mainFile || !files.altFile || !input || input.radius === undefined) {
+        if (this.notValidGameImageInput(files) || this.notValidRadius(input)) {
             throw new HttpException('Il manque des parametres dans le body.', HttpStatus.BAD_REQUEST);
         }
         const mainImageBitmap = files.mainFile[0].buffer;
@@ -71,5 +71,13 @@ export class ImageController {
         }
 
         return result;
+    }
+
+    private notValidGameImageInput(files: GameImageInput): boolean {
+        return !files || !files.mainFile || !files.altFile;
+    }
+
+    private notValidRadius(radius: { radius: string }): boolean {
+        return !radius || !radius.radius;
     }
 }

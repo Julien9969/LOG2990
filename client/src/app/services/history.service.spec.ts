@@ -81,29 +81,29 @@ describe('HistoryService', () => {
 
     it('playerWon should set currentGame.duration', () => {
         const duration = '42';
-        service.playerWon(duration);
+        service.setPlayerWon(duration);
         expect(service['currentGame'].duration).toEqual(duration);
     });
 
     it('playerWon should add <b> around currentGame.playerOne', () => {
         const playerOne = '42';
-        service.playerWon(playerOne);
+        service.setPlayerWon(playerOne);
         expect(service['currentGame'].playerOne).toEqual('<b>' + 'jose' + '</b>');
     });
 
     it('playerQuit should set currentGame.duration', () => {
         const duration = '42';
-        service.playerQuit(duration);
+        service.setPlayerQuit(duration);
         expect(service['currentGame'].duration).toEqual(duration);
     });
 
     it('playerQuit should add <s> around currentGame.playerTwo', () => {
-        service.playerQuit('', false);
+        service.setPlayerQuit('', false);
         expect(service['currentGame'].playerTwo).toEqual('<s>' + 'bob' + '</s>');
     });
 
     it('playerQuit should set currentGame.playerOne', () => {
-        service.playerQuit('', true);
+        service.setPlayerQuit('', true);
         expect(service['currentGame'].playerOne).toEqual('<s>' + 'jose' + '</s>');
     });
 

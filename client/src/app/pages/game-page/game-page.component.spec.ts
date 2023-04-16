@@ -93,9 +93,7 @@ describe('GamePageComponent', () => {
         });
 
         socketClientServiceSpy = jasmine.createSpyObj('SocketClientMock', ['send']);
-        historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
-
-        historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
+        historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'setPlayerWon', 'setPlayerQuit']);
 
         playImageComponentSpy = jasmine.createSpyObj('PlayImageComponentMock', ['playAudio']);
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
@@ -115,7 +113,7 @@ describe('GamePageComponent', () => {
     });
 
     beforeEach(() => {
-        window.history.pushState({ isSolo: true, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
+        window.history.pushState({ isSolo: true, gameID: '1', playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
         fixture = TestBed.createComponent(GamePageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -130,7 +128,7 @@ describe('GamePageComponent', () => {
     });
 
     it('constructor should define opponentName if isSolo is false', () => {
-        window.history.pushState({ isSolo: false, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
+        window.history.pushState({ isSolo: false, gameID: '12', playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
         const newComponent = TestBed.createComponent(GamePageComponent);
         expect(newComponent.componentInstance.opponentName).toBeDefined();
     });
@@ -138,7 +136,7 @@ describe('GamePageComponent', () => {
     describe('onInit', () => {
         it('should call  getGameInfos, ', () => {
             component.sessionId = 123;
-            component.gameID = '123';
+            component['gameID'] = '123';
             spyOn(component, 'getGameInfos');
             component.ngOnInit();
             expect(component.getGameInfos).toHaveBeenCalled();
@@ -156,7 +154,7 @@ describe('GamePageComponent', () => {
             component.ngOnInit();
             tick(3000);
             expect(inGameServiceSpy.retrieveSocketId).toHaveBeenCalled();
-            expect(component.userSocketId).toEqual(socketId);
+            expect(component['userSocketId']).toEqual(socketId);
             flush();
         }));
 
@@ -211,7 +209,7 @@ describe('GamePageComponent', () => {
                 ['socketId', 2],
                 ['socketId2', 3],
             ];
-            component.userSocketId = 'socketId2';
+            component['userSocketId'] = 'socketId2';
             component.isSolo = false;
             component.nDiffFoundMainPlayer = 0;
             component.handleDiffFoundUpdate(diffFound);
@@ -223,7 +221,7 @@ describe('GamePageComponent', () => {
     describe('endGameDialog', () => {
         it('solo: when this client is the winner should give the winner s message', () => {
             const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
-            component.userSocketId = 'socketId';
+            component['userSocketId'] = 'socketId';
             component.time = '9:14';
             component.isSolo = true;
 
@@ -237,7 +235,7 @@ describe('GamePageComponent', () => {
         });
         it('multi: when this client is the winner should give the winner s message', () => {
             const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
-            component.userSocketId = 'socketId';
+            component['userSocketId'] = 'socketId';
             component.time = '9:14';
             component.isSolo = false;
 
@@ -251,7 +249,7 @@ describe('GamePageComponent', () => {
         });
         it('multi: when this client is the loser should give the loser s message', () => {
             const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId2' };
-            component.userSocketId = 'socketId';
+            component['userSocketId'] = 'socketId';
             component.time = '9:14';
             component.isSolo = false;
 
@@ -266,12 +264,12 @@ describe('GamePageComponent', () => {
 
         it('should call history.playerWon if client is winner', () => {
             const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
-            component.userSocketId = 'socketId';
+            component['userSocketId'] = 'socketId';
             component.time = '9:14';
             component.isSolo = true;
 
             component.endGameDialog(winnerInfo);
-            expect(historyServiceSpy.playerWon).toHaveBeenCalledWith('9:14');
+            expect(historyServiceSpy.setPlayerWon).toHaveBeenCalledWith('9:14');
         });
     });
 
@@ -331,7 +329,7 @@ describe('GamePageComponent', () => {
         const event = new Event('beforeunload');
         component.isSolo = true;
         component.unloadHandler(event);
-        expect(historyServiceSpy.playerQuit).toHaveBeenCalled();
+        expect(historyServiceSpy.setPlayerQuit).toHaveBeenCalled();
     });
 
     describe('openDialog', () => {

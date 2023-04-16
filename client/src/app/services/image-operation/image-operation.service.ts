@@ -7,12 +7,12 @@ import { Coordinate } from '@common/coordinate';
     providedIn: 'root',
 })
 export class ImageOperationService {
-    // attributs pour sauvegarder les ids des intervalles et en supporter plusieurs en même temps
-    intervalIds: number[] = [];
-    newestTimerId: number = 0;
-    oldestTimerId: number = 0;
-
     isChatFocused: boolean = false;
+
+    // attributs pour sauvegarder les ids des intervalles et en supporter plusieurs en même temps
+    private intervalIds: number[] = [];
+    private newestTimerId: number = 0;
+    private oldestTimerId: number = 0;
 
     private originalImgContext: CanvasRenderingContext2D;
     private modifiedImgContext: CanvasRenderingContext2D;
@@ -143,7 +143,6 @@ export class ImageOperationService {
             });
 
             await this.createImageDataCheat(differencesInOneList);
-
             await this.cheatBlink();
         }
     }
@@ -205,7 +204,6 @@ export class ImageOperationService {
                 differencesInOneList.push(...differenceList);
             }
         });
-
         this.updateBaseImagesSave(diffToRemove);
         this.createImageDataCheat(differencesInOneList);
     }

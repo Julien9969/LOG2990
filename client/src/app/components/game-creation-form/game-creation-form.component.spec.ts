@@ -3,18 +3,17 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { HttpClientModule, HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterTestingModule } from '@angular/router/testing';
 import { UploadImageSquareComponent } from '@app/components/upload-image-square/upload-image-square.component';
 import {
     ALLOWED_RADIUS,
     DEFAULT_RADIUS,
-    ERROR_MESSAGE_DISPLAYED_TIME,
+    MESSAGE_DISPLAYED_TIME,
     MAX_TITLE_LENGTH,
     // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
     // eslint-disable-next-line prettier/prettier
-    SUCCESS_MESSAGE_DISPLAYED_TIME
 } from '@app/constants/utils-constants';
 import { ActiveCanvas } from '@app/interfaces/active-canvas';
 import { CommunicationService } from '@app/services/communication/communication.service';
@@ -111,24 +110,24 @@ describe('GameCreationFormComponent', () => {
             expect(createGameSpy).toHaveBeenCalledWith('games', stubForm);
         });
 
-        it('should call showErrorMessage when server returns error', async () => {
+        it('should call showMessages when server returns error', async () => {
             spyOn(component, 'validateTitle').and.callFake(() => true);
-            const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
+            const showMessagesSpy = spyOn(component, 'showMessages').and.callFake(() => {});
             spyOn(component.communication, 'postRequest').and.callFake(() => {
                 throw httpError;
             });
             await component.submitNewGame();
-            expect(showErrorMessageSpy).toHaveBeenCalled();
+            expect(showMessagesSpy).toHaveBeenCalled();
         });
 
-        it('should call showErrorMessages when client throws an error', async () => {
+        it('should call showMessagess when client throws an error', async () => {
             spyOn(component, 'validateTitle').and.callFake(() => true);
-            const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
+            const showMessagesSpy = spyOn(component, 'showMessages').and.callFake(() => {});
             spyOn(component.communication, 'postRequest').and.callFake(() => {
                 throw new Error();
             });
             await component.submitNewGame();
-            expect(showErrorMessageSpy).toHaveBeenCalled();
+            expect(showMessagesSpy).toHaveBeenCalled();
         });
 
         it('should navigate back to config page after successful game creation', fakeAsync(() => {
@@ -140,12 +139,12 @@ describe('GameCreationFormComponent', () => {
             flush();
         }));
 
-        it('should call showErrorMessages when the title is not valid', async () => {
-            const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
+        it('should call showMessagess when the title is not valid', async () => {
+            const showMessagesSpy = spyOn(component, 'showMessages').and.callFake(() => {});
             const validateTitleSpy = spyOn(component, 'validateTitle').and.callFake(() => false);
             await component.submitNewGame();
             expect(validateTitleSpy).toHaveBeenCalled();
-            expect(showErrorMessageSpy).toHaveBeenCalled();
+            expect(showMessagesSpy).toHaveBeenCalled();
         });
     });
 
@@ -189,7 +188,7 @@ describe('GameCreationFormComponent', () => {
 
         it('should get image files and call showSuccessMessage when successful', async () => {
             const compareImagesSpy = spyOn(component.communication, 'compareImages').and.callFake(async () => Promise.resolve(compareImageResult));
-            const showSuccessMessageSpy = spyOn(component, 'showSuccessMessage').and.callFake(() => {});
+            const showSuccessMessageSpy = spyOn(component, 'showMessages').and.callFake(() => {});
             await component.compareImages();
             expect(compareImagesSpy).toHaveBeenCalled();
             expect(mainImageSpy).toHaveBeenCalled();
@@ -197,28 +196,28 @@ describe('GameCreationFormComponent', () => {
             expect(showSuccessMessageSpy).toHaveBeenCalled();
         });
 
-        it('should call showErrorMessage, when server returns an error', async () => {
-            const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
+        it('should call showMessages, when server returns an error', async () => {
+            const showMessagesSpy = spyOn(component, 'showMessages').and.callFake(() => {});
             spyOn(component.communication, 'compareImages').and.callFake(() => {
                 throw httpError;
             });
 
             await component.compareImages();
-            expect(showErrorMessageSpy).toHaveBeenCalled();
+            expect(showMessagesSpy).toHaveBeenCalled();
         });
 
-        it('should call showErrorMessage, even when no error message', async () => {
-            const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
+        it('should call showMessages, even when no error message', async () => {
+            const showMessagesSpy = spyOn(component, 'showMessages').and.callFake(() => {});
             spyOn(component.communication, 'compareImages').and.callFake(() => {
                 throw new HttpErrorResponse({ error: { message: undefined } });
             });
 
             await component.compareImages();
-            expect(showErrorMessageSpy).toHaveBeenCalled();
+            expect(showMessagesSpy).toHaveBeenCalled();
         });
 
-        it('should call showErrorMessage when the images are not valid', async () => {
-            const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
+        it('should call showMessages when the images are not valid', async () => {
+            const showMessagesSpy = spyOn(component, 'showMessages').and.callFake(() => {});
 
             compareImageResult = {
                 isValid: false,
@@ -229,61 +228,59 @@ describe('GameCreationFormComponent', () => {
             spyOn(component.communication, 'compareImages').and.callFake(async () => Promise.resolve(compareImageResult));
             await component.compareImages();
 
-            expect(showErrorMessageSpy).toHaveBeenCalled();
+            expect(showMessagesSpy).toHaveBeenCalled();
         });
     });
 
     describe('showInvalidImageMessage', () => {
         it('shows an error message', () => {
-            const showErrorMessageSpy = spyOn(component, 'showErrorMessage').and.callFake(() => {});
+            const showMessagesSpy = spyOn(component, 'showMessages').and.callFake(() => {});
             component.showInvalidImageMessage();
 
-            expect(showErrorMessageSpy).toHaveBeenCalled();
+            expect(showMessagesSpy).toHaveBeenCalled();
         });
     });
 
-    describe('showSuccessMessage', () => {
+    describe('showMessages', () => {
         it('should set successMessage to the correct message', () => {
             const message = 'This is a test success message';
-            component.showSuccessMessage(message);
+            component.showMessages(message);
             expect(component.successMessage).toEqual(message);
         });
 
         it('should clear successMessage after a certain time', fakeAsync(() => {
             const message = 'This is a test success message';
-            component.showSuccessMessage(message);
-            tick(SUCCESS_MESSAGE_DISPLAYED_TIME);
+            component.showMessages(message);
+            tick(MESSAGE_DISPLAYED_TIME);
             expect(component.successMessage).toEqual('');
         }));
 
         it('should clear successMessage when a new message is set', () => {
             const clearTimeoutSpy = spyOn(window, 'clearTimeout').and.callFake(() => {});
-            component.successMessageTimeout = setTimeout(() => {}, 100000);
+            component['messageTimeout'] = setTimeout(() => {}, 100000);
             const message = 'This is a test success message';
-            component.showSuccessMessage(message);
+            component.showMessages(message);
             expect(clearTimeoutSpy).toHaveBeenCalled();
         });
-    });
 
-    describe('showErrorMessage', () => {
         it('should set errorMessage to the correct message', () => {
             const message = 'This is a test error message';
-            component.showErrorMessage(message);
+            component.showMessages(message, true);
             expect(component.errorMessage).toEqual(message);
         });
 
         it('should clear errorMessage after a certain time', fakeAsync(() => {
             const message = 'This is a test error message';
-            component.showErrorMessage(message);
-            tick(ERROR_MESSAGE_DISPLAYED_TIME);
+            component.showMessages(message, true);
+            tick(MESSAGE_DISPLAYED_TIME);
             expect(component.errorMessage).toEqual('');
         }));
 
         it('should clear errorMessage when a new message is set', () => {
             const clearTimeoutSpy = spyOn(window, 'clearTimeout').and.callFake(() => {});
-            component.errorMessageTimeout = setTimeout(() => {}, 100000);
+            component['messageTimeout'] = setTimeout(() => {}, 100000);
             const message = 'This is a test success message';
-            component.showErrorMessage(message);
+            component.showMessages(message, true);
             expect(clearTimeoutSpy).toHaveBeenCalled();
         });
     });
@@ -376,22 +373,22 @@ describe('GameCreationFormComponent', () => {
         });
 
         it('updates shiftPressed to when shift pressed', () => {
-            component.keyBinds(new KeyboardEvent('keydown', { key: ' ', shiftKey: true }));
-            expect(component.shiftPressed).toEqual(true);
+            component.bindsKey(new KeyboardEvent('keydown', { key: ' ', shiftKey: true }));
+            expect(component['shiftPressed']).toEqual(true);
 
-            component.keyBinds(new KeyboardEvent('keydown', { key: ' ', shiftKey: false }));
-            expect(component.shiftPressed).toEqual(false);
+            component.bindsKey(new KeyboardEvent('keydown', { key: ' ', shiftKey: false }));
+            expect(component['shiftPressed']).toEqual(false);
         });
 
         it('calls undo when ctrl z pressed and not redo', () => {
-            component.keyBinds(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true }));
+            component.bindsKey(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true }));
 
             expect(undoSpy).toHaveBeenCalled();
             expect(redoSpy).not.toHaveBeenCalled();
         });
 
         it('calls redo when ctrl shift z pressed, and not undo', () => {
-            component.keyBinds(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, shiftKey: true }));
+            component.bindsKey(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, shiftKey: true }));
 
             expect(undoSpy).not.toHaveBeenCalled();
             expect(redoSpy).toHaveBeenCalled();
@@ -401,10 +398,10 @@ describe('GameCreationFormComponent', () => {
     describe('shiftUnBind', () => {
         it('updates shiftPressed to when shift pressed', () => {
             component.shiftUnBind(new KeyboardEvent('keydown', { key: ' ', shiftKey: true }));
-            expect(component.shiftPressed).toEqual(true);
+            expect(component['shiftPressed']).toEqual(true);
 
             component.shiftUnBind(new KeyboardEvent('keydown', { key: ' ', shiftKey: false }));
-            expect(component.shiftPressed).toEqual(false);
+            expect(component['shiftPressed']).toEqual(false);
         });
     });
 
@@ -458,28 +455,28 @@ describe('GameCreationFormComponent', () => {
         const stubCoord = { x: 1, y: 1 };
         it('mainCanvasMouseDown calls drawService startAction with correct params', () => {
             const startActionSpy = spyOn(component.drawService, 'startAction').and.callFake(() => {});
-            component.mainCanvasMouseDown(stubCoord);
+            component.startMouseDownMainCanvas(stubCoord);
 
             expect(startActionSpy).toHaveBeenCalledWith(stubCoord, ActiveCanvas.Main);
         });
 
         it('altCanvasMouseDown calls drawService startAction with correct params', () => {
             const startActionSpy = spyOn(component.drawService, 'startAction').and.callFake(() => {});
-            component.altCanvasMouseDown(stubCoord);
+            component.startMouseDownAltCanvas(stubCoord);
 
             expect(startActionSpy).toHaveBeenCalledWith(stubCoord, ActiveCanvas.Alt);
         });
 
         it('mainCanvasMouseMove calls drawService onMouseMove with correct params', () => {
             const onMouseMoveSpy = spyOn(component.drawService, 'onMouseMove').and.callFake(() => {});
-            component.mainCanvasMouseMove(stubCoord);
+            component.startMouseMoveMainCanvas(stubCoord);
 
             expect(onMouseMoveSpy).toHaveBeenCalledWith(stubCoord, ActiveCanvas.Main, false);
         });
 
         it('altCanvasMouseMove calls drawService onMouseMove with correct params', () => {
             const onMouseMoveSpy = spyOn(component.drawService, 'onMouseMove').and.callFake(() => {});
-            component.altCanvasMouseMove(stubCoord);
+            component.startMouseMoveAltCanvas(stubCoord);
 
             expect(onMouseMoveSpy).toHaveBeenCalledWith(stubCoord, ActiveCanvas.Alt, false);
         });

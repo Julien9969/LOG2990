@@ -24,7 +24,7 @@ describe('SidebarComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(SidebarComponent);
         component = fixture.componentInstance;
-        component.chatContainer = new ElementRef(document.createElement('div'));
+        component['chatContainer'] = new ElementRef(document.createElement('div'));
         fixture.detectChanges();
     });
 
@@ -34,7 +34,7 @@ describe('SidebarComponent', () => {
 
     it('formattedTime should call Date.toUTCString', () => {
         const dateSpy = spyOn(Date.prototype, 'toUTCString');
-        const result = component.formatedTime(exampleTime);
+        const result = component.formatTime(exampleTime);
         expect(dateSpy).toHaveBeenCalled();
         expect(result).toEqual(new Date(exampleTime).toUTCString());
     });
@@ -65,8 +65,8 @@ describe('SidebarComponent', () => {
     it('ngAfterViewChecked should set scrollTop to scrollHeight if chat service.newMessage is true', () => {
         const scrollHeight = 1234;
         chatServiceSpy.newMessage = true;
-        const scrollSpy = spyOnProperty(component.chatContainer.nativeElement, 'scrollHeight', 'get').and.returnValue(scrollHeight);
-        const scrollTopSpy = spyOnProperty(component.chatContainer.nativeElement, 'scrollTop', 'set');
+        const scrollSpy = spyOnProperty(component['chatContainer'].nativeElement, 'scrollHeight', 'get').and.returnValue(scrollHeight);
+        const scrollTopSpy = spyOnProperty(component['chatContainer'].nativeElement, 'scrollTop', 'set');
         component.ngAfterViewChecked();
         expect(scrollSpy).toHaveBeenCalled();
         expect(scrollTopSpy).toHaveBeenCalledWith(scrollHeight);

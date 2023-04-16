@@ -58,7 +58,7 @@ export class DifferenceValidationService {
      */
     validateGuess(guess: Coordinate) {
         return (
-            // L'objet doit être bien défini
+            // L'objet doit être bien défini -- 0 est une valeur valide
             guess &&
             guess.x !== null &&
             guess.y !== null &&

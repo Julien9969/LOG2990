@@ -1,7 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { TIME_CONST } from '@app/constants/utils-constants';
+import { CONVERT_TO_MINUTES } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
@@ -113,7 +113,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     }
 
     formatTime(time: number): string {
-        return `${Math.floor(time / TIME_CONST.minute).toString()}:${time % TIME_CONST.minute}`;
+        return `${Math.floor(time / CONVERT_TO_MINUTES).toString()}:${time % CONVERT_TO_MINUTES}`;
     }
 
     ngOnDestroy(): void {

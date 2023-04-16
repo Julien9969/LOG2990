@@ -13,7 +13,7 @@ import { DrawService } from './draw.service';
     template: '',
 })
 export class StubUploadImageSquareComponent {
-    fgContext = CanvasTestHelper.createCanvas(IMAGE_WIDTH, IMAGE_HEIGHT).getContext('2d') as CanvasRenderingContext2D;
+    foregroundContext = CanvasTestHelper.createCanvas(IMAGE_WIDTH, IMAGE_HEIGHT).getContext('2d') as CanvasRenderingContext2D;
     canvasContext = CanvasTestHelper.createCanvas(IMAGE_WIDTH, IMAGE_HEIGHT).getContext('2d') as CanvasRenderingContext2D;
     updateCanvas(): void {}
 }
@@ -42,7 +42,7 @@ describe('DrawService', () => {
     describe('action tracking', () => {
         describe('startAction', () => {
             it('cancels other active actions if active canvas is not none', () => {
-                service.activeCanvas = ActiveCanvas.Alt;
+                service['activeCanvas'] = ActiveCanvas.Alt;
                 spyOn(service, 'cancelAction');
                 service.startAction({ x: 0, y: 0 }, ActiveCanvas.Main);
                 expect(service.cancelAction).toHaveBeenCalled();
@@ -56,9 +56,9 @@ describe('DrawService', () => {
 
             it('updates coordinates and canvas', () => {
                 const coordinates = { x: 1, y: 0 };
-                expect(service.activeCanvas).not.toEqual(ActiveCanvas.Main);
+                expect(service['activeCanvas']).not.toEqual(ActiveCanvas.Main);
                 service.startAction(coordinates, ActiveCanvas.Main);
-                expect(service.activeCanvas).toEqual(ActiveCanvas.Main);
+                expect(service['activeCanvas']).toEqual(ActiveCanvas.Main);
                 expect(service['startCoordinate']).toEqual(coordinates);
                 expect(service['lastPos']).toEqual(coordinates);
             });
@@ -66,22 +66,24 @@ describe('DrawService', () => {
             it('updates startCanvasData and startFgData with altImageComponent when rectangle mode and activeCanvas is not Main', () => {
                 service.mode = DrawMode.RECTANGLE;
                 service.startAction({ x: 0, y: 0 }, ActiveCanvas.None);
-                expect(service.startCanvasData).toEqual(altImageComponentMock.canvasContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
-                expect(service.startFgData).toEqual(altImageComponentMock.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
+                expect(service['startCanvasData']).toEqual(altImageComponentMock.canvasContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
+                expect(service['startForegroundData']).toEqual(altImageComponentMock.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
             });
 
             it('updates startCanvasData and startFgData with mainImageComponent when rectangle mode and activeCanvas is Main', () => {
                 service.mode = DrawMode.RECTANGLE;
                 service.startAction({ x: 0, y: 0 }, ActiveCanvas.Main);
-                expect(service.startCanvasData).toEqual(mainImageComponentMock.canvasContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
-                expect(service.startFgData).toEqual(mainImageComponentMock.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
+                expect(service['startCanvasData']).toEqual(mainImageComponentMock.canvasContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
+                expect(service['startForegroundData']).toEqual(
+                    mainImageComponentMock.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT),
+                );
             });
         });
 
         describe('onMouseMove', () => {
             it('calls performAction on active canvas if active canvas is main and the same as mouseMove canvas', () => {
                 spyOn(service, 'performAction');
-                service.activeCanvas = ActiveCanvas.Main;
+                service['activeCanvas'] = ActiveCanvas.Main;
 
                 service.onMouseMove({ x: 0, y: 0 }, ActiveCanvas.Main, false);
                 expect(service.performAction).toHaveBeenCalled();
@@ -89,14 +91,14 @@ describe('DrawService', () => {
 
             it('calls performAction on active canvas if active canvas is alt and the same as mouseMove canvas', () => {
                 spyOn(service, 'performAction');
-                service.activeCanvas = ActiveCanvas.Alt;
+                service['activeCanvas'] = ActiveCanvas.Alt;
 
                 service.onMouseMove({ x: 0, y: 0 }, ActiveCanvas.Alt, false);
                 expect(service.performAction).toHaveBeenCalled();
             });
 
             it('updates lastPos', () => {
-                service.activeCanvas = ActiveCanvas.Main;
+                service['activeCanvas'] = ActiveCanvas.Main;
                 const coordinates = { x: 1, y: 0 };
                 service.onMouseMove(coordinates, ActiveCanvas.Main, false);
                 expect(service['lastPos']).toEqual(coordinates);
@@ -104,7 +106,7 @@ describe('DrawService', () => {
 
             it('does not call performAction when no active canvas', () => {
                 spyOn(service, 'performAction');
-                service.activeCanvas = ActiveCanvas.None;
+                service['activeCanvas'] = ActiveCanvas.None;
 
                 service.onMouseMove({ x: 0, y: 0 }, ActiveCanvas.None, false);
                 expect(service.performAction).not.toHaveBeenCalled();
@@ -121,8 +123,8 @@ describe('DrawService', () => {
 
             it('calls correct function when rectangle mode and loads start state', () => {
                 const putImageDataSpy = new ImageData(IMAGE_WIDTH, IMAGE_HEIGHT);
-                service.startCanvasData = putImageDataSpy;
-                service.startFgData = putImageDataSpy;
+                service['startCanvasData'] = putImageDataSpy;
+                service['startForegroundData'] = putImageDataSpy;
                 spyOn(CanvasRenderingContext2D.prototype, 'putImageData' as any).and.callFake((imageData: ImageData, x: number, y: number) => {
                     expect(imageData).toEqual(putImageDataSpy);
                     expect(x).toEqual(0);
@@ -148,14 +150,14 @@ describe('DrawService', () => {
         describe('cancelAction', () => {
             it('clears redo history and active canvas', () => {
                 spyOn(service, 'clearRedoHistory' as any);
-                service.activeCanvas = ActiveCanvas.Main;
+                service['activeCanvas'] = ActiveCanvas.Main;
                 service.cancelAction();
                 expect(service['clearRedoHistory']).toHaveBeenCalled();
-                expect(service.activeCanvas).toEqual(2); // Can't use ActiveCanvas.None (type error)
+                expect(service['activeCanvas']).toEqual(ActiveCanvas.None as any); // Can't use ActiveCanvas.None (type error)
             });
 
             it('does not clear redo history when no active canvas', () => {
-                service.activeCanvas = ActiveCanvas.None;
+                service['activeCanvas'] = ActiveCanvas.None;
                 spyOn(service, 'clearRedoHistory' as any);
                 service.cancelAction();
                 expect(service['clearRedoHistory']).not.toHaveBeenCalled();
@@ -298,13 +300,13 @@ describe('DrawService', () => {
 
             it('swaps image data of canvases and call renderStates', () => {
                 spyOn(service, 'renderStates' as any);
-                const mainFg = mainImageComponentMock.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-                const altFg = altImageComponentMock.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+                const mainFg = mainImageComponentMock.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+                const altFg = altImageComponentMock.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
 
                 service.swapForegrounds();
 
-                expect(mainImageComponentMock.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)).toEqual(altFg);
-                expect(altImageComponentMock.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)).toEqual(mainFg);
+                expect(mainImageComponentMock.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)).toEqual(altFg);
+                expect(altImageComponentMock.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)).toEqual(mainFg);
             });
         });
 
@@ -325,7 +327,7 @@ describe('DrawService', () => {
                 spyOn(CanvasRenderingContext2D.prototype, 'getImageData').and.returnValue(imageData);
 
                 service.replaceForeground(ActiveCanvas.Main);
-                expect(mainImageComponentMock.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)).toEqual(imageData);
+                expect(mainImageComponentMock.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)).toEqual(imageData);
             });
 
             it('replaces proper canvas when active canvas is alternative', () => {
@@ -333,7 +335,7 @@ describe('DrawService', () => {
                 spyOn(CanvasRenderingContext2D.prototype, 'getImageData').and.returnValue(imageData);
 
                 service.replaceForeground(ActiveCanvas.Alt);
-                expect(altImageComponentMock.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)).toEqual(imageData);
+                expect(altImageComponentMock.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT)).toEqual(imageData);
             });
 
             it('does not replace a canvas when active canvas is none', () => {
@@ -378,9 +380,9 @@ describe('DrawService', () => {
             it('sets color and begins canvas path', () => {
                 const beginPathSpy = spyOn(CanvasRenderingContext2D.prototype, 'beginPath').and.callFake(() => {});
                 service['color'] = 'red';
-                service['drawLine']({ x: 0, y: 1 }, mainImageComponentMock.fgContext);
+                service['drawLine']({ x: 0, y: 1 }, mainImageComponentMock.foregroundContext);
 
-                expect(mainImageComponentMock.fgContext.fillStyle).toEqual('#ff0000');
+                expect(mainImageComponentMock.foregroundContext.fillStyle).toEqual('#ff0000');
                 expect(beginPathSpy).toHaveBeenCalled();
             });
 
@@ -394,7 +396,7 @@ describe('DrawService', () => {
                 ];
                 spyOn(service, 'getPixelsInPath' as any).and.returnValue(path);
 
-                service['drawLine']({ x: 0, y: 1 }, mainImageComponentMock.fgContext);
+                service['drawLine']({ x: 0, y: 1 }, mainImageComponentMock.foregroundContext);
 
                 expect(fillSpy).toHaveBeenCalled();
                 expect(arcSpy).toHaveBeenCalledTimes(path.length);
@@ -408,21 +410,21 @@ describe('DrawService', () => {
         describe('drawRectangle', () => {
             it('sets proper color', () => {
                 service['color'] = 'red';
-                service['drawRectangle']({ x: 0, y: 1 }, mainImageComponentMock.fgContext, false);
-                expect(mainImageComponentMock.fgContext.fillStyle).toEqual('#ff0000');
+                service['drawRectangle']({ x: 0, y: 1 }, mainImageComponentMock.foregroundContext, false);
+                expect(mainImageComponentMock.foregroundContext.fillStyle).toEqual('#ff0000');
             });
 
             it('draws rectangle in proper coordinates', () => {
                 service['startCoordinate'] = { x: 4, y: 5 };
                 const fillRectSpy = spyOn(CanvasRenderingContext2D.prototype, 'fillRect').and.callFake(() => {});
-                service['drawRectangle']({ x: 0, y: 0 }, mainImageComponentMock.fgContext, false);
+                service['drawRectangle']({ x: 0, y: 0 }, mainImageComponentMock.foregroundContext, false);
                 expect(fillRectSpy).toHaveBeenCalledWith(4, 5, -4, -5);
             });
 
             it('draws square when shift pressed', () => {
                 service['startCoordinate'] = { x: 4, y: 5 };
                 const fillRectSpy = spyOn(CanvasRenderingContext2D.prototype, 'fillRect').and.callFake(() => {});
-                service['drawRectangle']({ x: 12, y: 30 }, mainImageComponentMock.fgContext, true);
+                service['drawRectangle']({ x: 12, y: 30 }, mainImageComponentMock.foregroundContext, true);
                 expect(fillRectSpy).toHaveBeenCalledWith(4, 5, 8, 8);
             });
         });
@@ -439,7 +441,7 @@ describe('DrawService', () => {
                 const image = new Image();
                 image.width = 1;
                 image.height = 1;
-                service['replace']({ x: 0, y: 1 }, mainImageComponentMock.fgContext, image);
+                service['replace']({ x: 0, y: 1 }, mainImageComponentMock.foregroundContext, image);
 
                 expect(service['getPixelsInPath']).toHaveBeenCalledWith(service['lastPos'], { x: 0, y: 1 });
                 expect(putImageDataSpy).toHaveBeenCalledTimes(path.length);
@@ -458,7 +460,7 @@ describe('DrawService', () => {
                     { x: 2, y: 2 },
                 ];
                 spyOn(service, 'getPixelsInPath' as any).and.returnValue(path);
-                service['erase']({ x: 0, y: 1 }, mainImageComponentMock.fgContext);
+                service['erase']({ x: 0, y: 1 }, mainImageComponentMock.foregroundContext);
 
                 expect(service['getPixelsInPath']).toHaveBeenCalledWith(service['lastPos'], { x: 0, y: 1 });
                 expect(clearRectSpy).toHaveBeenCalledTimes(path.length);

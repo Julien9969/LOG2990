@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { TIME_CONST } from '@app/constants/utils-constants';
+import { ERROR_TIMEOUT } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
@@ -42,10 +42,6 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
         private readonly imageOperationService: ImageOperationService,
         private readonly socket: InGameService,
     ) {}
-
-    get mouse(): MouseService {
-        return this.mouseService;
-    }
 
     get canvasContext1(): CanvasRenderingContext2D {
         return this.imageCanvas1.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
@@ -117,7 +113,7 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
         this.errorGuess = true;
         window.setTimeout(() => {
             this.errorGuess = false;
-        }, TIME_CONST.secondInMillisecond);
+        }, ERROR_TIMEOUT);
         this.errorCounter++;
 
         if (this.errorCounter % 3 === 0) {

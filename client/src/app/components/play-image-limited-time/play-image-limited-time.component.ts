@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { TIME_CONST } from '@app/constants/utils-constants';
+import { ERROR_TIMEOUT } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
@@ -115,7 +115,7 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
         this.errorGuess = true;
         window.setTimeout(() => {
             this.errorGuess = false;
-        }, TIME_CONST.secondInMillisecond);
+        }, ERROR_TIMEOUT);
         this.errorCounter++;
 
         if (this.errorCounter % 3 === 0) {

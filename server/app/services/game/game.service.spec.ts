@@ -260,7 +260,9 @@ describe('Game Service tests', () => {
                 differenceImageId: 0,
             };
 
-            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImages').mockResolvedValue(new Error());
+            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImages').mockResolvedValue(
+                new Error('Le jeu nécessite une image ou rayon.'),
+            );
             jest.spyOn(DifferenceDetectionService.prototype as any, 'getComparisonResult').mockReturnValue(mockResult);
 
             const result = await gameService.compareImages(stubInputGame, Buffer.from([]), Buffer.from([]), new DifferenceDetectionService());

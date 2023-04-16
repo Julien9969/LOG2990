@@ -82,7 +82,7 @@ describe('UploadImageSquareComponent', () => {
             const updateCanvas = spyOn(component, 'updateCanvas').and.callFake(() => {});
 
             await component.loadBackground(validInput);
-            (component.bgImage.onload as () => void)();
+            (component.backgroundImage.onload as () => void)();
 
             expect(validateImageSpy).toHaveBeenCalled();
             expect(createObjectURLSpy).toHaveBeenCalledOnceWith((validInput.files as FileList)[0]);
@@ -172,7 +172,7 @@ describe('UploadImageSquareComponent', () => {
         it('fgContext gets 2d context of foregroundCanvas', () => {
             const getContextSpy = spyOn(component.foregroundCanvas, 'getContext').and.callFake(() => null);
 
-            const result = component.fgContext;
+            const result = component.foregroundContext;
             expect(result).toBeFalsy();
             expect(getContextSpy).toHaveBeenCalledWith('2d', { willReadFrequently: true });
         });

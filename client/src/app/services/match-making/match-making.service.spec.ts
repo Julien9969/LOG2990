@@ -58,7 +58,7 @@ describe('MatchMakingService', () => {
             callback(expectedResponse);
         });
         const gameId = '42';
-        const response = await service.someOneWaiting(gameId);
+        const response = await service.isSomeOneWaiting(gameId);
         expect(sendAndCallbackSpy).toHaveBeenCalled();
         expect(sendAndCallbackSpy).toHaveBeenCalledWith('someOneWaiting', gameId, jasmine.any(Function));
         expect(response).toEqual(expectedResponse);
@@ -71,7 +71,7 @@ describe('MatchMakingService', () => {
             callback(expectedResponse);
         });
         const gameId = '42';
-        const response = await service.roomCreatedForThisGame(gameId);
+        const response = await service.isRoomCreated(gameId);
         expect(sendAndCallbackSpy).toHaveBeenCalled();
         expect(sendAndCallbackSpy).toHaveBeenCalledWith('roomCreatedForThisGame', gameId, jasmine.any(Function));
         expect(response).toEqual(expectedResponse);
@@ -79,7 +79,7 @@ describe('MatchMakingService', () => {
 
     it('opponentJoined should call socketService.on with "opponentJoined" and a callback', () => {
         const callbackSpy = jasmine.createSpy('callback');
-        service.opponentJoined(callbackSpy);
+        service.onOpponentJoined(callbackSpy);
         socketHelper.peerSideEmit('opponentJoined', 'playerName');
         expect(callbackSpy).toHaveBeenCalled();
         expect(callbackSpy).toHaveBeenCalledWith('playerName');
@@ -87,7 +87,7 @@ describe('MatchMakingService', () => {
 
     it('opponentLeft should call socketService.on with "opponentLeft" and a callback', () => {
         const callbackSpy = jasmine.createSpy('callback');
-        service.opponentLeft(callbackSpy);
+        service.onOpponentLeft(callbackSpy);
         socketHelper.peerSideEmit('opponentLeft');
         expect(callbackSpy).toHaveBeenCalled();
     });
@@ -119,14 +119,14 @@ describe('MatchMakingService', () => {
 
     it('roomReachable should call socketService.on with "roomReachable" and a callback', () => {
         const callbackSpy = jasmine.createSpy('callback');
-        service.roomReachable(callbackSpy);
+        service.onRoomReachable(callbackSpy);
         socketHelper.peerSideEmit('roomReachable');
         expect(callbackSpy).toHaveBeenCalled();
     });
 
     it('sessionIdReceived should call socketService.on with "sessionId" and a callback', () => {
         const callbackSpy = jasmine.createSpy('callback');
-        service.sessionIdReceived(callbackSpy);
+        service.receiveSessionId(callbackSpy);
         socketHelper.peerSideEmit('sessionId', 'sessionId');
         expect(callbackSpy).toHaveBeenCalled();
         expect(callbackSpy).toHaveBeenCalledWith('sessionId');
@@ -189,7 +189,7 @@ describe('MatchMakingService', () => {
 
     it('gameDeleted should call socketService.on with "gameDeleted" and a callback', () => {
         const callbackSpy = jasmine.createSpy('callback');
-        service.gameDeleted(callbackSpy);
+        service.onGameDeleted(callbackSpy);
         socketHelper.peerSideEmit('gameDeleted');
         expect(callbackSpy).toHaveBeenCalled();
     });

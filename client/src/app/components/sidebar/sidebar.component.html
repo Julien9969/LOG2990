@@ -10,7 +10,7 @@
             }"
         >
             <div class="datetime">
-                {{ formatedTime(message.time) }}
+                {{ formatTime(message.time) }}
             </div>
             <br />
             <p class="flex-column">
@@ -20,9 +20,9 @@
         </div>
 
         <div *ngIf="!isSolo">
-            <form id="textbox" class="send-message-form" [formGroup]="messageForm" #formGroup (ngSubmit)="send()">
+            <form id="textbox" class="send-message-form" [formGroup]="messageForm" (ngSubmit)="send()">
                 <input [maxlength]="200" (focus)="imageOperationService.isChatFocused = true" (blur)="imageOperationService.isChatFocused = false" formControlName="text" type="text" placeholder="tapez votre message ici..." />
-                <button type="submit">Send</button>
+                <button type="submit">Envoyer</button>
             </form>
         </div>
     </div>
