@@ -1,0 +1,30 @@
+<main ngClass="game-theme">
+    <div id="page-container">
+        <div id="top-bar">
+            <mat-toolbar color="primary">
+                <span id="player-counter" class="diff-counter" color="player">{{ playerName }} : <mat-icon>search</mat-icon> {{ nDiffFound }} </span>
+                <span id="timer">{{ this.time }}</span>
+                <span *ngIf="!isSolo" id="opponent-counter" class="diff-counter" color="opponent">{{ opponentName }} </span>
+            </mat-toolbar>
+        </div>
+        <div id="game-container">
+            <app-play-image-limited-time [sessionID]="sessionId" [isTimeLimited]="true">
+                [imageMainId]="gameInfos.imageMain" [imageAltId]="gameInfos.imageAlt"
+            </app-play-image-limited-time>
+            <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="isSolo"></app-sidebar>
+        </div>
+        <div id="bottom-bar">
+            <mat-toolbar color="primary">
+                <button mat-button (click)="openDialog('quit')" id="quit-button" aria-label="Quitter">
+                    <mat-icon>home</mat-icon>
+                    Quitter
+                </button>
+                <!-- <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span> -->
+                <button *ngIf="isSolo" mat-button (click)="openDialog('clue')" id="clue-button" aria-label="Indice">
+                    <mat-icon>highlight</mat-icon>
+                    Indices : 10 (-5s)
+                </button>
+            </mat-toolbar>
+        </div>
+    </div>
+</main>

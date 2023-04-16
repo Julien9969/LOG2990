@@ -1,0 +1,59 @@
+img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.h100 {
+    height: 100%;
+}
+
+.image-container {
+    margin: 0 auto;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.play-areas {
+    margin-right: 5%;
+    margin-left: 5%;
+}
+
+.error {
+    transform: translate(-50%, -300%);
+    user-select: none;
+}
+
+canvas {
+    border: 1px solid black;
+    margin: 8px;
+    display: block;
+}
+
+.error {
+    pointer-events: none;
+    position: absolute;
+    color: red;
+    font-size: 200%;
+    font-weight: bold;
+    margin: 2% auto;
+}
+
+.flex {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.text,
+p {
+    margin-top: 5%;
+    margin-bottom: 5%;
+    font-size: 30px;
+    user-select: none;
+}

@@ -76,6 +76,13 @@ export class MatchMakingService {
         });
     }
 
+    startSoloLimitedTimeSession(callback: (sessionId: number) => void) {
+        this.socketService.sendAndCallBack(SessionEvents.StartLimitedTimeSession, true, callback);
+    }
+    startMultiLimitedTimeSession() {
+        this.socketService.send(SessionEvents.StartLimitedTimeSession, false);
+    }
+
     async acceptOpponent(playerName: string): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             this.socketService.sendAndCallBack(MatchMakingEvents.AcceptOpponent, playerName, (response: boolean) => {
@@ -94,12 +101,12 @@ export class MatchMakingService {
 
     startMultiSession(gameId: string) {
         const data: StartSessionData = { gameId, isSolo: false };
-        this.socketService.send(SessionEvents.StartSession, data);
+        this.socketService.send(SessionEvents.StartClassicSession, data);
     }
 
     startSoloSession(gameId: string, callback: (sessionId: number) => void) {
         const data: StartSessionData = { gameId, isSolo: true };
-        this.socketService.sendAndCallBack(SessionEvents.StartSession, data, callback);
+        this.socketService.sendAndCallBack(SessionEvents.StartClassicSession, data, callback);
     }
 
     updateRoomView(callback: () => void) {
