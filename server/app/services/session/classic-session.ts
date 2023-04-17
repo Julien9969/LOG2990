@@ -98,6 +98,20 @@ export class ClassicSession extends Session {
     }
 
     /**
+     * handle clue request to apply penalty to session timer,
+     * count the clue request and
+     * verify if the session is allowed to give out any more clues
+     *
+     * @returns boolean that indicates if the clue is allowed
+     */
+    handleClueRequest(): boolean {
+        this.nbCluesRequested++;
+        const clueIsAllowed = this.nbCluesRequested <= 3;
+        if (clueIsAllowed) this.time += 5;
+        return clueIsAllowed;
+    }
+
+    /**
      * Vérifie si une différence a déjà été trouvée
      *
      * @param differenceNum numéro (identifiant) de la différence à analyser

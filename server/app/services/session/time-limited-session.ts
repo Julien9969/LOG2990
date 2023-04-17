@@ -30,6 +30,10 @@ export class LimitedTimeSession extends Session {
         return this.players.length === 1;
     }
 
+    get allGameDifferences(): Coordinate[][] {
+        return this.differenceValidationService.differenceCoordLists;
+    }
+
     /**
      * Traite un essai de différence du jeu dans la session courante
      *
@@ -106,5 +110,19 @@ export class LimitedTimeSession extends Session {
 
     timerFinished(): boolean {
         return this.time <= 0;
+    }
+
+    /**
+     * handle clue request to apply penalty to session timer,
+     * count the clue request and
+     * verify if the session is allowed to give out any more clues
+     *
+     * @returns boolean that indicates if the clue is allowed
+     */
+    handleClueRequest(): boolean {
+        this.nbCluesRequested++;
+        const clueIsAllowed = this.nbCluesRequested <= 3;
+        if (clueIsAllowed) this.time -= 5;
+        return clueIsAllowed;
     }
 }

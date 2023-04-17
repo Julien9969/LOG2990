@@ -1,6 +1,6 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { PlayImageComponent } from '@app/components/play-image/play-image.component';
+import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { HistoryService } from '@app/services/history.service';
@@ -16,7 +16,7 @@ import { WinnerInfo } from '@common/winner-info';
     styleUrls: ['./game-page.component.scss'],
 })
 export class GamePageComponent implements OnInit, OnDestroy {
-    @ViewChild('appPlayImage') playImageComponent: PlayImageComponent;
+    @ViewChild('appPlayImage') playImageComponent: PlayImageClassicComponent;
 
     userSocketId: string;
 

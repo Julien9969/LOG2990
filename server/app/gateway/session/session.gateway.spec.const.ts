@@ -18,12 +18,12 @@ export const secondStubSocket: Socket = {
 export const stubGameId = 11;
 
 export const stubSession: ClassicSession = {
-    time: 100,
-    gameID: 'game-id',
-    stopTimer: () => {},
-    tryGuess: (coord, id) => {},
-    getClue: (penality: number) => {},
-    id: 0,
-    nGuesses: 0,
-    nPenalties: 0,
+    // time: 100,
+    // gameID: 'game-id',
+    // stopTimer: () => {},
+    // tryGuess: (coord, id) => {},
+    // getClue: (penality: number) => {},
+    // id: 0,
+    // nGuesses: 0,
+    // nPenalties: 0,
 } as ClassicSession;

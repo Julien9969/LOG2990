@@ -3,6 +3,8 @@ import { Session } from '@app/services/session/session';
 import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { Injectable } from '@nestjs/common';
+import { ClassicSession } from '../session/classic-session';
+import { LimitedTimeSession } from '../session/time-limited-session';
 
 @Injectable()
 export class ClueService {
@@ -13,6 +15,7 @@ export class ClueService {
      * @returns
      */
     generateClue(session: Session): Clue {
+        if (!(session instanceof ClassicSession || session instanceof ClassicSession)) return;
         if (!session.handleClueRequest()) return;
         const cluePosition = this.getRandomCluePosition(session);
 
@@ -28,7 +31,9 @@ export class ClueService {
      * @returns un pixel d'un indice aléatoirement séléctionné
      */
     private getRandomCluePosition(session: Session): Coordinate {
-        const allDiffLeftToFind = session.getNotFoundDifferences();
+        let allDiffLeftToFind: Coordinate[][];
+        if (session instanceof ClassicSession) allDiffLeftToFind = session.getNotFoundDifferences();
+        else if (session instanceof LimitedTimeSession) allDiffLeftToFind = session.allGameDifferences;
         const randomIndex = Math.floor(Math.random() * allDiffLeftToFind.length);
         const randomDifference = allDiffLeftToFind[randomIndex];
         return randomDifference[0];
