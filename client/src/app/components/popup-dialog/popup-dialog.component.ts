@@ -15,7 +15,7 @@ export class PopupDialogComponent implements OnInit {
 
     message = '';
     playerWon = false;
-
+    gameId: string;
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: string[],
 
@@ -24,6 +24,7 @@ export class PopupDialogComponent implements OnInit {
         private readonly socket: InGameService,
     ) {
         this.templateName = data[0];
+        this.gameId = data[2];
     }
 
     ngOnInit(): void {
@@ -31,6 +32,9 @@ export class PopupDialogComponent implements OnInit {
             this.audioService.playAudio('win');
             this.message = this.data[1];
         }
+    }
+    getPathToReplay() {
+        return '/replay/';
     }
     replay() {
         this.socket.socketService.loggingService.replayAllAction();

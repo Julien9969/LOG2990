@@ -1,0 +1,100 @@
+body {
+    margin: 0%;
+    height: 100%;
+}
+
+main {
+    height: 100%;
+}
+
+#page-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: lightblue;
+}
+
+mat-toolbar {
+    display: flex;
+    position: relative;
+    height: 50px;
+    span {
+        font-size: 150%;
+    }
+    #timer {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-right: auto;
+    }
+}
+
+#top-bar {
+    top: 0;
+    font-size: 150%;
+    z-index: 1;
+}
+
+.diff-counter {
+    mat-icon {
+        font-size: 100%;
+        font-weight: bolder;
+    }
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 0.1% 0.7% 0.1% 0.3%;
+}
+
+#player-counter {
+    border: 3px solid;
+    border-color: #2edd68;
+    color: #2edd68;
+}
+
+#opponent-counter {
+    position: absolute;
+    left: 100%;
+
+    transform: translateX(-107%);
+    border: 3px solid;
+    border-color: #eb3c3c;
+    color: #eb3c3c;
+}
+
+#game-container {
+    display: flex;
+    height: 100%;
+}
+
+app-play-image {
+    height: 100%;
+}
+
+app-sidebar {
+    width: 100%;
+    padding: 5px;
+}
+
+#bottom-bar {
+    z-index: 1;
+    font-size: 150%;
+
+    button {
+        border: 2px;
+        border-style: solid;
+        font-size: 100%;
+        mat-icon {
+            font-size: 120%;
+            margin-bottom: 5px;
+        }
+
+        &:hover {
+            background-color: gray;
+        }
+    }
+
+    span {
+        font-size: 150%;
+        margin: auto;
+    }
+}

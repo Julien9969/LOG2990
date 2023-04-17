@@ -26,12 +26,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
 
     errorMsgPosition: Coordinate;
     errorCounter: number = 0;
-    lastDifferenceFound: GuessResult = {
-        isCorrect: false,
-        differencesByPlayer: [],
-        differencePixelList: [{ x: 0, y: 0 }],
-        winnerName: undefined,
-    };
     errorGuess: boolean = false;
 
     // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
@@ -63,12 +57,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.errorCounter = 0;
-        this.lastDifferenceFound = {
-            isCorrect: false,
-            differencesByPlayer: [],
-            differencePixelList: [{ x: 0, y: 0 }],
-            winnerName: undefined,
-        };
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
@@ -93,7 +81,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     async reset() {
         this.ngOnInit();
         await this.ngAfterViewInit();
-        this.resetDifferenceList();
     }
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
@@ -113,10 +100,9 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
      * @param guessResult résultat du serveur après avoir demander de valider les coordonnés de la différence trouvé
      */
     updateDiffFound(guessResult: GuessResult): void {
-        if (guessResult.isCorrect && this.hasNbDifferencesChanged(guessResult.differencesByPlayer)) {
-            this.lastDifferenceFound = guessResult;
+        if (guessResult.isCorrect) {
             this.audioService.playAudio('success');
-            this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
+            this.diffFoundUpdate.emit(guessResult.differencesByPlayer);
             this.errorCounter = 0;
             this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
@@ -156,27 +142,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         canvasContext.drawImage(img, 0, 0);
     }
 
-    hasNbDifferencesChanged(differencesByPlayer: [userSocketId: string, nDifferences: number][]): boolean {
-        if (this.lastDifferenceFound.differencesByPlayer.length < differencesByPlayer.length) {
-            return true;
-        }
-        if (this.lastDifferenceFound.differencesByPlayer.length === differencesByPlayer.length) {
-            for (let i = 0; i < differencesByPlayer.length; i++) {
-                if (this.lastDifferenceFound.differencesByPlayer[i][1] !== differencesByPlayer[i][1]) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    resetDifferenceList() {
-        this.lastDifferenceFound = {
-            isCorrect: false,
-            differencesByPlayer: [],
-            differencePixelList: [{ x: 0, y: 0 }],
-            winnerName: undefined,
-        };
-    }
     ngOnDestroy(): void {
         this.imageOperationService.disableCheat();
     }

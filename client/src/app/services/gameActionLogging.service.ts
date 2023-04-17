@@ -11,6 +11,8 @@ export class GameActionLoggingService {
     resetFunction: () => void;
     isRecording: boolean = true;
     startTime: number;
+    baseTimeIncrement = 250;
+    speedMultiplier = 2;
     lastTimeReplayed: number = 0;
     actionLog: [number, string, any][] = [];
     constructor() {
@@ -39,7 +41,6 @@ export class GameActionLoggingService {
 
     // TODO: refactor loggedAction and loggedFunciton as enums for readability
     async replayAction(loggedAction: [number, string, any]) {
-        console.log(loggedAction);
         switch (loggedAction[1]) {
             case 'timerUpdate':
                 this.timerUpdateFunction(loggedAction[2]);
@@ -57,12 +58,12 @@ export class GameActionLoggingService {
         console.log(this.actionLog);
         let time = 0;
         const interval = setInterval(() => {
-            time += 500;
+            time += this.baseTimeIncrement * this.speedMultiplier;
             this.replayActionsToTime(time);
             if (this.lastTimeReplayed > this.actionLog.slice(-1)[0][0]) {
                 clearInterval(interval);
             }
-        }, 250);
+        }, this.baseTimeIncrement);
     }
     replayActionsToTime(time: number) {
         this.actionLog

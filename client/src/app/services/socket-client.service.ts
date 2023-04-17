@@ -34,7 +34,6 @@ export class SocketClientService {
             action(newData);
             this.loggingService.logAction(event, newData);
         };
-        this.loggingService.logAction(event, data);
         this.socket.emit(event, data, newActionAndLog);
     }
 

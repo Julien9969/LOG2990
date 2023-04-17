@@ -4,13 +4,15 @@ import { ConfigurationGameComponent } from '@app/pages/configuration-game-page/c
 import { GameCreationPageComponent } from '@app/pages/game-creation-page/game-creation-page.component';
 import { GameSelectionPageComponent } from '@app/pages/game-selection-page/game-selection-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
+import { ReplayPageComponent } from '@app/pages/replay-page/replay-page.component';
 import { SoloGamePageComponent } from '@app/pages/solo-game-page/solo-game-page.component';
-
 const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: 'home', component: MainPageComponent },
     { path: 'selection-view', component: GameSelectionPageComponent },
     { path: 'solo-game', component: SoloGamePageComponent },
+    { path: 'replay', component: ReplayPageComponent },
+
     { path: 'game-creation', component: GameCreationPageComponent },
     { path: 'config', component: ConfigurationGameComponent },
     { path: '**', redirectTo: '/home' },
