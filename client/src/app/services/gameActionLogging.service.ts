@@ -8,11 +8,14 @@ export class GameActionLoggingService {
     timerUpdateFunction: (time: string) => void;
     diffFoundFunction: (data: GuessResult) => void;
     cheatFunction: () => void;
+    resetFunction: () => void;
     isRecording: boolean = true;
     startTime: number;
+    lastTimeReplayed: number = 0;
     actionLog: [number, string, any][] = [];
-    currentIndex: number = 0;
-
+    constructor() {
+        this.setTimeZero();
+    }
     setTimeZero(): void {
         this.startTime = new Date().getTime();
     }
@@ -20,18 +23,23 @@ export class GameActionLoggingService {
         return new Date().getTime() - this.startTime;
     }
     logAction(event: string, data: any) {
+        if (event === 'startSession') {
+            this.actionLog = [];
+            this.setTimeZero();
+        }
         if (this.isRecording) {
             this.actionLog.push([this.getTimeSinceStart(), event, data]);
         }
     }
 
     startReplay() {
-        this.isRecording = false;
+        this.resetFunction();
         this.setTimeZero(); // just for TESTING, should have its logic for speed.
     }
 
-    // TODO: refactor loggedAction and loggedFunciton as schemas for readability
+    // TODO: refactor loggedAction and loggedFunciton as enums for readability
     async replayAction(loggedAction: [number, string, any]) {
+        console.log(loggedAction);
         switch (loggedAction[1]) {
             case 'timerUpdate':
                 this.timerUpdateFunction(loggedAction[2]);
@@ -46,26 +54,24 @@ export class GameActionLoggingService {
     }
 
     async replayAllAction() {
-        console.log('replayAllActions');
         console.log(this.actionLog);
-        let index = 0;
-        const arr = this.actionLog;
+        let time = 0;
         const interval = setInterval(() => {
-            this.replayAction(arr[index++]);
-            if (index === arr.length) {
+            time += 500;
+            this.replayActionsToTime(time);
+            if (this.lastTimeReplayed > this.actionLog.slice(-1)[0][0]) {
                 clearInterval(interval);
             }
         }, 250);
     }
-
-    getNextTime() {
-        return this.actionLog[this.currentIndex + 1][0];
-    }
-
-    replayActionsToTime() {
-        const time = this.getTimeSinceStart(); // just for TESTING
-        for (; this.getNextTime() <= time; this.currentIndex++) {
-            this.replayAction(this.actionLog[this.currentIndex]);
-        }
+    replayActionsToTime(time: number) {
+        this.actionLog
+            .filter((item) => {
+                return item[0] < time && item[0] >= this.lastTimeReplayed;
+            })
+            .forEach((action) => {
+                this.replayAction(action);
+            });
+        this.lastTimeReplayed = time;
     }
 }

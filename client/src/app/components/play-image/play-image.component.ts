@@ -39,7 +39,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         private readonly mouseService: MouseService,
         private readonly communicationService: CommunicationService,
         private readonly audioService: AudioService,
-        private readonly imageOperationService: ImageOperationService,
+        public imageOperationService: ImageOperationService,
         private readonly socket: InGameService,
         private loggingService: GameActionLoggingService,
     ) {}
@@ -75,8 +75,13 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         this.loggingService.diffFoundFunction = (guessResult: GuessResult) => {
             this.updateDiffFound(guessResult);
         };
+
         this.loggingService.cheatFunction = () => {
             this.imageOperationService.handleCheat(this.sessionID);
+        };
+
+        this.loggingService.resetFunction = async () => {
+            await this.reset();
         };
     }
 
@@ -88,6 +93,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
     async reset() {
         this.ngOnInit();
         await this.ngAfterViewInit();
+        this.resetDifferenceList();
     }
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
@@ -163,7 +169,14 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         }
         return false;
     }
-
+    resetDifferenceList() {
+        this.lastDifferenceFound = {
+            isCorrect: false,
+            differencesByPlayer: [],
+            differencePixelList: [{ x: 0, y: 0 }],
+            winnerName: undefined,
+        };
+    }
     ngOnDestroy(): void {
         this.imageOperationService.disableCheat();
     }

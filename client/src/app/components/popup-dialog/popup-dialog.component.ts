@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AudioService } from '@app/services/audio.service';
-
+import { InGameService } from '@app/services/in-game.service';
 /**
  * @title Inject des données lorsqu'on ouvre un dialogue
  */
@@ -18,8 +18,10 @@ export class PopupDialogComponent implements OnInit {
 
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: string[],
+
         public dialogRef: MatDialogRef<PopupDialogComponent>,
         private audioService: AudioService,
+        private readonly socket: InGameService,
     ) {
         this.templateName = data[0];
     }
@@ -30,7 +32,9 @@ export class PopupDialogComponent implements OnInit {
             this.message = this.data[1];
         }
     }
-
+    replay() {
+        this.socket.socketService.loggingService.replayAllAction();
+    }
     getClueNumber(): number {
         const noMagicNumber = 10;
         return noMagicNumber;

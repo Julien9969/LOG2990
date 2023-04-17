@@ -50,6 +50,7 @@
         <h1 mat-dialog-title>La partie est finie</h1>
         <h2>{{ data[1] }}!</h2>
         <div class="button-row">
+            <button mat-button matDialogClose aria-label="OUI" (click)="replay()">Rejouer la partie</button>
             <button mat-button matDialogClose routerLink="/home" aria-label="OUI">Retourner à l'accueil</button>
         </div>
     </div>
