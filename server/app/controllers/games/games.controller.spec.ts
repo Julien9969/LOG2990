@@ -52,11 +52,11 @@ describe('GameController tests', () => {
             await controller.deleteById('12');
             expect(spy).toHaveBeenCalledWith('12');
         });
-        
+
         it('should call delete() with the correct id', async () => {
             const deleteSpy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(async () => {});
             await controller.deleteById('5');
-            
+
             expect(deleteSpy).toBeCalledWith('5');
         });
 
@@ -70,7 +70,7 @@ describe('GameController tests', () => {
             expect(logErrorSpy).toBeCalled();
         });
     });
-        
+
     it('get should return an error if the id is invalid', async () => {
         jest.spyOn(controller['gameService'], 'findById').mockReturnValue(undefined);
         expect(async () => {
@@ -218,11 +218,11 @@ describe('GameController tests', () => {
             await controller.resetLeaderboard('12');
             expect(spy).toHaveBeenCalledWith('12');
         });
-        
+
         it('should call resetLeaderboard() with the correct id', async () => {
             const resetLeaderboardSpy = jest.spyOn(controller['gameService'], 'resetLeaderboard').mockImplementation(async () => {});
             await controller.resetLeaderboard('5');
-            
+
             expect(resetLeaderboardSpy).toBeCalledWith('5');
         });
 

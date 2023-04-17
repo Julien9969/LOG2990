@@ -230,7 +230,7 @@ export class GameService {
             }
         });
     }
-    
+
     /**
      * Valide et modifie les constantes de jeu en persistance
      *

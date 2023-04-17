@@ -116,7 +116,7 @@ export class GamesController {
 
     /**
      * Réinitialise les meilleurs temps d'un jeu du id donné
-     * 
+     *
      * @param id L'identifiant du jeu
      */
     @Delete('leaderboards/:id')
@@ -127,23 +127,23 @@ export class GamesController {
         } catch (e: unknown) {
             if (e instanceof Error) this.logger.error(e.message);
         }
-     }    
-    
+    }
+
     /**
      * Detruit un element jeu specifique, dans la memoire de la session et dans la persistance
-    *
-    * @param params une id de l'element game a detruire
-    */
-   @Delete(':id')
-   @HttpCode(HttpStatus.NO_CONTENT)
-   async deleteById(@Param('id') id: string) {
-       try {
-           await this.gameService.delete(id);
+     *
+     * @param params une id de l'element game a detruire
+     */
+    @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async deleteById(@Param('id') id: string) {
+        try {
+            await this.gameService.delete(id);
         } catch (e: unknown) {
             if (e instanceof Error) this.logger.error(e.message);
         }
     }
-    
+
     /**
      * Modifie les constantes de jeu globales (temps d'une partie en temps limité, pénalité d'indice et bonus de différence trouvée)
      *

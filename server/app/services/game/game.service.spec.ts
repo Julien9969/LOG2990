@@ -19,12 +19,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
 import { createStubInstance } from 'sinon';
-import {
-    DEFAULT_GAME_LEADERBOARD,
-    DIFFERENCE_LISTS_FOLDER,
-    DIFFERENCE_LISTS_PREFIX,
-    GAME_CONSTS_PATH,
-} from '../constants/services.const';
+import { DEFAULT_GAME_LEADERBOARD, DIFFERENCE_LISTS_FOLDER, DIFFERENCE_LISTS_PREFIX, GAME_CONSTS_PATH } from '../constants/services.const';
 import { DifferenceDetectionService } from '../difference-detection/difference-detection.service';
 import { ImageService } from '../images/image.service';
 import { GameService } from './game.service';
@@ -594,13 +589,12 @@ describe('Game Service tests', () => {
         const stubGameList = [stubGame, stubGame, stubGame];
         let findAllSpy: jest.SpyInstance;
         let deleteSpy: jest.SpyInstance;
-        
+
         beforeEach(() => {
             findAllSpy = jest.spyOn(gameService, 'findAll').mockImplementation(async () => {
                 return stubGameList;
             });
             deleteSpy = jest.spyOn(gameService, 'delete').mockImplementation();
-
         });
 
         it('gets all games and calls delete on each one', async () => {
@@ -624,12 +618,15 @@ describe('Game Service tests', () => {
     });
 
     describe('resetLeaderboard', () => {
-        const stubId = "test-id";
+        const stubId = 'test-id';
         it('calls updateOne on gameModel database with default scores', async () => {
             const updateSpy = jest.spyOn(gameModel, 'updateOne');
             await gameService.resetLeaderboard(stubId);
 
-            expect(updateSpy).toBeCalledWith({_id: stubId}, { scoreBoardSolo: DEFAULT_GAME_LEADERBOARD, scoreBoardMulti: DEFAULT_GAME_LEADERBOARD });
+            expect(updateSpy).toBeCalledWith(
+                { _id: stubId },
+                { scoreBoardSolo: DEFAULT_GAME_LEADERBOARD, scoreBoardMulti: DEFAULT_GAME_LEADERBOARD },
+            );
         });
 
         it('throws an error when database updateOne fails', async () => {
@@ -645,13 +642,12 @@ describe('Game Service tests', () => {
         const stubGameList = [stubGame, stubGame, stubGame];
         let findAllSpy: jest.SpyInstance;
         let resetLeaderboardSpy: jest.SpyInstance;
-        
+
         beforeEach(() => {
             findAllSpy = jest.spyOn(gameService, 'findAll').mockImplementation(async () => {
                 return stubGameList;
             });
             resetLeaderboardSpy = jest.spyOn(gameService, 'resetLeaderboard').mockImplementation();
-
         });
 
         it('gets all games and calls resetLeaderboard on each one', async () => {
@@ -673,5 +669,4 @@ describe('Game Service tests', () => {
             expect(loggerWarnSpy).toBeCalledTimes(1);
         });
     });
-
 });
