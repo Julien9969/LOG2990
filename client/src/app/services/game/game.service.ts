@@ -68,30 +68,30 @@ export class GameService {
     async updateGameConstants(gameConsts: GameConstants) {
         await this.communicationService.patchGameConstants(gameConsts);
     }
-    
+
     async getGameConstants(): Promise<GameConstants> {
         return await this.communicationService.getGameConstants();
     }
-    
+
     deleteAllGames = async () => {
-        await this.communicationService.deleteRequest(`games`);
+        await this.communicationService.deleteRequest('games');
         this.reloadWindow();
-    }
+    };
 
     resetAllLeaderboards = async () => {
         await this.communicationService.deleteRequest('games/leaderboards');
         this.reloadWindow();
-    }
+    };
 
     resetTimeConstants = async () => {
         const defaultGameConsts: GameConstants = {
             time: DEFAULT_GAME_TIME,
             reward: DEFAULT_REWARD_TIME,
             penalty: DEFAULT_PENALTY_TIME,
-        }
+        };
         await this.communicationService.patchGameConstants(defaultGameConsts);
         this.reloadWindow();
-    }
+    };
 
     // Cette fonction est un wrapper autour de window.location.reload(), pour pouvoir la mock.
     // Elle n'est pas couverte par les tests.

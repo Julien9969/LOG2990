@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-explicit-any -- Any utilisé pour créer notre propre mock */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { GameService } from '@app/services/game/game.service';
-import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
 import { DataResetComponent } from './data-reset.component';
 
 describe('DataResetComponent', () => {
@@ -20,14 +21,14 @@ describe('DataResetComponent', () => {
                 return {};
             },
             resetAllLeaderboards: async () => {},
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Any utilisé pour créer notre propre mock
         } as any;
 
         mockPopup = {} as PopupDialogComponent;
         dialogMock = {
-            open: (component, action) => { 
+            // eslint-disable-next-line no-unused-vars -- Le parametere est necessaire pour coller au typage de la fonction
+            open: (comp, action) => {
                 return {
-                    componentInstance: mockPopup
+                    componentInstance: mockPopup,
                 } as any;
             },
             closeAll: () => {},
@@ -36,7 +37,10 @@ describe('DataResetComponent', () => {
         await TestBed.configureTestingModule({
             declarations: [DataResetComponent],
             imports: [MatIconModule],
-            providers: [{ provide: GameService, useValue: gameServiceMock }, { provide: MatDialog, useValue: dialogMock }],
+            providers: [
+                { provide: GameService, useValue: gameServiceMock },
+                { provide: MatDialog, useValue: dialogMock },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(DataResetComponent);
@@ -50,7 +54,7 @@ describe('DataResetComponent', () => {
 
     it('deleteAllGames opens a popup dialog and sets callback to gameService deleteAllGames', () => {
         const openDialogSpy = spyOn(dialogMock, 'open').and.callFake(() => {
-            return {componentInstance: mockPopup} as any;
+            return { componentInstance: mockPopup } as any;
         });
         component.deleteAllGames();
 
@@ -60,12 +64,11 @@ describe('DataResetComponent', () => {
 
     it('resetAllLeaderboards opens a popup dialog and sets callback to gameService resetAllLeaderboards', () => {
         const openDialogSpy = spyOn(dialogMock, 'open').and.callFake(() => {
-            return {componentInstance: mockPopup} as any;
+            return { componentInstance: mockPopup } as any;
         });
         component.resetAllLeaderboards();
 
         expect(openDialogSpy).toHaveBeenCalled();
         expect(mockPopup.buttonCallback).toEqual(gameServiceMock.resetAllLeaderboards);
     });
-
 });

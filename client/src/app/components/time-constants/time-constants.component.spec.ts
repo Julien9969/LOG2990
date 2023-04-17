@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-explicit-any -- Any utilisé pour créer notre propre mock */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { GameService } from '@app/services/game/game.service';
 import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME, MIN_REWARD_TIME } from '@common/game-constants-values';
-import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
 import { TimeConstantsComponent } from './time-constants.component';
 
 describe('TimeConstantsComponent', () => {
@@ -24,13 +25,13 @@ describe('TimeConstantsComponent', () => {
             },
             updateGameConstants: async () => {},
             resetTimeConstants: async () => {},
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Any utilisé pour créer notre propre mock
         } as any;
         mockPopup = {} as PopupDialogComponent;
         dialogMock = {
-            open: (component, action) => { 
+            // eslint-disable-next-line no-unused-vars -- Le parametere est necessaire pour coller au typage de la fonction
+            open: (comp, action) => {
                 return {
-                    componentInstance: mockPopup
+                    componentInstance: mockPopup,
                 } as any;
             },
             closeAll: () => {},
@@ -39,7 +40,10 @@ describe('TimeConstantsComponent', () => {
         await TestBed.configureTestingModule({
             declarations: [TimeConstantsComponent],
             imports: [MatIconModule],
-            providers: [{ provide: GameService, useValue: gameServiceMock }, { provide: MatDialog, useValue: dialogMock }],
+            providers: [
+                { provide: GameService, useValue: gameServiceMock },
+                { provide: MatDialog, useValue: dialogMock },
+            ],
         }).compileComponents();
     });
 
@@ -180,7 +184,7 @@ describe('TimeConstantsComponent', () => {
 
     it('resetTimeConstants opens a popup dialog and sets callback to gameService resetTimeConstants', () => {
         const openDialogSpy = spyOn(dialogMock, 'open').and.callFake(() => {
-            return {componentInstance: mockPopup} as any;
+            return { componentInstance: mockPopup } as any;
         });
         component.resetTimeConstants();
 

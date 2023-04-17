@@ -22,13 +22,13 @@ export class StubSquareInterfaceComponent {
     selector: 'app-time-constants',
     template: '<span></span>',
 })
-class StubTimeConstantsComponent {};
+class StubTimeConstantsComponent {}
 
 @Component({
     selector: 'app-data-reset',
     template: '<span></span>',
 })
-class StubDataResetComponent {};
+class StubDataResetComponent {}
 
 describe('ConfigurationGameComponent', () => {
     let component: ConfigurationGameComponent;
