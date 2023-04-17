@@ -123,7 +123,7 @@ export class GameService {
             try {
                 this.delete(game.id);
             } catch (err) {
-                this.logger.warn(`Le jeu ${game.id} n'a pas pu être supprimé.`);
+                this.logger.error(`Le jeu ${game.id} n'a pas pu être supprimé.`);
             }
         });
     }
@@ -239,7 +239,7 @@ export class GameService {
             try {
                 this.resetLeaderboard(game.id);
             } catch (err) {
-                this.logger.warn(`Les meilleurs temps du jeu ${game.id} n'ont pas pu être réinitialiser.`);
+                this.logger.error(`Les meilleurs temps du jeu ${game.id} n'ont pas pu être réinitialiser.`);
             }
         });
     }

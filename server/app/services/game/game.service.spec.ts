@@ -604,16 +604,16 @@ describe('Game Service tests', () => {
             expect(deleteSpy).toBeCalledTimes(stubGameList.length);
         });
 
-        it('it logs a warning when a delete fails and keeps deleting', async () => {
+        it('it logs an error when a delete fails and keeps deleting', async () => {
             deleteSpy.mockImplementationOnce(() => {
                 throw new Error();
             });
-            const loggerWarnSpy = jest.spyOn(logger, 'warn').mockImplementation();
+            const loggerErrorSpy = jest.spyOn(logger, 'error').mockImplementation();
 
             await gameService.deleteAllGames();
 
             expect(deleteSpy).toBeCalledTimes(stubGameList.length);
-            expect(loggerWarnSpy).toBeCalledTimes(1);
+            expect(loggerErrorSpy).toBeCalledTimes(1);
         });
     });
 
@@ -657,16 +657,16 @@ describe('Game Service tests', () => {
             expect(resetLeaderboardSpy).toBeCalledTimes(stubGameList.length);
         });
 
-        it('it logs a warning when a resetLeaderboard fails and keeps reseting', async () => {
+        it('it logs an error when a resetLeaderboard fails and keeps reseting', async () => {
             resetLeaderboardSpy.mockImplementationOnce(() => {
                 throw new Error();
             });
-            const loggerWarnSpy = jest.spyOn(logger, 'warn').mockImplementation();
+            const loggerErrorSpy = jest.spyOn(logger, 'error').mockImplementation();
 
             await gameService.resetAllLeaderboards();
 
             expect(resetLeaderboardSpy).toBeCalledTimes(stubGameList.length);
-            expect(loggerWarnSpy).toBeCalledTimes(1);
+            expect(loggerErrorSpy).toBeCalledTimes(1);
         });
     });
 });
