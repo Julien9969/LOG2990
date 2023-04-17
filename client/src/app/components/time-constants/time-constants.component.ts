@@ -23,7 +23,7 @@ export class TimeConstantsComponent implements OnInit {
     }
 
     openEditPopup(): void {
-        this.dialog.open(TimeConstantsPopupComponent, {autoFocus: false, data: this.gameConstants});
+        this.dialog.open(TimeConstantsPopupComponent, { autoFocus: false, data: this.gameConstants });
     }
 
     resetTimeConstants() {
