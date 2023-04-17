@@ -1,3 +1,4 @@
+import { GameService } from '@app/services/game/game.service';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 import { Player } from '@common/player';
@@ -6,7 +7,7 @@ import { Session } from './session';
 
 export class ClassicSession extends Session {
     nDifferences: number = 0;
-    constructor(gameID: string, players: Player[]) {
+    constructor(gameService: GameService, gameID: string, players: Player[]) {
         super();
         this.players = players;
         if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
@@ -14,6 +15,7 @@ export class ClassicSession extends Session {
         this.differenceValidationService.loadDifferences(this.gameID.toString());
         this.nDifferences = this.differenceValidationService.differenceCoordLists.length;
         this.time = 0;
+        this.penalty = gameService.getGameConstants().penalty;
     }
 
     /**

@@ -47,7 +47,7 @@ export class SessionService {
     createNewClassicSession(id: string, socketIdOne: string, socketIdTwo: string = undefined): number {
         const players: Player[] = [{ name: 'unknown', socketId: socketIdOne, differencesFound: [] }];
         if (socketIdTwo) players.push({ name: 'unknown', socketId: socketIdTwo, differencesFound: [] });
-        return this.addToList(new ClassicSession(id, players));
+        return this.addToList(new ClassicSession(this.gameService, id, players));
     }
 
     /**

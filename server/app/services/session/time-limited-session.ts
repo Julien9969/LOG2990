@@ -14,9 +14,11 @@ export class LimitedTimeSession extends Session {
 
     constructor(gameService: GameService, players: Player[]) {
         super();
+        const gameConsts = gameService.getGameConstants();
         this.gameService = gameService;
         this.players = players;
-        this.time = gameService.getGameConstants().time;
+        this.time = gameConsts.time;
+        this.penalty = gameConsts.penalty;
         // if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
         this.decideNewGame();
     }

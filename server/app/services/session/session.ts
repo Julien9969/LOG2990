@@ -31,6 +31,7 @@ export class Session {
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
     players: Player[];
     nbCluesRequested: number = 0;
+    penalty: number;
 
     /**
      * Retourne si la session est en solo ou multi-joueur

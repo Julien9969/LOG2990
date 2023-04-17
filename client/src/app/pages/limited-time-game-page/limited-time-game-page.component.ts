@@ -33,6 +33,8 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     time: string = '';
     nbCluesLeft = 3;
 
+    penalty: number;
+
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
         private readonly dialog: MatDialog,
@@ -67,6 +69,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     }
 
     async ngOnInit(): Promise<void> {
+        this.penalty = (await this.gameService.getGameConstants()).penalty ?? 0;
         if (this.sessionId === undefined) {
             window.location.replace('/home');
         }

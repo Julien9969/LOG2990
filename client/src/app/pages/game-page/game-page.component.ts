@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
+import { GameService } from '@app/services/game/game.service';
 import { HistoryService } from '@app/services/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
@@ -34,6 +35,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     time: string = '0:00';
     nbCluesLeft = 3;
+    penalty: number;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
@@ -42,6 +44,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private readonly inGameSocket: InGameService,
         private readonly socketClient: SocketClientService,
         private readonly historyService: HistoryService,
+        private readonly gameService: GameService,
     ) {
         this.isLoaded = false;
 
@@ -70,6 +73,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     async ngOnInit(): Promise<void> {
+        this.penalty = (await this.gameService.getGameConstants()).penalty ?? 0;
         if (this.sessionId === undefined || this.gameID === undefined) {
             window.location.replace('/home');
         }
