@@ -21,6 +21,7 @@ export class LimitedTimeSession extends Session {
         this.penalty = gameConsts.penalty;
         // if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
         this.decideNewGame();
+        this.isTimeLimited = true;
     }
 
     /**

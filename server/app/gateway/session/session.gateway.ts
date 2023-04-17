@@ -253,20 +253,24 @@ export class SessionGateway {
     @SubscribeMessage(SessionEvents.PlayerLeft)
     playerLeft(client: Socket, sessionId: number) {
         this.logger.log(`Client ${client.id} exited the game`);
-        client.rooms.forEach((roomId) => {
-            if (roomId.startsWith('gameRoom')) {
-                this.sendSystemMessage(client, 'userDisconnected');
-                this.logger.log(`Client ${client.id} emited that he left the game to ${roomId}`);
-                this.server.to(roomId).except(client.id).emit(SessionEvents.OpponentLeftGame);
-                this.server.socketsLeave(roomId);
-            }
-        });
-        if (this.sessionService.findBySessionId(sessionId)) {
+        const session: Session = this.sessionService.findBySessionId(sessionId);
+        if (session && !session.isTimeLimited) {
             try {
                 this.sessionService.delete(sessionId);
             } catch (error) {
                 this.logger.error(error);
             }
+        }
+        if (!session.isTimeLimited) {
+            console.log('we still enter the function :(');
+            client.rooms.forEach((roomId) => {
+                if (roomId.startsWith('gameRoom')) {
+                    this.sendSystemMessage(client, 'userDisconnected');
+                    this.logger.log(`Client ${client.id} emited that he left the game to ${roomId}`);
+                    this.server.to(roomId).except(client.id).emit(SessionEvents.OpponentLeftGame);
+                    this.server.socketsLeave(roomId);
+                }
+            });
         }
         client.disconnect();
     }
@@ -325,31 +329,24 @@ export class SessionGateway {
     startLimitedTimeSessionTimer(client: Socket, sessionId: number) {
         this.logger.log(`Client ${client.id} started the timer`);
         const session: LimitedTimeSession = this.sessionService.findBySessionId(sessionId) as LimitedTimeSession;
-        if (session) {
-            if (session.isSolo) {
-                session.timerId = setInterval(() => {
-                    session.time--;
-                    if (session.timerFinished()) {
-                        session.stopTimer();
-                        this.limitedTimeGameEnded(client, true);
-                    }
-                    client.emit(SessionEvents.TimerUpdate, session.formatedTime);
-                }, SECOND_IN_MILLISECONDS);
-            } else {
-                session.timerId = setInterval(() => {
-                    session.time--;
-                    if (session.timerFinished()) {
-                        session.stopTimer();
-                        this.limitedTimeGameEnded(client, true);
-                    }
-                    client.rooms.forEach((roomId) => {
-                        if (roomId.startsWith('gameRoom')) {
-                            this.server.to(roomId).emit(SessionEvents.TimerUpdate, session.formatedTime);
-                        }
-                    });
-                }, SECOND_IN_MILLISECONDS);
+
+        session.timerId = setInterval(() => {
+            session.time--;
+            console.log(session.time);
+            if (session.timerFinished()) {
+                session.stopTimer();
+                this.limitedTimeGameEnded(client, true);
             }
-        }
+            for (const player of session.players) {
+                this.server.to(player.socketId).emit(SessionEvents.TimerUpdate, session.formatedTime);
+            }
+            // client.emit(SessionEvents.TimerUpdate, session.formatedTime);
+            // client.rooms.forEach((roomId) => {
+            //     if (roomId.startsWith('gameRoom')) {
+            //         this.server.to(roomId).except(client.id).emit(SessionEvents.TimerUpdate, session.formatedTime);
+            //     }
+            // });
+        }, SECOND_IN_MILLISECONDS);
     }
 
     /**
@@ -446,7 +443,8 @@ export class SessionGateway {
         this.logger.log('Client disconnected : ' + client.id);
         try {
             const session = this.sessionService.findByClientId(client.id);
-            if (!session) return;
+            if (!session || session.isTimeLimited) return;
+            console.log('we delete the session');
             this.sessionService.delete(session.id);
             this.logger.log(`Session with client ${client.id} has been deleted`);
         } catch (error) {

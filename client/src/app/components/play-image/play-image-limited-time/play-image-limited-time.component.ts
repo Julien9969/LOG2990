@@ -6,32 +6,28 @@ import { ImageOperationService } from '@app/services/image-operation/image-opera
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { MouseService } from '@app/services/mouse/mouse.service';
 import { Coordinate } from '@common/coordinate';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 
 @Component({
-    selector: 'app-play-image-classic',
-    templateUrl: './play-image-classic.component.html',
-    styleUrls: ['./play-image-classic.component.scss'],
+    selector: 'app-play-image-limited-time',
+    templateUrl: '../play-image.component.html',
+    styleUrls: ['./play-image-limited-time.component.scss'],
 })
-export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestroy {
+export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnDestroy {
     @ViewChild('canvas1', { static: false }) imageCanvas1!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas2', { static: false }) imageCanvas2!: ElementRef<HTMLCanvasElement>;
 
     @Input() sessionID!: number;
     @Input() imageMainId!: number;
     @Input() imageAltId!: number;
-    @Input() isSolo: boolean;
+    @Input() isTimeLimited: boolean = false;
 
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
     errorMsgPosition: Coordinate;
     errorCounter: number = 0;
-    lastDifferenceFound: GuessResult = {
-        isCorrect: false,
-        differencesByPlayer: [],
-        differencePixelList: [{ x: 0, y: 0 }],
-        winnerName: undefined,
-    };
+
     errorGuess: boolean = false;
 
     // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
@@ -66,14 +62,11 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
 
     ngOnInit(): void {
         this.errorCounter = 0;
-        this.lastDifferenceFound = {
-            isCorrect: false,
-            differencesByPlayer: [],
-            differencePixelList: [{ x: 0, y: 0 }],
-            winnerName: undefined,
-        };
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
+        });
+        this.socket.listenNewGame((data: [Game, number]) => {
+            this.receiveNewGame(data[0]);
         });
     }
 
@@ -85,18 +78,11 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
 
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
-        if (this.isSolo) {
-            this.socket
-                .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
-                .then((response: GuessResult) => {
-                    this.updateDiffFound(response);
-                })
-                .catch((e) => {
-                    alert(e.message);
-                });
-        } else {
-            this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
-        }
+        this.submitLimitedTimeCoordinates();
+    }
+
+    submitLimitedTimeCoordinates() {
+        this.socket.submitCoordinatesLimitedTime(this.sessionID, this.mouseService.mousePosition);
     }
 
     /**
@@ -105,14 +91,26 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
      * @param guessResult résultat du serveur après avoir demander de valider les coordonnés de la différence trouvé
      */
     updateDiffFound(guessResult: GuessResult): void {
-        if (guessResult.isCorrect && this.hasNbDifferencesChanged(guessResult.differencesByPlayer)) {
-            this.lastDifferenceFound = guessResult;
+        if (guessResult.isCorrect) {
             this.audioService.playAudio('success');
-            this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
+            this.diffFoundUpdate.emit(guessResult.differencesByPlayer);
             this.errorCounter = 0;
-            this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
             this.handleErrorGuess();
+        }
+    }
+
+    async receiveNewGame(newGame: Game) {
+        try {
+            if (!newGame) return;
+            this.imageMainId = newGame.imageMain;
+            this.imageAltId = newGame.imageAlt;
+            await this.loadImage(this.canvasContext1, this.imageMainId);
+            await this.loadImage(this.canvasContext2, this.imageAltId);
+            this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            alert(error.message);
         }
     }
 
@@ -146,20 +144,6 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
 
     drawImageOnCanvas(canvasContext: CanvasRenderingContext2D, img: HTMLImageElement): void {
         canvasContext.drawImage(img, 0, 0);
-    }
-
-    hasNbDifferencesChanged(differencesByPlayer: [userSocketId: string, nDifferences: number][]): boolean {
-        if (this.lastDifferenceFound.differencesByPlayer.length < differencesByPlayer.length) {
-            return true;
-        }
-        if (this.lastDifferenceFound.differencesByPlayer.length === differencesByPlayer.length) {
-            for (let i = 0; i < differencesByPlayer.length; i++) {
-                if (this.lastDifferenceFound.differencesByPlayer[i][1] !== differencesByPlayer[i][1]) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     ngOnDestroy(): void {
