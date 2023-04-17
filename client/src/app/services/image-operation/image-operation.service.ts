@@ -241,7 +241,9 @@ export class ImageOperationService {
         const clueModifiedImageData = structuredClone(this.modifiedImageSave);
 
         differences.forEach((difference) => {
-            if (difference.x < 0 || difference.x >= IMAGE_WIDTH || difference.y < 0 || difference.y >= IMAGE_HEIGHT) return;
+            const inXAxisInterval = difference.x >= 0 && difference.x < IMAGE_WIDTH;
+            const inYAxisInterval = difference.y >= 0 && difference.y < IMAGE_HEIGHT;
+            if (!inXAxisInterval || !inYAxisInterval) return;
             const pixelIndex = (difference.y * CANVAS.width + difference.x) * BIT_PER_PIXEL;
             const highlightedPixel = new Uint8ClampedArray(BIT_PER_PIXEL);
             highlightedPixel[0] = RGB_RED.r;
