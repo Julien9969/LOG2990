@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
+import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
 import { PlayImageLimitedTimeComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
@@ -18,6 +19,7 @@ import { HistoryService } from '@app/services/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Clue } from '@common/clue';
+import { Coordinate } from '@common/coordinate';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
 import { GamePageComponent } from './game-page.component';
@@ -104,6 +106,7 @@ describe('GamePageComponent', () => {
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },
                 { provide: PlayImageLimitedTimeComponent, useValue: playImageComponentSpy },
+                { provide: PlayImageClassicComponent, useValue: playImageComponentSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: InGameService, useValue: inGameServiceSpy },
                 { provide: SocketClientService, useValue: socketClientServiceSpy },
@@ -310,6 +313,9 @@ describe('GamePageComponent', () => {
     describe('handleClueRequest', () => {
         beforeEach(() => {
             component.nbCluesLeft = 3;
+            component.playImageComponent.handleClue = async (nbCLuesLeft: number, differencesInOneList: Coordinate[]) => {
+                Promise.resolve();
+            };
         });
 
         it('should call retrieveClue', async () => {

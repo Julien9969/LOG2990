@@ -25,7 +25,7 @@ describe('SessionGateway', () => {
     let server: SinonStubbedInstance<Server>;
     let sessionService: SinonStubbedInstance<SessionService>;
     let gameService: SinonStubbedInstance<GameService>;
-    let session: SinonStubbedInstance<Session>;
+    let session: SinonStubbedInstance<ClassicSession>;
 
     // Spy globaux
     let logSpy: jest.SpyInstance;
@@ -41,7 +41,7 @@ describe('SessionGateway', () => {
         server = createStubInstance<Server>(Server);
         sessionService = createStubInstance<SessionService>(SessionService);
         gameService = createStubInstance<GameService>(GameService);
-        session = createStubInstance<Session>(Session);
+        session = createStubInstance<ClassicSession>(ClassicSession);
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 SessionGateway,

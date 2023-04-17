@@ -1,4 +1,4 @@
-import { Session } from '@app/services/session/session';
+import { ClassicSession } from '@app/services/session/classic-session';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { ClueService } from './clue.service';
@@ -6,7 +6,7 @@ import { MAX_NB_CLUES_REQUESTED, MIN_NB_CLUES_REQUESTED } from './clue.service.s
 
 describe('ClueService', () => {
     let clueService: ClueService;
-    const stubSession: SinonStubbedInstance<Session> = createStubInstance<Session>(Session);
+    const stubSession: SinonStubbedInstance<ClassicSession> = createStubInstance<ClassicSession>(ClassicSession);
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({

@@ -13,11 +13,12 @@ describe('Session Service tests', () => {
     let session: SinonStubbedInstance<Session>;
     let differenceValidationService: SinonStubbedInstance<DifferenceValidationService>;
 
-    const exampleId = 'asd123123';
-    const badId = 'bbbbsfojdsafo1232';
-    const exampleName = 'michel';
-    const newExampleName = 'Julien Sr.';
-    const exampleDictionnary = { asd123123: 'michel', dqqwee12313: 'victor', dasd123: 'Seb', jksoj78: 'Maxime' };
+    // TODO : Analyser si ces commentaires sont nécessaires pour les tests
+    // const exampleId = 'asd123123';
+    // const badId = 'bbbbsfojdsafo1232';
+    // const exampleName = 'michel';
+    // const newExampleName = 'Julien Sr.';
+    // const exampleDictionnary = { asd123123: 'michel', dqqwee12313: 'victor', dasd123: 'Seb', jksoj78: 'Maxime' };
 
     beforeAll(async () => {
         session = createStubInstance<Session>(Session);
