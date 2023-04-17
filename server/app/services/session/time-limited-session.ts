@@ -1,16 +1,16 @@
+import { ONE_PLAYER } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { GameService } from '@app/services/game/game.service';
 import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { Player } from '@common/player';
-import { ONE_PLAYER } from '../constants/services.const';
 import { Session } from './session';
 
 export class LimitedTimeSession extends Session {
     gameService: GameService;
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
-    playedGames: Game[] = [];
+    playedGames: string[] = [];
     nDifferencesFound: number = 0;
 
     constructor(gameService: GameService, players: Player[]) {
@@ -75,7 +75,6 @@ export class LimitedTimeSession extends Session {
      * @returns le socketId du joueur gagnant ou un string indiquant qu'il n'y a pas de gagnant
      */
     async decideNewGame(): Promise<Game> {
-        console.log('a new game was decided for this session');
         let newGame: Game = await this.gameService.getRandomGame();
         if (await this.noMoreGames()) {
             return undefined;
@@ -83,12 +82,11 @@ export class LimitedTimeSession extends Session {
         while (this.hasGameBeenPlayed(newGame)) {
             newGame = await this.gameService.getRandomGame();
         }
-        this.playedGames.push(newGame);
+        this.playedGames.push(newGame.id);
         this.gameID = newGame.id;
         try {
             this.differenceValidationService.loadDifferences(this.gameID.toString());
         } catch (e: unknown) {
-            console.log('on a eu une erreure avec le dernier jeu');
             return this.decideNewGame();
         }
         return newGame;
@@ -97,13 +95,18 @@ export class LimitedTimeSession extends Session {
     hasGameBeenPlayed(game: Game): boolean {
         return (
             this.playedGames.find((value) => {
-                return game.id === value.id;
+                return game.id === value;
             }) !== undefined
         );
     }
 
     async noMoreGames(): Promise<boolean> {
-        return this.playedGames.length === (await this.gameService.getNumberOfGames());
+        const allGames: Game[] = await this.gameService.findAll();
+        const unPlayedGames: Game[] = allGames.filter((game: Game) => {
+            return !this.playedGames.includes(game.id);
+        });
+        if (unPlayedGames.length === 0) return true;
+        return false;
     }
 
     timerFinished(): boolean {

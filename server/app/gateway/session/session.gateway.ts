@@ -125,7 +125,6 @@ export class SessionGateway {
                 const clientsInRoom = await this.server.in(roomId).allSockets();
                 if (clientsInRoom.size === 2) {
                     const [firstClientId, secondClientId] = clientsInRoom;
-                    console.log('firstClientId', firstClientId, 'secondClientId', secondClientId);
                     const sessionId = this.sessionService.createNewLimitedTimeSession(firstClientId, secondClientId);
                     const session: LimitedTimeSession = this.getSession(sessionId) as LimitedTimeSession;
                     this.sendNewGame(client, session);
@@ -264,7 +263,6 @@ export class SessionGateway {
             }
         }
         if (!session.isTimeLimited) {
-            console.log('we still enter the function :(');
             client.rooms.forEach((roomId) => {
                 if (roomId.startsWith('gameRoom')) {
                     this.sendSystemMessage(client, 'userDisconnected');
@@ -279,7 +277,6 @@ export class SessionGateway {
 
     async sendNewGame(client: Socket, session: LimitedTimeSession) {
         const chosenGame = await session.decideNewGame();
-        console.log('on envoie un nouveau jeu ');
         if (!chosenGame) {
             this.limitedTimeGameEnded(client, false);
         }
@@ -339,15 +336,15 @@ export class SessionGateway {
                 session.stopTimer();
                 this.limitedTimeGameEnded(client, true);
             }
-            for (const player of session.players) {
-                this.server.to(player.socketId).emit(SessionEvents.TimerUpdate, session.formatedTime);
-            }
-            // client.emit(SessionEvents.TimerUpdate, session.formatedTime);
-            // client.rooms.forEach((roomId) => {
-            //     if (roomId.startsWith('gameRoom')) {
-            //         this.server.to(roomId).except(client.id).emit(SessionEvents.TimerUpdate, session.formatedTime);
-            //     }
-            // });
+            // for (const player of session.players) {
+            //     this.server.to(player.socketId).emit(SessionEvents.TimerUpdate, session.formatedTime);
+            // }
+            client.emit(SessionEvents.TimerUpdate, session.formatedTime);
+            client.rooms.forEach((roomId) => {
+                if (roomId.startsWith('gameRoom')) {
+                    this.server.to(roomId).except(client.id).emit(SessionEvents.TimerUpdate, session.formatedTime);
+                }
+            });
         }, SECOND_IN_MILLISECONDS);
     }
 
@@ -447,7 +444,6 @@ export class SessionGateway {
             const session = this.sessionService.findByClientId(client.id);
             // if (!session || session.isTimeLimited) return;
             if (!session) return;
-            console.log('we delete the session');
             this.sessionService.delete(session.id, client.id);
             this.logger.log(`Session with client ${client.id} has been deleted`);
         } catch (error) {
