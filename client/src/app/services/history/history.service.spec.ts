@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
-import { HistoryService } from '@app/services/history.service';
-import { CommunicationService } from './communication/communication.service';
+import { HistoryService } from '@app/services/history/history.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
 
 describe('HistoryService', () => {
     let service: HistoryService;
@@ -52,6 +52,11 @@ describe('HistoryService', () => {
         service.initHistory('classique', true);
         expect(service['setStartDateTime']).toHaveBeenCalled();
         expect(service['currentGame'].gameMode).toEqual('classique solo');
+    });
+
+    it('initHistory should set game mode to multi if false passed', () => {
+        service.initHistory('classique', false);
+        expect(service['currentGame'].gameMode).toEqual('classique multi');
     });
 
     it('setPlayers should set currentGame.playerOne', () => {

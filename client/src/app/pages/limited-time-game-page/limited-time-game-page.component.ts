@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CONVERT_TO_MINUTES } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
-import { HistoryService } from '@app/services/history.service';
+import { HistoryService } from '@app/services/history/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
