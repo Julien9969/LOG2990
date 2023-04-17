@@ -4,6 +4,7 @@ import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { Player } from '@common/player';
+import { ONE_PLAYER } from '../constants/services.const';
 import { Session } from './session';
 
 export class LimitedTimeSession extends Session {
@@ -107,5 +108,12 @@ export class LimitedTimeSession extends Session {
 
     timerFinished(): boolean {
         return this.time <= 0;
+    }
+
+    deletePlayer(socketId: string) {
+        let playerToRemove = -1;
+        if (socketId === this.players[0].socketId) playerToRemove = 0;
+        else playerToRemove = 1;
+        this.players.splice(playerToRemove, ONE_PLAYER);
     }
 }

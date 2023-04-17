@@ -76,3 +76,5 @@ export const DEFAULT_GAME_LEADERBOARD: [string, number][] = [
  * Constante de gestion de Session;
  */
 export const SESSION_ID_CAP = 10000;
+export const MULTIPLAYER_SESSION = 2;
+export const ONE_PLAYER = 1;

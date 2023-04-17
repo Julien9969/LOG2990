@@ -19,6 +19,7 @@ export class ClassicSession extends Session {
         this.differenceValidationService.loadDifferences(this.gameID.toString());
         this.nDifferences = this.differenceValidationService.differenceCoordLists.length;
         this.time = 0;
+        this.isTimeLimited = false;
     }
 
     /**

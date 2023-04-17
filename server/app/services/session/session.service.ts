@@ -1,4 +1,4 @@
-import { SESSION_ID_CAP } from '@app/services/constants/services.const';
+import { MULTIPLAYER_SESSION, SESSION_ID_CAP } from '@app/services/constants/services.const';
 import { GameService } from '@app/services/game/game.service';
 import { Session } from '@app/services/session/session';
 import { Player } from '@common/player';
@@ -64,13 +64,24 @@ export class SessionService {
      *
      * @param id L'identifiant de la session à supprimer
      */
-    delete(id: number) {
+    delete(id: number, socketId: string) {
         const game = this.findBySessionId(id);
         const index = this.activeSessions.indexOf(game);
         if (this.activeSessions.length < index || index < 0) throw new Error(`Aucune session trouvee avec ce ID ${id}.`);
 
-        this.activeSessions[index].stopTimer();
-        this.activeSessions.splice(index, 1);
+        if (game.isTimeLimited) {
+            const limitedTimeGame: LimitedTimeSession = game as LimitedTimeSession;
+            if ((limitedTimeGame.players.length = MULTIPLAYER_SESSION)) {
+                limitedTimeGame.deletePlayer(socketId);
+                return;
+            }
+        }
+        this.deleteFromActiveSessions(index);
+    }
+
+    deleteFromActiveSessions(indexOfSession: number) {
+        this.activeSessions[indexOfSession].stopTimer();
+        this.activeSessions.splice(indexOfSession, 1);
     }
 
     /**
