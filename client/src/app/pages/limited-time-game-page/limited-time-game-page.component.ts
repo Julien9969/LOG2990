@@ -21,7 +21,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     isSolo: boolean;
 
     sessionId: number;
-    // gameID: string;
     gameInfos: Game;
 
     nDiffFound: number;
@@ -29,13 +28,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     time: string = '';
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
-    constructor(
-        private readonly dialog: MatDialog,
-        // private readonly communicationService: CommunicationService,
-        private readonly socket: InGameService,
-        // private readonly socketClient: SocketClientService,
-        private readonly gameService: GameService,
-    ) {
+    constructor(private readonly dialog: MatDialog, private readonly socket: InGameService, private readonly gameService: GameService) {
         this.isLoaded = false;
 
         this.isSolo = window.history.state.isSolo;
@@ -59,7 +52,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         }
         const startTime = (await this.gameService.getGameConstants()).time as number;
         this.time = this.formatTime(startTime);
-        // this.getGameInfos();
         this.socket.retrieveSocketId().then((userSocketId: string) => {
             this.userSocketId = userSocketId;
         });
@@ -117,7 +109,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.playerExited();
-        // this.socketClient.send(SessionEvents.LeaveRoom);
         this.socket.disconnect();
     }
 }
