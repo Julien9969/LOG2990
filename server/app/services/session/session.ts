@@ -59,7 +59,7 @@ export class Session {
      */
     tryGuess(guess: Coordinate, userSocketId: string): GuessResult {
         let diffNum: number;
-        let diffPixelList: Coordinate[] = [];
+        let diffPixelList: Coordinate[] = [guess];
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
         try {
             diffNum = this.differenceValidationService.checkDifference(guess.x, guess.y);

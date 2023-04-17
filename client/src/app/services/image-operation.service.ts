@@ -162,7 +162,12 @@ export class ImageOperationService {
             }, CHEAT_PERIOD_MS);
         }, CHEAT_PERIOD_MS * 2);
     }
-
+    clearAllIntervals() {
+        this.intervalIds.forEach((interval) => {
+            clearInterval(interval);
+        });
+        this.intervalIds = [];
+    }
     disableCheat(): void {
         clearInterval(this.cheatInterval);
         this.cheatInterval = 0;

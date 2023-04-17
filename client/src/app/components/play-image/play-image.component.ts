@@ -67,10 +67,6 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         this.loggingService.cheatFunction = () => {
             this.imageOperationService.handleCheat(this.sessionID);
         };
-
-        this.loggingService.resetFunction = async () => {
-            await this.reset();
-        };
     }
 
     async ngAfterViewInit(): Promise<void> {
@@ -106,12 +102,12 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
             this.errorCounter = 0;
             this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
-            this.handleErrorGuess();
+            this.handleErrorGuess(guessResult.differencePixelList[0]);
         }
     }
 
-    handleErrorGuess(): void {
-        this.errorMsgPosition = { x: this.mouseService.mousePosition.x, y: this.mouseService.mousePosition.y };
+    handleErrorGuess(coordinate: Coordinate): void {
+        this.errorMsgPosition = coordinate;
         this.errorGuess = true;
         window.setTimeout(() => {
             this.errorGuess = false;

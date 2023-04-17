@@ -8,7 +8,7 @@ export class GameActionLoggingService {
     timerUpdateFunction: (time: string) => void;
     diffFoundFunction: (data: GuessResult) => void;
     cheatFunction: () => void;
-    resetFunction: () => void;
+    intervalPlayAll: any;
     isRecording: boolean = true;
     startTime: number;
     baseTimeIncrement = 250;
@@ -34,12 +34,7 @@ export class GameActionLoggingService {
         }
     }
 
-    startReplay() {
-        this.resetFunction();
-        this.setTimeZero(); // just for TESTING, should have its logic for speed.
-    }
-
-    // TODO: refactor loggedAction and loggedFunciton as enums for readability
+    // TODO: refactor loggedAction as enum for readability
     async replayAction(loggedAction: [number, string, any]) {
         switch (loggedAction[1]) {
             case 'timerUpdate':
@@ -56,16 +51,20 @@ export class GameActionLoggingService {
 
     async replayAllAction() {
         let time = 0;
+        this.lastTimeReplayed = time;
+
         console.log(this.actionLog);
-        const interval = setInterval(() => {
+        this.intervalPlayAll = setInterval(() => {
             time += this.baseTimeIncrement * this.speedMultiplier;
             this.replayActionsToTime(time);
             if (this.lastTimeReplayed > this.actionLog.slice(-1)[0][0]) {
-                clearInterval(interval);
+                clearInterval(this.intervalPlayAll);
             }
         }, this.baseTimeIncrement);
     }
-
+    clearReplayAll() {
+        clearInterval(this.intervalPlayAll);
+    }
     replayActionsToTime(time: number) {
         this.actionLog
             .filter((action) => {

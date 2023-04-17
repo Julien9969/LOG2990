@@ -27,6 +27,8 @@
                     <mat-icon>home</mat-icon>
                     Quitter
                 </button>
+                <button mat-button (click)="resetAndReplay()">rejouer</button>
+
                 <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span>
                 <button mat-button (click)="openDialog('clue')" id="clue-button" aria-label="Indice">
                     <mat-icon>highlight</mat-icon>

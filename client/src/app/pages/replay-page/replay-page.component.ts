@@ -57,9 +57,9 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     }
 
     async ngOnInit(): Promise<void> {
-        /* if (this.sessionId === undefined || this.gameID === undefined) {
-            window.location.replace('/replay');
-        }*/
+        if (this.gameId === undefined) {
+            window.location.replace('/home');
+        }
         this.getGameInfos();
         this.socket.retrieveSocketId().then((userSocketId) => {
             this.userSocketId = userSocketId;
@@ -130,8 +130,14 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: ['opponentLeft'] });
         }
     }
-    async replay() {
-        this.socket.socketService.loggingService.replayAllAction();
+    replay() {
+        this.loggingService.clearReplayAll();
+        this.loggingService.replayAllAction();
+    }
+    async resetAndReplay() {
+        await this.playImageComponent.reset();
+        this.playImageComponent.imageOperationService.clearAllIntervals();
+        this.replay();
     }
     ngOnDestroy(): void {
         this.playerExited();
