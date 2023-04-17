@@ -10,7 +10,7 @@ import {
     RGB_GREEN,
     RGB_RED,
 } from '@app/constants/utils-constants';
-import { POINTER_X_OFFSET, RATIO_POINTER_IMAGE } from '@app/services/constantes.service';
+import { POINTER_X_OFFSET, RATIO_POINTER_IMAGE as RATIO_FINGER_TO_IMAGE_HEIGHT } from '@app/services/constantes.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 
@@ -260,8 +260,8 @@ export class ImageOperationService {
     }
 
     private async createlastClueImageData(difference: Coordinate) {
-        const contextOriginalImg = this.createDummyCanvasContext();
-        const contextModifiedImg = this.createDummyCanvasContext();
+        const contextOriginalImg = this.createBlankCanvas();
+        const contextModifiedImg = this.createBlankCanvas();
 
         contextOriginalImg.putImageData(this.originalImageSave, 0, 0);
         contextModifiedImg.putImageData(this.modifiedImageSave, 0, 0);
@@ -269,7 +269,7 @@ export class ImageOperationService {
         const isPointerFlipped = difference.x < IMAGE_WIDTH / 2;
 
         const pointer: HTMLImageElement = new Image();
-        pointer.src = isPointerFlipped ? '../../../assets/logo/AmongPointingLeft.png' : '../../../assets/logo/AmongPointingRight.png';
+        pointer.src = '../../../assets/logo/AmongPointing' + isPointerFlipped ? 'Left.png' : 'Right.png';
 
         // pour attendre que l'image soit téléversé correctement
         await new Promise<void>((resolve) => {
@@ -277,20 +277,20 @@ export class ImageOperationService {
                 resolve();
             };
         });
-        const pointerHeight = Math.floor(IMAGE_HEIGHT * RATIO_POINTER_IMAGE);
-        const pointerWidth = Math.floor(IMAGE_WIDTH * RATIO_POINTER_IMAGE);
+        const pointerHeight = Math.floor(IMAGE_HEIGHT * RATIO_FINGER_TO_IMAGE_HEIGHT);
+        const pointerWidth = Math.floor(IMAGE_WIDTH * RATIO_FINGER_TO_IMAGE_HEIGHT);
 
         contextOriginalImg.drawImage(
             pointer,
             isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
-            difference.y - pointerHeight * RATIO_POINTER_IMAGE,
+            difference.y - pointerHeight * RATIO_FINGER_TO_IMAGE_HEIGHT,
             pointerWidth,
             pointerHeight,
         );
         contextModifiedImg.drawImage(
             pointer,
             isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
-            difference.y - pointerHeight * RATIO_POINTER_IMAGE,
+            difference.y - pointerHeight * RATIO_FINGER_TO_IMAGE_HEIGHT,
             pointerWidth,
             pointerHeight,
         );
@@ -299,7 +299,7 @@ export class ImageOperationService {
         this.clueModifiedImageData = contextModifiedImg.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
     }
 
-    private createDummyCanvasContext(): CanvasRenderingContext2D {
+    private createBlankCanvas(): CanvasRenderingContext2D {
         const canvasForOriginalImg = document.createElement('canvas');
         canvasForOriginalImg.width = IMAGE_WIDTH;
         canvasForOriginalImg.height = IMAGE_HEIGHT;

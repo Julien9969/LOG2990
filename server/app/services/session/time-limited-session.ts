@@ -115,11 +115,11 @@ export class LimitedTimeSession extends Session {
     }
 
     /**
-     * handle clue request to apply penalty to session timer,
-     * count the clue request and
-     * verify if the session is allowed to give out any more clues
+     * Applique la penalité sur le temps, compte l'indice au
+     * total des indices permis et verifie si la session est
+     * permise de donner plus d'indices
      *
-     * @returns boolean that indicates if the clue is allowed
+     * @returns boolean qui indique si la demande d'indice est approuvée
      */
     handleClueRequest(): boolean {
         this.nbCluesRequested++;
