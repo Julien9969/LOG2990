@@ -13,12 +13,14 @@ import {
     MIN_GAME_TIME,
     MIN_PENALTY_TIME,
 } from '@common/game-constants-values';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
+import { createStubInstance } from 'sinon';
 import {
+    DEFAULT_GAME_LEADERBOARD,
     DIFFERENCE_LISTS_FOLDER,
     DIFFERENCE_LISTS_PREFIX,
     GAME_CONSTS_PATH,
@@ -35,6 +37,8 @@ describe('Game Service tests', () => {
     let gameModel: Model<GameDocument>;
     let imageService: ImageService;
     let matchMakingGateway: MatchmakingGateway;
+    let logger: Logger;
+
     const stubUpdate = {
         exec: () => {},
     };
@@ -47,6 +51,8 @@ describe('Game Service tests', () => {
     };
 
     beforeEach(async () => {
+        logger = createStubInstance(Logger);
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 GameService,
@@ -69,6 +75,10 @@ describe('Game Service tests', () => {
                         deleteMany: jest.fn(),
                     },
                 },
+                {
+                    provide: Logger,
+                    useValue: logger,
+                },
             ],
         }).compile();
 
@@ -76,6 +86,7 @@ describe('Game Service tests', () => {
         gameModel = module.get<Model<GameDocument>>(getModelToken('Game'));
         imageService = module.get<ImageService>(ImageService);
         matchMakingGateway = module.get<MatchmakingGateway>(MatchmakingGateway);
+        jest.spyOn(gameService['logger'], 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -414,7 +425,7 @@ describe('Game Service tests', () => {
             });
 
             it('throws an internal server error when database fails', () => {
-                jest.spyOn(gameModel, 'updateOne').mockImplementation(() => {
+                jest.spyOn(gameModel, 'updateOne').mockImplementationOnce(() => {
                     throw new Error();
                 });
 
@@ -578,4 +589,89 @@ describe('Game Service tests', () => {
             expect(gameService['validateGameConstants'](gameConsts)).toBeFalsy();
         });
     });
+
+    describe('deleteAllGames', () => {
+        const stubGameList = [stubGame, stubGame, stubGame];
+        let findAllSpy: jest.SpyInstance;
+        let deleteSpy: jest.SpyInstance;
+        
+        beforeEach(() => {
+            findAllSpy = jest.spyOn(gameService, 'findAll').mockImplementation(async () => {
+                return stubGameList;
+            });
+            deleteSpy = jest.spyOn(gameService, 'delete').mockImplementation();
+
+        });
+
+        it('gets all games and calls delete on each one', async () => {
+            await gameService.deleteAllGames();
+
+            expect(findAllSpy).toBeCalled();
+            expect(deleteSpy).toBeCalledTimes(stubGameList.length);
+        });
+
+        it('it logs a warning when a delete fails and keeps deleting', async () => {
+            deleteSpy.mockImplementationOnce(() => {
+                throw new Error();
+            });
+            const loggerWarnSpy = jest.spyOn(logger, 'warn').mockImplementation();
+
+            await gameService.deleteAllGames();
+
+            expect(deleteSpy).toBeCalledTimes(stubGameList.length);
+            expect(loggerWarnSpy).toBeCalledTimes(1);
+        });
+    });
+
+    describe('resetLeaderboard', () => {
+        const stubId = "test-id";
+        it('calls updateOne on gameModel database with default scores', async () => {
+            const updateSpy = jest.spyOn(gameModel, 'updateOne');
+            await gameService.resetLeaderboard(stubId);
+
+            expect(updateSpy).toBeCalledWith({_id: stubId}, { scoreBoardSolo: DEFAULT_GAME_LEADERBOARD, scoreBoardMulti: DEFAULT_GAME_LEADERBOARD });
+        });
+
+        it('throws an error when database updateOne fails', async () => {
+            jest.spyOn(gameModel, 'updateOne').mockImplementationOnce(() => {
+                throw new Error();
+            });
+
+            expect(gameService.resetLeaderboard(stubId)).rejects.toThrow();
+        });
+    });
+
+    describe('resetAllLeaderboards', () => {
+        const stubGameList = [stubGame, stubGame, stubGame];
+        let findAllSpy: jest.SpyInstance;
+        let resetLeaderboardSpy: jest.SpyInstance;
+        
+        beforeEach(() => {
+            findAllSpy = jest.spyOn(gameService, 'findAll').mockImplementation(async () => {
+                return stubGameList;
+            });
+            resetLeaderboardSpy = jest.spyOn(gameService, 'resetLeaderboard').mockImplementation();
+
+        });
+
+        it('gets all games and calls resetLeaderboard on each one', async () => {
+            await gameService.resetAllLeaderboards();
+
+            expect(findAllSpy).toBeCalled();
+            expect(resetLeaderboardSpy).toBeCalledTimes(stubGameList.length);
+        });
+
+        it('it logs a warning when a resetLeaderboard fails and keeps reseting', async () => {
+            resetLeaderboardSpy.mockImplementationOnce(() => {
+                throw new Error();
+            });
+            const loggerWarnSpy = jest.spyOn(logger, 'warn').mockImplementation();
+
+            await gameService.resetAllLeaderboards();
+
+            expect(resetLeaderboardSpy).toBeCalledTimes(stubGameList.length);
+            expect(loggerWarnSpy).toBeCalledTimes(1);
+        });
+    });
+
 });
