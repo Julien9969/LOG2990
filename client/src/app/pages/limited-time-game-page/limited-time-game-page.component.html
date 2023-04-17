@@ -8,7 +8,7 @@
             </mat-toolbar>
         </div>
         <div id="game-container">
-            <app-play-image-limited-time [sessionID]="sessionId" [isTimeLimited]="true">
+            <app-play-image-limited-time [sessionID]="sessionId">
                 [imageMainId]="gameInfos.imageMain" [imageAltId]="gameInfos.imageAlt"
             </app-play-image-limited-time>
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="isSolo"></app-sidebar>

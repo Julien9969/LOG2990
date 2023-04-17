@@ -21,7 +21,6 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
     @Input() sessionID!: number;
     @Input() imageMainId!: number;
     @Input() imageAltId!: number;
-    @Input() isTimeLimited: boolean = false;
 
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
@@ -98,7 +97,7 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
 
     async receiveNewGame(newGame: Game) {
         try {
-            if (!newGame) return;
+            if (!newGame) throw new Error('game is undefined');
             this.imageMainId = newGame.imageMain;
             this.imageAltId = newGame.imageAlt;
             await this.loadImage(this.canvasContext1, this.imageMainId);

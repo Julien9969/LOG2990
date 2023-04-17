@@ -193,6 +193,7 @@ export class SessionGateway {
                 if (result.winnerName) this.playerWon(client, sessionId, session.isSolo);
             } else {
                 this.logger.log(`Client ${client.id} submitted a wrong guess`);
+                this.sendSystemMessage(client, 'guess_bad');
                 client.emit(SessionEvents.DifferenceFound, result);
             }
         } catch (error) {
@@ -220,6 +221,7 @@ export class SessionGateway {
                 });
                 this.sendNewGame(client, session);
             } else {
+                this.sendSystemMessage(client, 'guess_bad');
                 this.logger.log(`Client ${client.id} submitted a wrong guess`);
             }
             client.emit(SessionEvents.DifferenceFound, result);
