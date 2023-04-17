@@ -278,6 +278,7 @@ export class SessionGateway {
 
     async sendNewGame(client: Socket, session: LimitedTimeSession) {
         const chosenGame = await session.decideNewGame();
+        console.log('on envoie un nouveau jeu ');
         if (!chosenGame) {
             this.limitedTimeGameEnded(client, false);
         }
@@ -333,7 +334,6 @@ export class SessionGateway {
 
         session.timerId = setInterval(() => {
             session.time--;
-            console.log(session.time);
             if (session.timerFinished()) {
                 session.stopTimer();
                 this.limitedTimeGameEnded(client, true);
@@ -444,7 +444,8 @@ export class SessionGateway {
         this.logger.log('Client disconnected : ' + client.id);
         try {
             const session = this.sessionService.findByClientId(client.id);
-            if (!session || session.isTimeLimited) return;
+            // if (!session || session.isTimeLimited) return;
+            if (!session) return;
             console.log('we delete the session');
             this.sessionService.delete(session.id);
             this.logger.log(`Session with client ${client.id} has been deleted`);

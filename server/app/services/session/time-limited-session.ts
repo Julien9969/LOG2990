@@ -20,7 +20,7 @@ export class LimitedTimeSession extends Session {
         this.time = gameConsts.time;
         this.penalty = gameConsts.penalty;
         // if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
-        this.decideNewGame();
+        // this.decideNewGame();
         this.isTimeLimited = true;
     }
 
@@ -82,6 +82,7 @@ export class LimitedTimeSession extends Session {
      * @returns le socketId du joueur gagnant ou un string indiquant qu'il n'y a pas de gagnant
      */
     async decideNewGame(): Promise<Game> {
+        console.log('a new game was decided for this session');
         let newGame: Game = await this.gameService.getRandomGame();
         if (await this.noMoreGames()) {
             return undefined;
@@ -94,6 +95,7 @@ export class LimitedTimeSession extends Session {
         try {
             this.differenceValidationService.loadDifferences(this.gameID.toString());
         } catch (e: unknown) {
+            console.log('on a eu une erreure avec le dernier jeu');
             return this.decideNewGame();
         }
         return newGame;
