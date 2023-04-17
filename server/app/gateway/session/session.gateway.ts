@@ -78,8 +78,7 @@ export class SessionGateway {
      */
     @SubscribeMessage(SessionEvents.StartClassicSession)
     async startClassicSession(client: Socket, data: StartSessionData) {
-        // eslint-disable-next-line prefer-const
-        let { gameId, isSolo } = data;
+        const { gameId, isSolo } = data;
 
         this.logger.log(`Client ${client.id} asked for session id`);
         if (isSolo) {
