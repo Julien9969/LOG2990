@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { AudioService } from '@app/services/audio.service';
-import { InGameService } from '@app/services/in-game.service';
 /**
  * @title Inject des données lorsqu'on ouvre un dialogue
  */
@@ -15,16 +15,13 @@ export class PopupDialogComponent implements OnInit {
 
     message = '';
     playerWon = false;
-    gameId: string;
     constructor(
-        @Inject(MAT_DIALOG_DATA) public data: string[],
-
+        @Inject(MAT_DIALOG_DATA) public data: [string, string, { gameId: string; playerName: string }],
         public dialogRef: MatDialogRef<PopupDialogComponent>,
         private audioService: AudioService,
-        private readonly socket: InGameService,
+        private readonly router: Router,
     ) {
         this.templateName = data[0];
-        this.gameId = data[2];
     }
 
     ngOnInit(): void {
@@ -33,11 +30,9 @@ export class PopupDialogComponent implements OnInit {
             this.message = this.data[1];
         }
     }
-    getPathToReplay() {
-        return '/replay/';
-    }
     replay() {
-        this.socket.socketService.loggingService.replayAllAction();
+        this.router.navigate(['/replay'], { state: this.data[2] });
+        // this.socket.socketService.loggingService.replayAllAction();
     }
     getClueNumber(): number {
         const noMagicNumber = 10;

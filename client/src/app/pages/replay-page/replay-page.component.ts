@@ -24,7 +24,7 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     isSolo: boolean;
 
     sessionId: number;
-    gameID: string;
+    gameId: string;
     gameInfos: Game;
 
     nDiffFoundMainPlayer: number = 0;
@@ -46,8 +46,8 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
             this.opponentName = window.history.state.opponentName;
         }
         this.playerName = window.history.state.playerName;
-        this.sessionId = window.history.state.sessionId;
-        this.gameID = window.history.state.gameID;
+        this.gameId = window.history.state.gameId;
+        this.replay();
     }
 
     @HostListener('window:beforeunload', ['$event'])
@@ -80,7 +80,7 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     }
 
     getGameInfos(): void {
-        this.communicationService.gameInfoGet(this.gameID).subscribe({
+        this.communicationService.gameInfoGet(this.gameId).subscribe({
             next: (response) => {
                 this.gameInfos = response as Game;
                 this.isLoaded = true;
@@ -131,7 +131,6 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
         }
     }
     async replay() {
-        await this.playImageComponent.reset();
         this.socket.socketService.loggingService.replayAllAction();
     }
     ngOnDestroy(): void {

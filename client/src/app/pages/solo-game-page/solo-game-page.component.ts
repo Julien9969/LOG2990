@@ -113,7 +113,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
             closeOnNavigation: true,
             disableClose: true,
             autoFocus: false,
-            data: ['endGame', message],
+            data: ['endGame', message, { gameId: this.gameID, playerName: this.playerName }],
         });
     }
 

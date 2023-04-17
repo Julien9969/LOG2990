@@ -55,8 +55,8 @@ export class GameActionLoggingService {
     }
 
     async replayAllAction() {
-        console.log(this.actionLog);
         let time = 0;
+        console.log(this.actionLog);
         const interval = setInterval(() => {
             time += this.baseTimeIncrement * this.speedMultiplier;
             this.replayActionsToTime(time);
@@ -65,10 +65,11 @@ export class GameActionLoggingService {
             }
         }, this.baseTimeIncrement);
     }
+
     replayActionsToTime(time: number) {
         this.actionLog
-            .filter((item) => {
-                return item[0] < time && item[0] >= this.lastTimeReplayed;
+            .filter((action) => {
+                return action[0] < time && action[0] >= this.lastTimeReplayed;
             })
             .forEach((action) => {
                 this.replayAction(action);
