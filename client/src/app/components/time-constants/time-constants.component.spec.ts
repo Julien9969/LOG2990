@@ -68,6 +68,22 @@ describe('TimeConstantsComponent', () => {
         expect(gameServiceMock.getGameConstants).toHaveBeenCalled();
     });
 
+    it('ngOnInit should set empty gameConstants when server returns undefined', async () => {
+        gameServiceGetConstantsSpy.and.callFake(() => {
+            return undefined;
+        });
+
+        component.gameConstants = {
+            time: 1,
+            reward: 1,
+            penalty: 1,
+        };
+
+        await component.ngOnInit();
+        expect(gameServiceGetConstantsSpy).toHaveBeenCalled();
+        expect(component.gameConstants).toEqual({});
+    });
+
     it('ngOnInit should set empty gameConstants when server throws', async () => {
         gameServiceGetConstantsSpy.and.callFake(() => {
             throw new Error();

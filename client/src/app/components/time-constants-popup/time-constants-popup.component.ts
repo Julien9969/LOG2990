@@ -12,7 +12,6 @@ import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PE
 export class TimeConstantsPopupComponent implements OnInit {
     gameConstants: GameConstants = {};
     modifiedGameConstants: GameConstants = {};
-    editingConstants = false;
 
     // eslint-disable-next-line prettier/prettier -- Le linter crée des lignes trop longues avec les Validators
     timeFormControl = new FormControl('', [
@@ -76,7 +75,7 @@ export class TimeConstantsPopupComponent implements OnInit {
 
         await this.gameService.updateGameConstants({ ...this.gameConstants, ...this.modifiedGameConstants });
         this.gameConstants = await this.gameService.getGameConstants();
-        this.editingConstants = false;
+        this.gameService.reloadWindow();
     }
 
     // Wrapper de Number pour y acceder dans le HTML

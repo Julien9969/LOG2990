@@ -25,6 +25,7 @@ describe('TimeConstantsPopupComponent', () => {
             },
             updateGameConstants: async () => {},
             resetTimeConstants: async () => {},
+            reloadWindow: () => {},
         } as any;
         mockPopup = {} as PopupDialogComponent;
         dialogMock = {
