@@ -10,7 +10,7 @@ import { GuessResult } from '@common/guess-result';
 
 @Component({
     selector: 'app-play-image-classic',
-    templateUrl: './play-image-classic.component.html',
+    templateUrl: '../play-image.component.html',
     styleUrls: ['./play-image-classic.component.scss'],
 })
 export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestroy {

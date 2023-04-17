@@ -4,7 +4,6 @@ import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.
 import { TIME_CONST } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
-import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
 
@@ -34,7 +33,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         private readonly dialog: MatDialog,
         // private readonly communicationService: CommunicationService,
         private readonly socket: InGameService,
-        private readonly socketClient: SocketClientService,
+        // private readonly socketClient: SocketClientService,
         private readonly gameService: GameService,
     ) {
         this.isLoaded = false;
@@ -118,7 +117,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.playerExited();
-        this.socketClient.send(SessionEvents.LeaveRoom);
+        // this.socketClient.send(SessionEvents.LeaveRoom);
         this.socket.disconnect();
     }
 }

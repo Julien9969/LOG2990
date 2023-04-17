@@ -33,6 +33,7 @@ export class Session {
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
     players: Player[];
     nbCluesRequested: number = 0;
+    isTimeLimited: boolean;
 
     /**
      * Retourne si la session est en solo ou multi-joueur

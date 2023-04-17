@@ -11,7 +11,7 @@ import { GuessResult } from '@common/guess-result';
 
 @Component({
     selector: 'app-play-image-limited-time',
-    templateUrl: './play-image-limited-time.component.html',
+    templateUrl: '../play-image.component.html',
     styleUrls: ['./play-image-limited-time.component.scss'],
 })
 export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnDestroy {
