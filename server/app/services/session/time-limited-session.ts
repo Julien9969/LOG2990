@@ -122,7 +122,9 @@ export class LimitedTimeSession extends Session {
     handleClueRequest(): boolean {
         this.nbCluesRequested++;
         const clueIsAllowed = this.nbCluesRequested <= 3;
-        if (clueIsAllowed) this.time -= 5;
+        if (clueIsAllowed) {
+            this.time -= 5;
+        }
         return clueIsAllowed;
     }
 }

@@ -46,6 +46,7 @@ export class Session {
      * @returns Le temps en format mm:ss
      */
     get formatedTime(): string {
+        if (this.time <= 0) return '0:00';
         const minutes = Math.floor(this.time / TIME_CONST.minute);
         const seconds = this.time % TIME_CONST.minute;
         return minutes + ':' + seconds.toString().padStart(2, '0');

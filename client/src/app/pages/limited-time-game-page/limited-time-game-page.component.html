@@ -8,7 +8,7 @@
             </mat-toolbar>
         </div>
         <div id="game-container">
-            <app-play-image-limited-time [sessionID]="sessionId" [isTimeLimited]="true">
+            <app-play-image-limited-time #appPlayImage [sessionID]="sessionId" [isTimeLimited]="true">
                 [imageMainId]="gameInfos.imageMain" [imageAltId]="gameInfos.imageAlt"
             </app-play-image-limited-time>
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="isSolo"></app-sidebar>
@@ -20,9 +20,9 @@
                     Quitter
                 </button>
                 <!-- <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span> -->
-                <button *ngIf="isSolo" mat-button (click)="openDialog('clue')" id="clue-button" aria-label="Indice">
+                <button *ngIf="isSolo" mat-button (click)="handleClueRequest()" id="clue-button" aria-label="Indice">
                     <mat-icon>highlight</mat-icon>
-                    Indices : 10 (-5s)
+                    Indices: {{ nbCluesLeft }} (-{{ 0 }} sec)
                 </button>
             </mat-toolbar>
         </div>

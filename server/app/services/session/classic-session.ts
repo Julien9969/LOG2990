@@ -8,11 +8,6 @@ export class ClassicSession extends Session {
     nDifferences: number = 0;
     constructor(gameID: string, players: Player[]) {
         super();
-        // playerOne: string, playerTwo?: string) {
-        // this.differencesFoundByPlayer.push([firstSocketId, []]);
-        // if (secondSocketId) {
-        //     this.differencesFoundByPlayer.push([secondSocketId, []]);
-        // }
         this.players = players;
         if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
         this.gameID = gameID;

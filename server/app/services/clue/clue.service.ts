@@ -1,10 +1,10 @@
 import { CLUE_BORDER_WIDTH, DIVIDER_FIRST_CLUE, DIVIDER_SECOND_CLUE, IMAGE_HEIGHT, IMAGE_WIDTH } from '@app/services/constants/services.const';
+import { ClassicSession } from '@app/services/session/classic-session';
 import { Session } from '@app/services/session/session';
+import { LimitedTimeSession } from '@app/services/session/time-limited-session';
 import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { Injectable } from '@nestjs/common';
-import { ClassicSession } from '../session/classic-session';
-import { LimitedTimeSession } from '../session/time-limited-session';
 
 @Injectable()
 export class ClueService {
@@ -15,7 +15,7 @@ export class ClueService {
      * @returns
      */
     generateClue(session: Session): Clue {
-        if (!(session instanceof ClassicSession || session instanceof ClassicSession)) return;
+        if (!(session instanceof ClassicSession || session instanceof LimitedTimeSession)) return;
         if (!session.handleClueRequest()) return;
         const cluePosition = this.getRandomCluePosition(session);
 
