@@ -24,11 +24,4 @@ export class DataResetComponent {
         popup.deleteMessage = "Voulez-vous vraiment réinitialiser TOUS les meilleurs temps?"
         popup.buttonCallback = this.gameService.resetAllLeaderboards;
     }
-
-    resetTimeConstants() {
-        this.dialog.closeAll();
-        const popup = this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['delete'] }).componentInstance;
-        popup.deleteMessage = "Voulez-vous vraiment réinitialiser les constantes de jeu?"
-        popup.buttonCallback = this.gameService.resetTimeConstants;
-    }
 }

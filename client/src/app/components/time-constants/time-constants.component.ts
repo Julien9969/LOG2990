@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { GameService } from '@app/services/game/game.service';
 import { GameConstants } from '@common/game-constants';
 import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME, MIN_REWARD_TIME } from '@common/game-constants-values';
+import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
 ;
 
 @Component({
@@ -36,7 +38,7 @@ export class TimeConstantsComponent implements OnInit {
         Validators.max(MAX_PENALTY_TIME),
     ]);
 
-    constructor(private readonly gameService: GameService) {}
+    constructor(private readonly dialog: MatDialog, private readonly gameService: GameService) {}
 
     // Pour y avoir accès dans le code html, qui affiche les bornes de chaque valeur
     get timeConstantBounds() {
@@ -86,6 +88,13 @@ export class TimeConstantsComponent implements OnInit {
         await this.gameService.updateGameConstants({ ...this.gameConstants, ...this.modifiedGameConstants });
         this.gameConstants = await this.gameService.getGameConstants();
         this.editingConstants = false;
+    }
+
+    resetTimeConstants() {
+        this.dialog.closeAll();
+        const popup = this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['delete'] }).componentInstance;
+        popup.deleteMessage = "Voulez-vous vraiment réinitialiser les constantes de jeu?"
+        popup.buttonCallback = this.gameService.resetTimeConstants;
     }
 
     // Wrapper de Number pour y acceder dans le HTML

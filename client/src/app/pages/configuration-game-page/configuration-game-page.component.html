@@ -3,7 +3,7 @@
         <div>
             <mat-toolbar id="top" color="primary">
                 <div id="topbar-links">
-                    <p>Modifiez un jeu</p>
+                    <h1>Modifiez un jeu</h1>
                     <div id="quit-button">
                         <button mat-button routerLink="/main">
                             <mat-icon>home</mat-icon>
@@ -14,12 +14,9 @@
                         <button mat-button routerLink="/game-creation"><mat-icon>build</mat-icon>Créer un jeu</button>
                     </div>
                 </div>
-                <app-data-reset></app-data-reset>
                 <app-time-constants></app-time-constants>
-                <span></span>
-                <div>
-                    <button mat-raised-button color="primary" (click)="openHistoryDialog()">Historique</button>
-                </div>
+                <button mat-raised-button color="primary" (click)="openHistoryDialog()"><mat-icon>menu_book</mat-icon>Historique</button>
+                <app-data-reset></app-data-reset>
             </mat-toolbar>
             <app-square-interface [configPage]="true"></app-square-interface>
         </div>

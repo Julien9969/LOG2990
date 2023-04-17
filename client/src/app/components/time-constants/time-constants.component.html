@@ -1,9 +1,6 @@
 <span class="horizontal-bar" id="time-infos">
-    
     <span class="tooltip">
-        <p>
-            Constantes de jeu: 
-        </p>
+        <button mat-raised-button color="primary" (click)="openEditPopup()"><mat-icon>edit</mat-icon>Constantes de jeu</button>
         <span class="tooltiptext">
 
             <div class="info">
@@ -21,9 +18,10 @@
 
         </span>
     </span>
-
-
-    <button mat-raised-button color="primary" (click)="openEditPopup()">Modifier constantes</button>
+    <span class="reset-tooltip tooltip">
+        <mat-icon class="reset-icon" (click)="resetTimeConstants()">restart_alt</mat-icon>
+        <span class="reset-tooltiptext tooltiptext">Réinitialiser les contantes de temps</span>
+    </span>
 </span>
 
 <div *ngIf="this.editingConstants" id="constants-edit">

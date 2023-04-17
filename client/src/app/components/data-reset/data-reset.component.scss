@@ -2,19 +2,8 @@ span.horizontal-bar {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: center;
-    // p {
-    //     background-color: rgb(50, 50, 50);
-    //     color: #fff;
-    //     padding: 8px;
-    //     border-radius: 10px;
-    // }
     mat-icon {
-        transform: translate(0, -25%)
-    }
-    input {
-        margin: 0 4vh;
-        transform: translate(0, -75%)
+        transform: translate(0, -40%)
     }
 }
 
@@ -50,7 +39,8 @@ mat-icon:hover {
     border-radius: 6px;
     position: fixed;
     z-index: 1;
-    transform: translate(-6vw, 6vh);
+    right: 1.5vw;
+    top: 7.8vh;
 }
 
 .tooltip:hover .tooltiptext {
