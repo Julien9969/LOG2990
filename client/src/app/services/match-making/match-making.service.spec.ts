@@ -168,7 +168,7 @@ describe('MatchMakingService', () => {
         const data = { gameId, isSolo: false };
         service.startMultiSession(gameId);
         expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('startSession', data);
+        expect(sendSpy).toHaveBeenCalledWith('startClassicSession', data);
     });
 
     it('startSoloSession should call socketService.send with "startSoloSession" and a data', () => {
@@ -177,7 +177,7 @@ describe('MatchMakingService', () => {
         const data = { gameId, isSolo: true };
         service.startSoloSession(gameId, () => {});
         expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('startSession', data, jasmine.any(Function));
+        expect(sendSpy).toHaveBeenCalledWith('startClassicSession', data, jasmine.any(Function));
     });
 
     it('updateRoomView should call socketService.on with "updateRoomView" and a callback', () => {

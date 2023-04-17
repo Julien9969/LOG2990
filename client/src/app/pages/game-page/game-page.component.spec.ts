@@ -11,7 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
-import { PlayImageComponent } from '@app/components/play-image/play-image.component';
+import { PlayImageLimitedTimeComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { HistoryService } from '@app/services/history.service';
@@ -103,7 +103,7 @@ describe('GamePageComponent', () => {
             imports: [MatIconModule, MatToolbarModule],
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },
-                { provide: PlayImageComponent, useValue: playImageComponentSpy },
+                { provide: PlayImageLimitedTimeComponent, useValue: playImageComponentSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: InGameService, useValue: inGameServiceSpy },
                 { provide: SocketClientService, useValue: socketClientServiceSpy },
