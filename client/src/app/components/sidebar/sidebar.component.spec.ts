@@ -33,10 +33,10 @@ describe('SidebarComponent', () => {
     });
 
     it('formattedTime should call Date.toUTCString', () => {
-        const dateSpy = spyOn(Date.prototype, 'toUTCString');
+        const dateSpy = spyOn(Date.prototype, 'toUTCString').and.returnValue('1:00:00 GMT');
         const result = component.formatTime(exampleTime);
         expect(dateSpy).toHaveBeenCalled();
-        expect(result).toEqual(new Date(exampleTime).toUTCString());
+        expect(result).toEqual('1:00:00');
     });
 
     it('send should not call sendMessage if the messageText is empty', () => {

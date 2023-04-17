@@ -1,6 +1,13 @@
 .container {
     min-height: 100vh;
-    background-color: rgb(250, 250, 250);
+    background-color: rgb(0, 0, 0);
+}
+
+.container {
+    background-image: url('../../../assets/back-ground/main.webp');
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    background-size: 100% 100%;
 }
 
 #buttons {
@@ -28,17 +35,23 @@
 }
 
 .footer-item {
+    margin: 5%;
     text-align: center;
     align-items: center;
     display: flex;
     flex-direction: column;
     .team-name {
         margin-bottom: 4vh;
-        color: rgb(63, 81, 181);
+        font-size: 3vh;
+        font-weight: bold;
+        color: rgb(145, 10, 10);
     }
     #names {
         span {
             margin-right: 1vh;
+            color: aliceblue;
+            font-size: large;
+            font-weight: 400;
         }
     }
 }

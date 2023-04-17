@@ -49,8 +49,9 @@ describe('HistoryService', () => {
 
     it('initHistory should call setStartDateTime', () => {
         spyOn(service, 'setStartDateTime' as any).and.callFake(() => {});
-        service.initHistory();
+        service.initHistory('classique', true);
         expect(service['setStartDateTime']).toHaveBeenCalled();
+        expect(service['currentGame'].gameMode).toEqual('classique solo');
     });
 
     it('setPlayers should set currentGame.playerOne', () => {
@@ -103,5 +104,12 @@ describe('HistoryService', () => {
         service['setStartDateTime']();
         const expectedStartDateTime = dateSpy.toLocaleDateString() + ' ' + dateSpy.toLocaleTimeString();
         expect(service['currentGame'].startDateTime).toEqual(expectedStartDateTime);
+    });
+
+    it('setLimitedTime history should set currentGame.gameMode', () => {
+        const historyPostSpy = spyOn(service, 'postHistory' as any).and.callFake(() => {});
+        service.setLimitedTimeHistory('1:00');
+        expect(service['currentGame'].duration).toEqual('1:00');
+        expect(historyPostSpy).toHaveBeenCalled();
     });
 });

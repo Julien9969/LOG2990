@@ -3,7 +3,6 @@ export const ERROR_TIMEOUT = 1000;
 
 export const CONVERT_TO_MINUTES = 60;
 
-
 export enum MouseButton {
     Left = 0,
     Middle = 1,
