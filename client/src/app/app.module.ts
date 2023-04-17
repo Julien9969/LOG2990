@@ -14,6 +14,7 @@ import { AppMaterialModule } from '@app/modules/material.module';
 import { AppComponent } from '@app/pages/app/app.component';
 import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
+import { DataResetComponent } from './components/data-reset/data-reset.component';
 import { DrawBottomBarComponent } from './components/draw-bottom-bar/draw-bottom-bar.component';
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
 import { GameCreationFormComponent } from './components/game-creation-form/game-creation-form.component';
@@ -23,6 +24,7 @@ import { LimitedTimeSelectionComponent } from './components/limited-time-selecti
 import { MatchMakingDialogComponent } from './components/match-making-dialog/match-making-dialog.component';
 import { PlayImageClassicComponent } from './components/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from './components/popup-dialog/popup-dialog.component';
+import { TimeConstantsPopupComponent } from './components/time-constants-popup/time-constants-popup.component';
 import { TimeConstantsComponent } from './components/time-constants/time-constants.component';
 import { UploadImageSquareComponent } from './components/upload-image-square/upload-image-square.component';
 import { ConfigurationGameComponent } from './pages/configuration-game-page/configuration-game-page.component';
@@ -58,6 +60,8 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         LimitedTimeSelectionComponent,
         LimitedTimeGamePageComponent,
         TimeConstantsComponent,
+        TimeConstantsPopupComponent,
+        DataResetComponent,
     ],
     imports: [
         AppMaterialModule,

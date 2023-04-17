@@ -10,11 +10,11 @@ span.horizontal-bar {
         border-radius: 10px;
     }
     mat-icon {
-        transform: translate(0, -25%)
+        transform: translateY(-25%);
     }
     input {
         margin: 0 4vh;
-        transform: translate(0, -75%)
+        transform: translateY(-75%)''
     }
 }
 

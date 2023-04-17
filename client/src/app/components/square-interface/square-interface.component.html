@@ -30,7 +30,7 @@
 
                         <mat-card-actions *ngIf="configPage" class="buttons">
                             <button (click)="deleteGame(gameData.id)" mat-raised-button color="primary">Supprimer</button>
-                            <button mat-raised-button color="primary">Réinitialiser</button>
+                            <button (click)="resetLeaderboard(gameData.id)" mat-raised-button color="primary">Réinitialiser</button>
                         </mat-card-actions>
                     </div>
                 </mat-card>
