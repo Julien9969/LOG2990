@@ -11,9 +11,10 @@ describe('TimeConstantsComponent', () => {
     let component: TimeConstantsComponent;
     let fixture: ComponentFixture<TimeConstantsComponent>;
     let gameServiceMock: GameService;
-    let gameServiceGetConstantsSpy: jasmine.Spy;
     let dialogMock: MatDialog;
     let mockPopup: PopupDialogComponent;
+    let gameServiceGetConstantsSpy: jasmine.Spy;
+    let openDialogSpy: jasmine.Spy;
 
     beforeEach(async () => {
         gameServiceMock = {
@@ -56,6 +57,9 @@ describe('TimeConstantsComponent', () => {
                 reward: 10,
             };
         });
+        openDialogSpy = spyOn(dialogMock, 'open').and.callFake(() => {
+            return { componentInstance: mockPopup } as any;
+        });
     });
 
     it('should create the component', () => {
@@ -69,9 +73,7 @@ describe('TimeConstantsComponent', () => {
     });
 
     it('ngOnInit should set empty gameConstants when server returns undefined', async () => {
-        gameServiceGetConstantsSpy.and.callFake(() => {
-            return undefined;
-        });
+        gameServiceGetConstantsSpy.and.callFake(() => {});
 
         component.gameConstants = {
             time: 1,
@@ -101,9 +103,6 @@ describe('TimeConstantsComponent', () => {
     });
 
     it('resetTimeConstants opens a popup dialog and sets callback to gameService resetTimeConstants', () => {
-        const openDialogSpy = spyOn(dialogMock, 'open').and.callFake(() => {
-            return { componentInstance: mockPopup } as any;
-        });
         component.resetTimeConstants();
 
         expect(openDialogSpy).toHaveBeenCalled();
@@ -111,9 +110,6 @@ describe('TimeConstantsComponent', () => {
     });
 
     it('openEditPopup opens a TimeConstantsPopupComponent popup', () => {
-        const openDialogSpy = spyOn(dialogMock, 'open').and.callFake(() => {
-            return { componentInstance: mockPopup } as any;
-        });
         component.openEditPopup();
 
         expect(openDialogSpy).toHaveBeenCalled();
