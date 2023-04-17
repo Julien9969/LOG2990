@@ -3,12 +3,12 @@
 // eslint-disable-next-line max-classes-per-file
 import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { ConfigurationGameComponent } from './configuration-game-page.component';
 import { HistoryPopupComponent } from '@app/components/history-popup/history-popup.component';
-import { MatDialog } from '@angular/material/dialog';
 import { CommunicationService } from '@app/services/communication/communication.service';
+import { ConfigurationGameComponent } from './configuration-game-page.component';
 @Component({
     selector: 'app-square-interface',
     template: '',
@@ -18,6 +18,18 @@ export class StubSquareInterfaceComponent {
     @Input() configPage: boolean = false;
 }
 
+@Component({
+    selector: 'app-time-constants',
+    template: '<span></span>',
+})
+class StubTimeConstantsComponent {};
+
+@Component({
+    selector: 'app-data-reset',
+    template: '<span></span>',
+})
+class StubDataResetComponent {};
+
 describe('ConfigurationGameComponent', () => {
     let component: ConfigurationGameComponent;
     let fixture: ComponentFixture<ConfigurationGameComponent>;
@@ -26,7 +38,7 @@ describe('ConfigurationGameComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [ConfigurationGameComponent, StubSquareInterfaceComponent],
+            declarations: [ConfigurationGameComponent, StubTimeConstantsComponent, StubDataResetComponent, StubSquareInterfaceComponent],
             imports: [MatIconModule, MatToolbarModule],
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },

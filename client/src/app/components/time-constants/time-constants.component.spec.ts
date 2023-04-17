@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { GameService } from '@app/services/game/game.service';
 import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME, MIN_REWARD_TIME } from '@common/game-constants-values';
+import { PopupDialogComponent } from '../popup-dialog/popup-dialog.component';
 import { TimeConstantsComponent } from './time-constants.component';
 
 describe('TimeConstantsComponent', () => {
@@ -12,6 +14,8 @@ describe('TimeConstantsComponent', () => {
     let gameServiceMock: GameService;
     let gameServiceGetConstantsSpy: jasmine.Spy;
     let gameServiceUpdateConstantsSpy: jasmine.Spy;
+    let dialogMock: MatDialog;
+    let mockPopup: PopupDialogComponent;
 
     beforeEach(async () => {
         gameServiceMock = {
@@ -19,13 +23,23 @@ describe('TimeConstantsComponent', () => {
                 return {};
             },
             updateGameConstants: async () => {},
+            resetTimeConstants: async () => {},
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Any utilisé pour créer notre propre mock
         } as any;
+        mockPopup = {} as PopupDialogComponent;
+        dialogMock = {
+            open: (component, action) => { 
+                return {
+                    componentInstance: mockPopup
+                } as any;
+            },
+            closeAll: () => {},
+        } as MatDialog;
 
         await TestBed.configureTestingModule({
             declarations: [TimeConstantsComponent],
             imports: [MatIconModule],
-            providers: [{ provide: GameService, useValue: gameServiceMock }],
+            providers: [{ provide: GameService, useValue: gameServiceMock }, { provide: MatDialog, useValue: dialogMock }],
         }).compileComponents();
     });
 
@@ -162,5 +176,15 @@ describe('TimeConstantsComponent', () => {
 
     it('convertToNumber returns undefined when empty input', () => {
         expect(component.convertToNumber('')).toEqual(undefined);
+    });
+
+    it('resetTimeConstants opens a popup dialog and sets callback to gameService resetTimeConstants', () => {
+        const openDialogSpy = spyOn(dialogMock, 'open').and.callFake(() => {
+            return {componentInstance: mockPopup} as any;
+        });
+        component.resetTimeConstants();
+
+        expect(openDialogSpy).toHaveBeenCalled();
+        expect(mockPopup.buttonCallback).toEqual(gameServiceMock.resetTimeConstants);
     });
 });
