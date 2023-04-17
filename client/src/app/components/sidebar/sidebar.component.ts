@@ -34,7 +34,7 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
     }
 
     formatTime(time: number): string {
-        return new Date(time).toUTCString();
+        return new Date(time).toUTCString().replace('GMT', '').trim();
     }
 
     send() {

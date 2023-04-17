@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CONVERT_TO_MINUTES } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
+import { HistoryService } from '@app/services/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
@@ -32,10 +33,10 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
         private readonly dialog: MatDialog,
-        // private readonly communicationService: CommunicationService,
         private readonly socket: InGameService,
         private readonly socketClient: SocketClientService,
         private readonly gameService: GameService,
+        private readonly historyService: HistoryService,
     ) {
         this.isLoaded = false;
 
@@ -49,9 +50,11 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     }
 
     @HostListener('window:beforeunload', ['$event'])
-    unloadNotification($event: Event) {
-        // eslint-disable-next-line deprecation/deprecation
-        $event.returnValue = true; // L'équivalent non déprécié ne produit pas le même résultat
+    unloadNotification(event: BeforeUnloadEvent) {
+        event.preventDefault();
+        this.historyService.setLimitedTimeHistory(this.time);
+
+        event.returnValue = false;
     }
 
     async ngOnInit(): Promise<void> {
@@ -77,6 +80,9 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         this.socket.listenNewGame((data: [Game, number]) => {
             this.nDiffFound = data[1];
         });
+        this.historyService.initHistory('Temps limité', this.isSolo);
+        this.historyService.setPlayers(this.playerName, this.opponentName);
+        this.historyService.gameId = this.sessionId.toString();
     }
 
     playerExited() {
@@ -88,6 +94,8 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         if (timerFinished) {
             message = `Vous n'avez plus de temps, vous avez trouvé ${this.nDiffFound} différences`;
         } else message = `Vous avez joué à tous les jeux, vous avez trouvé ${this.nDiffFound + 1} différences`;
+
+        this.historyService.setLimitedTimeHistory(this.time);
         this.dialog.closeAll();
         this.dialog.open(PopupDialogComponent, {
             closeOnNavigation: true,

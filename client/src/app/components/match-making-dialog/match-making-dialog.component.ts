@@ -114,7 +114,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     navigateToMultiGame(sessionID: number): void {
-        this.router.navigateByUrl('solo-game', {
+        this.router.navigateByUrl(this.routerLink, {
             state: { isSolo: false, gameID: this.gameInfo.id, playerName: this.playerName, opponentName: this.opponentName, sessionId: sessionID },
         });
     }
@@ -140,6 +140,8 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     commonMatchMakingFeatures(): void {
         this.matchMaking.receiveSessionId((sessionId: number) => {
+            // if ((this.gameInfo.id = 'limited-time')) this.navigateToMultiGame(sessionId);
+            // else this.navigateToMultiGame(sessionId);
             this.navigateToMultiGame(sessionId);
         });
 

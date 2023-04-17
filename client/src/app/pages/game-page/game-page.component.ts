@@ -148,13 +148,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
         this.inGameSocket.disconnect();
-        if (this.isSolo) this.historyService.setPlayerQuit(this.time, this.isSolo);
     }
 
     private initHistory() {
-        this.historyService.initHistory();
+        this.historyService.initHistory('Classique', this.isSolo);
         this.historyService.setPlayers(this.playerName, this.opponentName);
         this.historyService.gameId = this.gameID;
-        this.historyService.setGameMode('TODO', this.isSolo);
     }
 }

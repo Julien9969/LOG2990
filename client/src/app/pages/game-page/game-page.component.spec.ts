@@ -348,11 +348,10 @@ describe('GamePageComponent', () => {
         });
     });
 
-    it('initHistory should call historyService.initHistory , setPlayer and set gameMode', () => {
+    it('initHistory should call historyService.initHistory , setPlayer', () => {
         component['initHistory']();
         expect(historyServiceSpy.initHistory).toHaveBeenCalled();
         expect(historyServiceSpy.setPlayers).toHaveBeenCalled();
-        expect(historyServiceSpy.setGameMode).toHaveBeenCalled();
     });
 
     it('ngOnDestroy should call socketClientService with leaveRoom', () => {

@@ -22,7 +22,6 @@ export class HistoryController {
         if (this.isInvalideHistoryEntry(newHistoryEntry)) {
             throw new HttpException('Données manquantes.', HttpStatus.BAD_REQUEST);
         }
-
         try {
             return await this.history.findOneAndUpdate(
                 { gameId: newHistoryEntry.gameId, startDateTime: newHistoryEntry.startDateTime, gameMode: newHistoryEntry.gameMode },

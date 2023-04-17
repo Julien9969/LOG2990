@@ -392,8 +392,9 @@ export class SessionGateway {
                 const positionInScoreBoard = await this.gameService.addToScoreboard(gameId, finishedGame);
                 if (positionInScoreBoard) {
                     await this.gameService.findById(gameId).then((game: Game) => {
-                        const hightScoreMessage = `${new Date().toTimeString().split(' ')[0]} - 
-                                ${winnerName} obtient la ${positionInScoreBoard} place dans les meilleurs temps du jeu ${game.name} en 
+                        const hightScoreMessage = `${winnerName} obtient la ${positionInScoreBoard} place dans les meilleurs temps du jeu ${
+                            game.name
+                        } en 
                             ${session.isSolo ? 'solo' : 'multijoueur'}`;
                         this.server.emit(ChatEvents.BroadcastNewHighScore, hightScoreMessage);
                     });

@@ -53,20 +53,6 @@ describe('HistoryService', () => {
         expect(service['setStartDateTime']).toHaveBeenCalled();
     });
 
-    it('setGameMode should set currentGame.gameMode to solo if isSolo is true', () => {
-        const gameMode = '42';
-        const isSolo = true;
-        service.setGameMode(gameMode, isSolo);
-        expect(service['currentGame'].gameMode).toEqual(gameMode + ' solo');
-    });
-
-    it('setGameMode should set currentGame.gameMode to multi if isSolo is false', () => {
-        const gameMode = '42';
-        const isSolo = false;
-        service.setGameMode(gameMode, isSolo);
-        expect(service['currentGame'].gameMode).toEqual(gameMode + ' multi');
-    });
-
     it('setPlayers should set currentGame.playerOne', () => {
         const playerOne = '42';
         service.setPlayers(playerOne);

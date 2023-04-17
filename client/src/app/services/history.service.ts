@@ -7,7 +7,7 @@ import { GameHistory } from '@common/game-history';
 })
 export class HistoryService {
     private currentGame: GameHistory;
-    private date: Date = new Date();
+    private date: Date;
     constructor(private readonly communicationService: CommunicationService) {}
 
     set gameId(gameId: string) {
@@ -22,13 +22,17 @@ export class HistoryService {
         this.communicationService.deleteHistory();
     }
 
-    initHistory(): void {
-        this.currentGame = { startDateTime: '', gameId: '', duration: '', gameMode: '', playerOne: '', playerTwo: '' };
+    initHistory(mode: string, isSolo: boolean): void {
+        this.date = new Date();
+        this.currentGame = {
+            startDateTime: '',
+            gameId: '',
+            duration: '',
+            gameMode: mode + (isSolo ? ' solo' : ' multi'),
+            playerOne: '',
+            playerTwo: '',
+        };
         this.setStartDateTime();
-    }
-
-    setGameMode(gameMode: string, isSolo: boolean): void {
-        this.currentGame.gameMode = gameMode + (isSolo ? ' solo' : ' multi');
     }
 
     setPlayers(playerOne: string, playerTwo?: string): void {
@@ -51,6 +55,11 @@ export class HistoryService {
         } else {
             this.currentGame.playerOne = '<s>' + this.currentGame.playerOne + '</s>';
         }
+        this.postHistory();
+    }
+
+    setLimitedTimeHistory(duration: string): void {
+        this.currentGame.duration = duration;
         this.postHistory();
     }
 
