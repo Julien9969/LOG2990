@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { TIME_CONST } from '@app/constants/utils-constants';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { PlayImage } from '@app/components/play-image/play-image';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
@@ -12,9 +12,9 @@ import { GuessResult } from '@common/guess-result';
 @Component({
     selector: 'app-play-image-limited-time',
     templateUrl: '../play-image.component.html',
-    styleUrls: ['./play-image-limited-time.component.scss'],
+    styleUrls: ['../play-image.component.scss'],
 })
-export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnDestroy {
+export class PlayImageLimitedTimeComponent extends PlayImage implements AfterViewInit, OnInit, OnDestroy {
     @ViewChild('canvas1', { static: false }) imageCanvas1!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas2', { static: false }) imageCanvas2!: ElementRef<HTMLCanvasElement>;
 
@@ -27,33 +27,17 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
     errorMsgPosition: Coordinate;
     errorCounter: number = 0;
 
-    errorGuess: boolean = false;
-
-    // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
+    // eslint-disable-next-line max-params
     constructor(
-        private readonly mouseService: MouseService,
-        private readonly communicationService: CommunicationService,
-        private readonly audioService: AudioService,
-        private readonly imageOperationService: ImageOperationService,
-        private readonly socket: InGameService,
-    ) {}
-
-    get mouse(): MouseService {
-        return this.mouseService;
+        protected readonly mouseService: MouseService,
+        protected readonly communicationService: CommunicationService,
+        protected readonly audioService: AudioService,
+        protected readonly imageOperationService: ImageOperationService,
+        protected readonly socket: InGameService,
+    ) {
+        super(mouseService, communicationService, audioService, imageOperationService, socket);
     }
-
-    get canvasContext1(): CanvasRenderingContext2D {
-        return this.imageCanvas1.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
-    }
-
-    get canvasContext2(): CanvasRenderingContext2D {
-        return this.imageCanvas2.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
-    }
-
-    @HostListener('window:keydown.t', ['$event'])
-    async handleCheat() {
-        await this.imageOperationService.handleCheat(this.sessionID);
-    }
+    // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
 
     ngOnInit(): void {
         this.errorCounter = 0;
@@ -63,12 +47,6 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
         this.socket.listenNewGame((data: [Game, number]) => {
             this.receiveNewGame(data[0]);
         });
-    }
-
-    async ngAfterViewInit(): Promise<void> {
-        await this.loadImage(this.canvasContext1, this.imageMainId);
-        await this.loadImage(this.canvasContext2, this.imageAltId);
-        this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
     }
 
     sendPosition(event: MouseEvent): void {
@@ -109,39 +87,11 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
         }
     }
 
-    handleErrorGuess(): void {
-        this.errorMsgPosition = { x: this.mouseService.mousePosition.x, y: this.mouseService.mousePosition.y };
-        this.errorGuess = true;
-        window.setTimeout(() => {
-            this.errorGuess = false;
-        }, TIME_CONST.secondInMillisecond);
-        this.errorCounter++;
-
-        if (this.errorCounter % 3 === 0) {
-            this.audioService.playAudio('manyErrors');
-            this.errorCounter = 0;
-        } else {
-            this.audioService.playAudio('error');
-        }
-    }
-
-    async loadImage(canvasContext: CanvasRenderingContext2D, imageId: number): Promise<void> {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        return new Promise<void>((done) => {
-            img.onload = async () => {
-                this.drawImageOnCanvas(canvasContext, img);
-                return done();
-            };
-            img.src = this.communicationService.getImageURL(imageId);
-        });
-    }
-
-    drawImageOnCanvas(canvasContext: CanvasRenderingContext2D, img: HTMLImageElement): void {
-        canvasContext.drawImage(img, 0, 0);
+    ngAfterViewInit(): void {
+        this.afterViewInit();
     }
 
     ngOnDestroy(): void {
-        this.imageOperationService.disableCheat();
+        this.onDestroy();
     }
 }
