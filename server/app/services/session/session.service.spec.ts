@@ -1,20 +1,61 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines, no-restricted-imports, max-len */
+import { Test, TestingModule } from '@nestjs/testing';
+import { SinonStubbedInstance, createStubInstance } from 'sinon';
+import { ClueService } from '../clue/clue.service';
+import { DifferenceValidationService } from '../difference-validation/difference-validation.service';
 import { GameService } from '../game/game.service';
+import { Session } from './session';
 import { SessionService } from './session.service';
-let sessionService: SessionService;
-// let session: Session;
 
-describe('Session tests', () => {
+describe('Session Service tests', () => {
+    let sessionService: SessionService;
+    let session: SinonStubbedInstance<Session>;
+    let differenceValidationService: SinonStubbedInstance<DifferenceValidationService>;
+
+    // TODO : Analyser si ces commentaires sont nécessaires pour les tests
     // const exampleId = 'asd123123';
     // const badId = 'bbbbsfojdsafo1232';
     // const exampleName = 'michel';
     // const newExampleName = 'Julien Sr.';
     // const exampleDictionnary = { asd123123: 'michel', dqqwee12313: 'victor', dasd123: 'Seb', jksoj78: 'Maxime' };
-    const gameServiceStub = {} as GameService;
+
     beforeAll(async () => {
-        sessionService = new SessionService(gameServiceStub);
-        // session = new Session(gameId);
+        session = createStubInstance<Session>(Session);
+        differenceValidationService = createStubInstance<DifferenceValidationService>(DifferenceValidationService);
+        differenceValidationService.differenceCoordLists = [[{ x: 0, y: 0 }]];
+
+        const moduleRef: TestingModule = await Test.createTestingModule({
+            providers: [
+                SessionService,
+                {
+                    provide: GameService,
+                    useValue: {
+                        getGameConstants: () => {
+                            return {
+                                time: 100,
+                                penalty: 5,
+                                reward: 10,
+                            };
+                        },
+                    },
+                },
+                {
+                    provide: ClueService,
+                    useValue: {},
+                },
+                {
+                    provide: Session,
+                    useValue: session,
+                },
+                {
+                    provide: DifferenceValidationService,
+                    useValue: differenceValidationService,
+                },
+            ],
+        }).compile();
+
+        sessionService = moduleRef.get<SessionService>(SessionService);
     });
 
     afterEach(() => {

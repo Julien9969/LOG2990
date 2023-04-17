@@ -36,6 +36,8 @@ export class ChatService {
                 return 'Différence trouvée par ' + playerName;
             case SystemCode.UserDisconnected:
                 return playerName + 'a abandonné la partie.';
+            case SystemCode.UseClue:
+                return 'Indice utilisé';
         }
         return 'invalid system error';
     }

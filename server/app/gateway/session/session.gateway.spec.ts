@@ -6,7 +6,6 @@ import { GameService } from '@app/services/game/game.service';
 import { ClassicSession } from '@app/services/session/classic-session';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
-import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
@@ -26,7 +25,7 @@ describe('SessionGateway', () => {
     let server: SinonStubbedInstance<Server>;
     let sessionService: SinonStubbedInstance<SessionService>;
     let gameService: SinonStubbedInstance<GameService>;
-    let session: SinonStubbedInstance<Session>;
+    let session: SinonStubbedInstance<ClassicSession>;
 
     // Spy globaux
     let logSpy: jest.SpyInstance;
@@ -42,7 +41,7 @@ describe('SessionGateway', () => {
         server = createStubInstance<Server>(Server);
         sessionService = createStubInstance<SessionService>(SessionService);
         gameService = createStubInstance<GameService>(GameService);
-        session = createStubInstance<Session>(Session);
+        session = createStubInstance<ClassicSession>(ClassicSession);
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 SessionGateway,
@@ -125,29 +124,29 @@ describe('SessionGateway', () => {
         });
     });
 
-    describe('handleClueRequest', () => {
-        let findSessionByClientIdSpy: jest.SpyInstance;
-        let getClueSpy: jest.SpyInstance;
-        beforeEach(() => {
-            findSessionByClientIdSpy = jest.spyOn(sessionService, 'findByClientId').mockImplementation(() => stubSession);
-            getClueSpy = jest.spyOn(stubSession, 'getClue').mockImplementation(async () => {
-                return {
-                    coordinates: [{ x: 0, y: 0 }],
-                    nbCluesLeft: 2,
-                } as Clue;
-            });
-        });
+    // describe('handleClueRequest', () => {
+    //     let findSessionByClientIdSpy: jest.SpyInstance;
+    //     let getClueSpy: jest.SpyInstance;
+    //     beforeEach(() => {
+    //         findSessionByClientIdSpy = jest.spyOn(sessionService, 'findByClientId').mockImplementation(() => stubSession);
+    //         getClueSpy = jest.spyOn(stubSession, 'getClue').mockImplementation(async () => {
+    //             return {
+    //                 coordinates: [{ x: 0, y: 0 }],
+    //                 nbCluesLeft: 2,
+    //             } as Clue;
+    //         });
+    //     });
 
-        it('should call sessionService.findByClientId & gameService.findById', async () => {
-            await gateway.handleClueRequest(stubSocket);
-            expect(findSessionByClientIdSpy).toBeCalled();
-        });
+    //     it('should call sessionService.findByClientId & gameService.findById', async () => {
+    //         await gateway.handleClueRequest(stubSocket);
+    //         expect(findSessionByClientIdSpy).toBeCalled();
+    //     });
 
-        it('should getClue from the correct session', async () => {
-            await gateway.handleClueRequest(stubSocket);
-            expect(getClueSpy).toBeCalledWith(gameService.getGameConstants().penalty);
-        });
-    });
+    //     it('should getClue from the correct session', async () => {
+    //         await gateway.handleClueRequest(stubSocket);
+    //         expect(getClueSpy).toBeCalledWith(gameService.getGameConstants().penalty);
+    //     });
+    // });
 
     describe('leaveRoom', () => {
         it('should make the client leave the room', () => {

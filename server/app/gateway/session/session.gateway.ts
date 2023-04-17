@@ -48,9 +48,9 @@ export class SessionGateway {
      * @return l'indice
      */
     @SubscribeMessage(SessionEvents.AskForClue)
-    async handleClueRequest(client: Socket) {
-        const session = this.sessionService.findByClientId(client.id);
-        return await session.getClue(this.gameService.getGameConstants().penalty);
+    handleClueRequest(client: Socket) {
+        this.sendSystemMessage(client, 'useClue');
+        return this.sessionService.generateClue(client.id);
     }
 
     /**
