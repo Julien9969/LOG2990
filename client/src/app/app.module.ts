@@ -24,6 +24,7 @@ import { LimitedTimeSelectionComponent } from './components/limited-time-selecti
 import { MatchMakingDialogComponent } from './components/match-making-dialog/match-making-dialog.component';
 import { PlayImageClassicComponent } from './components/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from './components/popup-dialog/popup-dialog.component';
+import { TimeConstantsPopupComponent } from './components/time-constants-popup/time-constants-popup.component';
 import { TimeConstantsComponent } from './components/time-constants/time-constants.component';
 import { UploadImageSquareComponent } from './components/upload-image-square/upload-image-square.component';
 import { ConfigurationGameComponent } from './pages/configuration-game-page/configuration-game-page.component';
@@ -59,6 +60,7 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         LimitedTimeSelectionComponent,
         LimitedTimeGamePageComponent,
         TimeConstantsComponent,
+        TimeConstantsPopupComponent,
         DataResetComponent,
     ],
     imports: [
