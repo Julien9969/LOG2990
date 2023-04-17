@@ -9,17 +9,18 @@ import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 
 @Component({
-    selector: 'app-play-image',
-    templateUrl: './play-image.component.html',
-    styleUrls: ['./play-image.component.scss'],
+    selector: 'app-play-image-classic',
+    templateUrl: './play-image-classic.component.html',
+    styleUrls: ['./play-image-classic.component.scss'],
 })
-export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
+export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestroy {
     @ViewChild('canvas1', { static: false }) imageCanvas1!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas2', { static: false }) imageCanvas2!: ElementRef<HTMLCanvasElement>;
 
     @Input() sessionID!: number;
     @Input() imageMainId!: number;
     @Input() imageAltId!: number;
+    @Input() isSolo: boolean;
 
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
@@ -80,14 +81,18 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
 
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
-        this.socket
-            .submitCoordinates(this.sessionID, this.mouseService.mousePosition)
-            .then((response: GuessResult) => {
-                this.updateDiffFound(response);
-            })
-            .catch((e) => {
-                alert(e.message);
-            });
+        if (this.isSolo) {
+            this.socket
+                .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
+                .then((response: GuessResult) => {
+                    this.updateDiffFound(response);
+                })
+                .catch((e) => {
+                    alert(e.message);
+                });
+        } else {
+            this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
+        }
     }
 
     /**

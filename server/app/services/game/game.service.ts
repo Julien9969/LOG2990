@@ -203,6 +203,19 @@ export class GameService {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    /**
+     * @returns un jeux aleatoire
+     */
+    async getRandomGame(): Promise<Game> {
+        const allGames: Game[] = await this.gameModel.find();
+        const randomNumber = Math.floor(Math.random() * allGames.length);
+        const chosenGame: Game = allGames[randomNumber];
+        return chosenGame;
+    }
+
+    async getNumberOfGames(): Promise<number> {
+        return (await this.findAll()).length;
+    }
 
     /**
      * Réinitialise les meilleurs temps d'un jeu de la persistance
