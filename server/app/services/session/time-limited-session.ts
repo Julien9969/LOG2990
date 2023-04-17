@@ -14,9 +14,11 @@ export class LimitedTimeSession extends Session {
 
     constructor(gameService: GameService, players: Player[]) {
         super();
+        const gameConsts = gameService.getGameConstants();
         this.gameService = gameService;
         this.players = players;
-        this.time = gameService.getGameConstants().time;
+        this.time = gameConsts.time;
+        this.penalty = gameConsts.penalty;
         // if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
         this.decideNewGame();
     }
@@ -28,6 +30,10 @@ export class LimitedTimeSession extends Session {
      */
     get isSolo(): boolean {
         return this.players.length === 1;
+    }
+
+    get allGameDifferences(): Coordinate[][] {
+        return this.differenceValidationService.differenceCoordLists;
     }
 
     /**
@@ -106,5 +112,21 @@ export class LimitedTimeSession extends Session {
 
     timerFinished(): boolean {
         return this.time <= 0;
+    }
+
+    /**
+     * Applique la penalité sur le temps, compte l'indice au
+     * total des indices permis et verifie si la session est
+     * permise de donner plus d'indices
+     *
+     * @returns boolean qui indique si la demande d'indice est approuvée
+     */
+    handleClueRequest(): boolean {
+        this.nbCluesRequested++;
+        const clueIsAllowed = this.nbCluesRequested <= 3;
+        if (clueIsAllowed) {
+            this.time -= 5;
+        }
+        return clueIsAllowed;
     }
 }

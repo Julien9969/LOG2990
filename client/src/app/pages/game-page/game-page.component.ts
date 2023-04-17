@@ -1,7 +1,9 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
+import { GameService } from '@app/services/game/game.service';
 import { HistoryService } from '@app/services/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
@@ -15,6 +17,8 @@ import { WinnerInfo } from '@common/winner-info';
     styleUrls: ['./game-page.component.scss'],
 })
 export class GamePageComponent implements OnInit, OnDestroy {
+    @ViewChild('appPlayImage') playImageComponent: PlayImageClassicComponent;
+
     userSocketId: string;
 
     playerName: string;
@@ -31,6 +35,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     time: string = '0:00';
     nbCluesLeft = 3;
+    penalty: number = 0;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
@@ -39,6 +44,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private readonly inGameSocket: InGameService,
         private readonly socketClient: SocketClientService,
         private readonly historyService: HistoryService,
+        private readonly gameService: GameService,
     ) {
         this.isLoaded = false;
 
@@ -58,10 +64,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
         event.returnValue = false;
     }
 
-    @HostListener('window:keydown.i', ['$event'])
+    @HostListener('window:keydown.i')
     async handleClueRequest() {
-        if (!this.nbCluesLeft) return;
+        if (!this.nbCluesLeft || !this.isSolo) return;
         const clue = await this.inGameSocket.retrieveClue();
+        this.playImageComponent.handleClue(clue.nbCluesLeft, clue.coordinates);
         this.nbCluesLeft = clue.nbCluesLeft;
     }
 
@@ -86,6 +93,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.inGameSocket.listenProvideName(this.playerName);
 
         this.initHistory();
+        this.penalty = (await this.gameService.getGameConstants()).penalty ?? 0;
     }
 
     getGameInfos(): void {
@@ -142,7 +150,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
         this.inGameSocket.disconnect();
-        if (this.isSolo) this.historyService.playerQuit(this.time, this.isSolo);
     }
 
     private initHistory() {

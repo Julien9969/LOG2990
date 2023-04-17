@@ -60,6 +60,10 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
         await this.imageOperationService.handleCheat(this.sessionID);
     }
 
+    async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
+        await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);
+    }
+
     ngOnInit(): void {
         this.errorCounter = 0;
         this.lastDifferenceFound = {

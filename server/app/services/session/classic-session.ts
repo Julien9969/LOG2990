@@ -1,3 +1,4 @@
+import { GameService } from '@app/services/game/game.service';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 import { Player } from '@common/player';
@@ -6,19 +7,15 @@ import { Session } from './session';
 
 export class ClassicSession extends Session {
     nDifferences: number = 0;
-    constructor(gameID: string, players: Player[]) {
+    constructor(gameService: GameService, gameID: string, players: Player[]) {
         super();
-        // playerOne: string, playerTwo?: string) {
-        // this.differencesFoundByPlayer.push([firstSocketId, []]);
-        // if (secondSocketId) {
-        //     this.differencesFoundByPlayer.push([secondSocketId, []]);
-        // }
         this.players = players;
         if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
         this.gameID = gameID;
         this.differenceValidationService.loadDifferences(this.gameID.toString());
         this.nDifferences = this.differenceValidationService.differenceCoordLists.length;
         this.time = 0;
+        this.penalty = gameService.getGameConstants().penalty;
     }
 
     /**
@@ -95,6 +92,20 @@ export class ClassicSession extends Session {
         if (this.nDifferences / 2 <= this.players[0].differencesFound.length) return this.players[0].socketId;
         if (this.nDifferences / 2 <= this.players[1].differencesFound.length) return this.players[1].socketId;
         return;
+    }
+
+    /**
+     * Applique la penalité sur le temps, compte l'indice au
+     * total des indices permis et verifie si la session est
+     * permise de donner plus d'indices
+     *
+     * @returns boolean qui indique si la demande d'indice est approuvée
+     */
+    handleClueRequest(): boolean {
+        this.nbCluesRequested++;
+        const clueIsAllowed = this.nbCluesRequested <= 3;
+        if (clueIsAllowed) this.time += 5;
+        return clueIsAllowed;
     }
 
     /**

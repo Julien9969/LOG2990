@@ -1,5 +1,16 @@
 import { Injectable } from '@angular/core';
-import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
+import {
+    BIT_PER_PIXEL,
+    BLINK_COUNT,
+    BLINK_PERIOD_MS,
+    CANVAS,
+    CHEAT_PERIOD_MS,
+    IMAGE_HEIGHT,
+    IMAGE_WIDTH,
+    RGB_GREEN,
+    RGB_RED,
+} from '@app/constants/utils-constants';
+import { RATIO_POINTER_IMAGE as POINTER_TO_CANVAS_RATIO, POINTER_X_OFFSET } from '@app/services/constantes.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 
@@ -24,6 +35,9 @@ export class ImageOperationService {
     private cheatInterval: number;
     private cheatImagesData: ImageData;
     private allDifferencesList: Coordinate[][];
+
+    private clueOriginalImageData: ImageData;
+    private clueModifiedImageData: ImageData;
 
     constructor(private readonly inGameService: InGameService) {}
 
@@ -73,6 +87,7 @@ export class ImageOperationService {
      */
     async createBlinkInterval(differences: Coordinate[]): Promise<void> {
         let count = 0;
+        this.removeClue();
         return new Promise<void>((done) => {
             this.intervalIds[this.newestTimerId] = window.setInterval(() => {
                 if (count % 2 === 0) {
@@ -82,6 +97,7 @@ export class ImageOperationService {
                 }
                 if (count === BLINK_COUNT) {
                     this.setOriginalPixel(differences);
+                    this.showClue();
                     return done();
                 }
                 count++;
@@ -149,6 +165,27 @@ export class ImageOperationService {
     }
 
     /**
+     * Met en place l'affichage de l'indice
+     */
+    async handleClue(nbCluesLeft: number, differences: Coordinate[]) {
+        if (this.isChatFocused) return;
+        await this.createImagesDataClue(nbCluesLeft, differences);
+        this.showClue();
+    }
+
+    async showClue() {
+        this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
+        this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
+    }
+
+    async removeClue() {
+        this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
+        this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
+        this.clueOriginalImageData = this.originalImageSave;
+        this.clueModifiedImageData = this.modifiedImageSave;
+    }
+
+    /**
      * Créer l'interval de clignotement pour la triche
      */
     async cheatBlink(): Promise<void> {
@@ -191,6 +228,86 @@ export class ImageOperationService {
     }
 
     /**
+     * Crée l'image d'indice avec les pixels d'incides en rouge ou l'indice spéciale
+     *
+     * @param differences liste des pixels a mettre en rouge
+     */
+    private async createImagesDataClue(nbCluesLeft: number, differences: Coordinate[] = []): Promise<void> {
+        if (!nbCluesLeft) {
+            return await this.createlastClueImageData(differences[0]);
+        }
+
+        const clueOriginalImageData = structuredClone(this.originalImageSave);
+        const clueModifiedImageData = structuredClone(this.modifiedImageSave);
+
+        differences.forEach((difference) => {
+            const outsideXInterval = difference.x < 0 || difference.x >= IMAGE_WIDTH;
+            const outsideYInterval = difference.y < 0 || difference.y >= IMAGE_HEIGHT;
+            if (outsideXInterval || outsideYInterval) return;
+            const pixelIndex = (difference.y * CANVAS.width + difference.x) * BIT_PER_PIXEL;
+            const highlightedPixel = new Uint8ClampedArray(BIT_PER_PIXEL);
+            highlightedPixel[0] = RGB_RED.r;
+            highlightedPixel[1] = RGB_RED.g;
+            highlightedPixel[2] = RGB_RED.b;
+            highlightedPixel[3] = RGB_RED.a;
+
+            clueOriginalImageData.data.set(highlightedPixel, pixelIndex);
+            clueModifiedImageData.data.set(highlightedPixel, pixelIndex);
+        });
+
+        this.clueOriginalImageData = clueOriginalImageData;
+        this.clueModifiedImageData = clueModifiedImageData;
+    }
+
+    private async createlastClueImageData(difference: Coordinate) {
+        const contextOriginalImg = this.createBlankCanvas();
+        const contextModifiedImg = this.createBlankCanvas();
+
+        contextOriginalImg.putImageData(this.originalImageSave, 0, 0);
+        contextModifiedImg.putImageData(this.modifiedImageSave, 0, 0);
+
+        const isPointerFlipped = difference.x < IMAGE_WIDTH / 2;
+
+        const pointer: HTMLImageElement = new Image();
+        pointer.src = '../../../assets/logo/AmongPointing' + isPointerFlipped ? 'Left.png' : 'Right.png';
+
+        // pour attendre que l'image soit téléversé correctement
+        await new Promise<void>((resolve) => {
+            pointer.onload = () => {
+                resolve();
+            };
+        });
+        const pointerHeight = Math.floor(IMAGE_HEIGHT * POINTER_TO_CANVAS_RATIO);
+        const pointerWidth = Math.floor(IMAGE_WIDTH * POINTER_TO_CANVAS_RATIO);
+
+        contextOriginalImg.drawImage(
+            pointer,
+            isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
+            difference.y - pointerHeight * POINTER_TO_CANVAS_RATIO,
+            pointerWidth,
+            pointerHeight,
+        );
+        contextModifiedImg.drawImage(
+            pointer,
+            isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
+            difference.y - pointerHeight * POINTER_TO_CANVAS_RATIO,
+            pointerWidth,
+            pointerHeight,
+        );
+
+        this.clueOriginalImageData = contextOriginalImg.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        this.clueModifiedImageData = contextModifiedImg.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+    }
+
+    private createBlankCanvas(): CanvasRenderingContext2D {
+        const canvasForOriginalImg = document.createElement('canvas');
+        canvasForOriginalImg.width = IMAGE_WIDTH;
+        canvasForOriginalImg.height = IMAGE_HEIGHT;
+
+        return canvasForOriginalImg.getContext('2d') as CanvasRenderingContext2D;
+    }
+
+    /**
      * Enlève la difference de la liste des diférences et met a jour les images de base et de triche
      *
      * @param diffToRemove liste des pixels a enlever de la liste de triche
@@ -213,7 +330,7 @@ export class ImageOperationService {
     /**
      * met les pixels de l'image de original dans l'image de modifier
      *
-     * @param difference liste des pixels a mettre a jour dans l'images modifier de base
+     * @param difference liste des pixels a mettre a jour dans l'image modifiée de base
      */
     private updateBaseImagesSave(difference: Coordinate[]): void {
         difference.forEach((diff) => {

@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars, @typescript-eslint/no-empty-function */
 import { ClassicSession } from '@app/services/session/classic-session';
+import { Coordinate } from '@common/coordinate';
+import { GuessResult } from '@common/guess-result';
 import { Socket } from 'socket.io';
 
 export const stubSocket: Socket = {
@@ -21,8 +23,9 @@ export const stubSession: ClassicSession = {
     time: 100,
     gameID: 'game-id',
     stopTimer: () => {},
-    tryGuess: (coord, id) => {},
-    getClue: (penality: number) => {},
+    tryGuess: (guessCoord: Coordinate, socketId: string) => {
+        return {} as GuessResult;
+    },
     id: 0,
     nGuesses: 0,
     nPenalties: 0,

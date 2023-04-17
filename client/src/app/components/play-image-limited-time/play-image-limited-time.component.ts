@@ -56,6 +56,10 @@ export class PlayImageLimitedTimeComponent implements AfterViewInit, OnInit, OnD
         await this.imageOperationService.handleCheat(this.sessionID);
     }
 
+    async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
+        await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);
+    }
+
     ngOnInit(): void {
         this.errorCounter = 0;
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
