@@ -36,7 +36,9 @@ export class ClueService {
         else if (session instanceof LimitedTimeSession) allDiffLeftToFind = session.allGameDifferences;
         const randomIndex = Math.floor(Math.random() * allDiffLeftToFind.length);
         const randomDifference = allDiffLeftToFind[randomIndex];
-        return randomDifference[0];
+        const averageXCoord = (randomDifference[randomDifference.length - 1].x + randomDifference[0].x) / 2;
+        const averageYCoord = (randomDifference[randomDifference.length - 1].y + randomDifference[0].y) / 2;
+        return { x: averageXCoord, y: averageYCoord } as Coordinate;
     }
 
     /**

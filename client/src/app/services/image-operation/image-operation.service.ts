@@ -10,7 +10,7 @@ import {
     RGB_GREEN,
     RGB_RED,
 } from '@app/constants/utils-constants';
-import { RATIO_POINTER_IMAGE } from '@app/services/constantes.service';
+import { POINTER_X_OFFSET, RATIO_POINTER_IMAGE } from '@app/services/constantes.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 
@@ -241,9 +241,9 @@ export class ImageOperationService {
         const clueModifiedImageData = structuredClone(this.modifiedImageSave);
 
         differences.forEach((difference) => {
-            const inXAxisInterval = difference.x >= 0 && difference.x < IMAGE_WIDTH;
-            const inYAxisInterval = difference.y >= 0 && difference.y < IMAGE_HEIGHT;
-            if (!inXAxisInterval || !inYAxisInterval) return;
+            const outsideXInterval = difference.x < 0 || difference.x >= IMAGE_WIDTH;
+            const outsideYInterval = difference.y < 0 || difference.y >= IMAGE_HEIGHT;
+            if (outsideXInterval || outsideYInterval) return;
             const pixelIndex = (difference.y * CANVAS.width + difference.x) * BIT_PER_PIXEL;
             const highlightedPixel = new Uint8ClampedArray(BIT_PER_PIXEL);
             highlightedPixel[0] = RGB_RED.r;
@@ -266,8 +266,10 @@ export class ImageOperationService {
         contextOriginalImg.putImageData(this.originalImageSave, 0, 0);
         contextModifiedImg.putImageData(this.modifiedImageSave, 0, 0);
 
+        const isPointerFlipped = difference.x < IMAGE_WIDTH / 2;
+
         const pointer: HTMLImageElement = new Image();
-        pointer.src = '../../../assets/logo/AmongPointer.png';
+        pointer.src = isPointerFlipped ? '../../../assets/logo/AmongPointingLeft.png' : '../../../assets/logo/AmongPointingRight.png';
 
         // pour attendre que l'image soit téléversé correctement
         await new Promise<void>((resolve) => {
@@ -280,14 +282,14 @@ export class ImageOperationService {
 
         contextOriginalImg.drawImage(
             pointer,
-            difference.x - pointerWidth,
+            isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
             difference.y - pointerHeight * RATIO_POINTER_IMAGE,
             pointerWidth,
             pointerHeight,
         );
         contextModifiedImg.drawImage(
             pointer,
-            difference.x - pointerWidth,
+            isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
             difference.y - pointerHeight * RATIO_POINTER_IMAGE,
             pointerWidth,
             pointerHeight,

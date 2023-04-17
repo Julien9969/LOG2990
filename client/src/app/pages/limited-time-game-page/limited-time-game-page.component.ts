@@ -33,7 +33,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     time: string = '';
     nbCluesLeft = 3;
 
-    penalty: number;
+    penalty: number = 0;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
@@ -69,11 +69,12 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     }
 
     async ngOnInit(): Promise<void> {
-        this.penalty = (await this.gameService.getGameConstants()).penalty ?? 0;
         if (this.sessionId === undefined) {
             window.location.replace('/home');
         }
-        const startTime = (await this.gameService.getGameConstants()).time as number;
+        const gameConsts = await this.gameService.getGameConstants();
+        const startTime = gameConsts.time as number;
+        this.penalty = gameConsts.penalty as number;
         this.time = this.formatTime(startTime);
         // this.getGameInfos();
         this.inGameSocket.retrieveSocketId().then((userSocketId: string) => {
