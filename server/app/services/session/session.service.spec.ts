@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines, no-restricted-imports, max-len */
 import { GameService } from '../game/game.service';
 import { SessionService } from './session.service';
-import { Coordinate } from '@common/coordinate';
+// import { Coordinate } from '@common/coordinate';
 let sessionService: SessionService;
 
 describe('Session tests', () => {
