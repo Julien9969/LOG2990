@@ -93,8 +93,9 @@ export class GameService {
         this.reloadWindow();
     };
 
-    // Cette fonction est un wrapper autour de window.location.reload(), pour pouvoir la mock. 
-    // Elle est nécessaire pour mettre à jour après un changement de configuration de jeux, mais pas couverte par les tests puisqu'elle reload le chrome de tests.
+    // Cette fonction est un wrapper autour de window.location.reload(), pour pouvoir la mock.
+    // Elle est nécessaire pour mettre à jour après un changement de configuration de jeux,
+    // n'est mais pas couverte par les tests puisqu'elle reload le chrome de tests.
     reloadWindow() {
         window.location.reload();
     }
