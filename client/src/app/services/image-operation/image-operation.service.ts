@@ -10,7 +10,7 @@ import {
     RGB_GREEN,
     RGB_RED,
 } from '@app/constants/utils-constants';
-import { POINTER_X_OFFSET, RATIO_POINTER_IMAGE as RATIO_FINGER_TO_IMAGE_HEIGHT } from '@app/services/constantes.service';
+import { RATIO_POINTER_IMAGE as POINTER_TO_CANVAS_RATIO, POINTER_X_OFFSET } from '@app/services/constantes.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 
@@ -277,20 +277,20 @@ export class ImageOperationService {
                 resolve();
             };
         });
-        const pointerHeight = Math.floor(IMAGE_HEIGHT * RATIO_FINGER_TO_IMAGE_HEIGHT);
-        const pointerWidth = Math.floor(IMAGE_WIDTH * RATIO_FINGER_TO_IMAGE_HEIGHT);
+        const pointerHeight = Math.floor(IMAGE_HEIGHT * POINTER_TO_CANVAS_RATIO);
+        const pointerWidth = Math.floor(IMAGE_WIDTH * POINTER_TO_CANVAS_RATIO);
 
         contextOriginalImg.drawImage(
             pointer,
             isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
-            difference.y - pointerHeight * RATIO_FINGER_TO_IMAGE_HEIGHT,
+            difference.y - pointerHeight * POINTER_TO_CANVAS_RATIO,
             pointerWidth,
             pointerHeight,
         );
         contextModifiedImg.drawImage(
             pointer,
             isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
-            difference.y - pointerHeight * RATIO_FINGER_TO_IMAGE_HEIGHT,
+            difference.y - pointerHeight * POINTER_TO_CANVAS_RATIO,
             pointerWidth,
             pointerHeight,
         );
