@@ -18,7 +18,7 @@ button {
     background-color: rgb(213, 219, 216);
     height: 50px;
     min-width: auto;
-    transform: translate(0, -1vh);
+    transform: translateY(-1vh);
     mat-icon {
         margin-right: 10%;
     }

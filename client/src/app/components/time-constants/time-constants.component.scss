@@ -46,7 +46,7 @@ span.horizontal-bar {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    transform: translate(0, -2.5vh);
+    transform: translateY(-2.5vh);
 }
 
 
@@ -86,7 +86,7 @@ span.horizontal-bar {
     font-size: 44px;
     padding: 20px;
     cursor: pointer;
-    transform: translate(0, -0.5vh);
+    transform: translateY(-0.5vh);
 }
 
 .reset-icon:hover {

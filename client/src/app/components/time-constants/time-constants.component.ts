@@ -17,6 +17,7 @@ export class TimeConstantsComponent implements OnInit {
     async ngOnInit() {
         try {
             this.gameConstants = await this.gameService.getGameConstants();
+            if(!this.gameConstants) this.gameConstants = {};
         } catch (err) {
             this.gameConstants = {};
         }

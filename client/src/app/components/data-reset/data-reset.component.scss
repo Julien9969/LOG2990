@@ -3,7 +3,7 @@ span.horizontal-bar {
     flex-direction: row;
     justify-content: center;
     mat-icon {
-        transform: translate(0, -40%)
+        transform: translateY(-40%)
     }
 }
 
