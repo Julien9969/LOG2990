@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-explicit-any -- Any utilisé pour créer notre propre mock */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormControl } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { GameService } from '@app/services/game/game.service';
 import { MAX_GAME_TIME, MAX_PENALTY_TIME, MAX_REWARD_TIME, MIN_GAME_TIME, MIN_PENALTY_TIME, MIN_REWARD_TIME } from '@common/game-constants-values';
@@ -40,7 +42,7 @@ describe('TimeConstantsPopupComponent', () => {
 
         await TestBed.configureTestingModule({
             declarations: [TimeConstantsPopupComponent],
-            imports: [MatIconModule],
+            imports: [MatDialogModule, MatFormFieldModule, FormsModule, BrowserAnimationsModule, ReactiveFormsModule, MatInputModule],
             providers: [
                 { provide: MAT_DIALOG_DATA, useValue: {} },
                 { provide: GameService, useValue: gameServiceMock },
