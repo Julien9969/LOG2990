@@ -59,9 +59,9 @@ export class SessionGateway {
      * @param id L'identifiant de la session à supprimer
      */
     @SubscribeMessage(SessionEvents.CloseSession)
-    closeSession(sessionId: number) {
+    closeSession(client: Socket, sessionId: number) {
         try {
-            this.sessionService.delete(sessionId);
+            this.sessionService.delete(sessionId, client.id);
         } catch (error) {
             this.logger.error(error);
         }
@@ -125,6 +125,7 @@ export class SessionGateway {
                 const clientsInRoom = await this.server.in(roomId).allSockets();
                 if (clientsInRoom.size === 2) {
                     const [firstClientId, secondClientId] = clientsInRoom;
+                    console.log('firstClientId', firstClientId, 'secondClientId', secondClientId);
                     const sessionId = this.sessionService.createNewLimitedTimeSession(firstClientId, secondClientId);
                     const session: LimitedTimeSession = this.getSession(sessionId) as LimitedTimeSession;
                     this.sendNewGame(client, session);
@@ -257,7 +258,7 @@ export class SessionGateway {
         const session: Session = this.sessionService.findBySessionId(sessionId);
         if (session && !session.isTimeLimited) {
             try {
-                this.sessionService.delete(sessionId);
+                this.sessionService.delete(sessionId, client.id);
             } catch (error) {
                 this.logger.error(error);
             }
@@ -447,7 +448,7 @@ export class SessionGateway {
             // if (!session || session.isTimeLimited) return;
             if (!session) return;
             console.log('we delete the session');
-            this.sessionService.delete(session.id);
+            this.sessionService.delete(session.id, client.id);
             this.logger.log(`Session with client ${client.id} has been deleted`);
         } catch (error) {
             this.logger.error(error);
