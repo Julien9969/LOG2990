@@ -77,7 +77,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         if (this.sessionId === undefined || this.gameID === undefined) {
             // Redirection à la page principale
             const pagePath = window.location.pathname.split('/').slice(0, SLICE_LAST_INDEX);
-            window.location.replace(pagePath.join('/') + '/home');
+            window.location.replace(pagePath.join('/'));
         }
         this.getGameInfos();
         this.inGameSocket.retrieveSocketId().then((userSocketId) => {

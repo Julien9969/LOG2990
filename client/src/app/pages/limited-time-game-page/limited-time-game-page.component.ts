@@ -72,7 +72,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         if (this.sessionId === undefined) {
             // Redirection à la page principale
             const pagePath = window.location.pathname.split('/').slice(0, SLICE_LAST_INDEX);
-            window.location.replace(pagePath.join('/') + '/home');
+            window.location.replace(pagePath.join('/'));
         }
         const gameConsts = await this.gameService.getGameConstants();
         const startTime = gameConsts.time as number;
