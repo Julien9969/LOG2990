@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { GameConstants } from '@common/game-constants';
 import { Test, TestingModule } from '@nestjs/testing';
 import mongoose from 'mongoose';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
@@ -7,8 +9,10 @@ import { GameService } from '../game/game.service';
 import { ClassicSession } from './classic-session';
 import { Session } from './session';
 
-class GameServiceStub {
-    getGameConstants() {
+export class GameServiceStub {
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+    yay = 123;
+    getGameConstants(): GameConstants {
         return {
             time: 100,
             penalty: 5,
@@ -28,6 +32,7 @@ describe('Session tests', () => {
         differenceValidationService.differenceCoordLists = [[{ x: 0, y: 0 }]];
         // gameService = createStubInstance<GameService>(GameService);
         gameServiceStub = new GameServiceStub();
+        gameServiceStub.yay = 0;
         const moduleRef: TestingModule = await Test.createTestingModule({
             providers: [
                 ClassicSession,
@@ -69,22 +74,15 @@ describe('Session tests', () => {
         jest.spyOn(mongoose, 'isValidObjectId').mockImplementation(() => {
             return true;
         });
-
-        const sessionSolo = new ClassicSession(gameServiceStub as any, gameId, [{ name: 'name', socketId: firstSocketId, differencesFound: [] }]);
+        console.log(gameServiceStub.yay);
+        const sessionSolo = new ClassicSession(gameServiceStub as any, gameId, [{ name: 'name', socketId: firstSocketId, differencesFound: [23] }]);
         const sessionMulti = new ClassicSession(gameServiceStub as any, gameId, [
             { name: 'name', socketId: firstSocketId, differencesFound: [] },
-            { name: 'name', socketId: firstSocketId, differencesFound: [] },
+            { name: 'name', socketId: secondSocketId, differencesFound: [] },
         ]);
         it('SoloPlayer Game: tryguess should throw error if validateGuess returns false', () => {
             jest.spyOn(DifferenceValidationService.prototype, 'validateGuess').mockImplementation(() => {
                 return false;
-            });
-            jest.spyOn(GameServiceStub.prototype, 'getGameConstants').mockImplementation(() => {
-                return {
-                    time: 100,
-                    penalty: 5,
-                    reward: 10,
-                };
             });
             let error: Error;
 
