@@ -134,7 +134,7 @@ describe('SquareInterfaceComponent', () => {
     it('deleteGame calls game service delete and reloads page', async () => {
         const deleteSpy = spyOn(component['gameService'], 'deleteGame').and.callFake(async () => {});
         // eslint-disable-next-line -- Le any sert à mock une fonction privée
-        const reloadSpy = spyOn(component, 'reloadWindow' as any).and.callFake(() => {});
+        const reloadSpy = spyOn(component['gameService'], 'reloadWindow' as any).and.callFake(() => {});
         await component.deleteGame('');
 
         expect(deleteSpy).toHaveBeenCalled();
