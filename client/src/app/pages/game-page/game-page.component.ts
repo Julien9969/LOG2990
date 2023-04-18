@@ -1,6 +1,6 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
+import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { GameService } from '@app/services/game/game.service';

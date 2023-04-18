@@ -1,6 +1,6 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { PlayImageLimitedTimeComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
+import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { TIME_CONST } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
@@ -34,7 +34,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     penalty: number = 0;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
-    constructor(private readonly dialog: MatDialog, private readonly socket: InGameService, private readonly gameService: GameService) {
+    constructor(private readonly dialog: MatDialog, private readonly inGameSocket: InGameService, private readonly gameService: GameService) {
         this.isLoaded = false;
 
         this.isSolo = window.history.state.isSolo;
@@ -68,7 +68,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         const startTime = gameConsts.time as number;
         this.penalty = gameConsts.penalty as number;
         this.time = this.formatTime(startTime);
-        this.socket.retrieveSocketId().then((userSocketId: string) => {
+        this.inGameSocket.retrieveSocketId().then((userSocketId: string) => {
             this.userSocketId = userSocketId;
         });
         this.inGameSocket.listenOpponentLeaves(() => {
@@ -125,6 +125,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.playerExited();
-        this.socket.disconnect();
+        this.inGameSocket.disconnect();
     }
 }
