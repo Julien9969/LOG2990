@@ -225,4 +225,37 @@ describe('ImageOperationService', () => {
         const list2 = [{ x: 2, y: 2 }];
         expect(service['isSameDifference'](list1, list2)).toEqual(false);
     });
+
+    describe('handleClue', () => {
+        let showClueSpy: jasmine.Spy;
+        beforeEach(() => {
+            showClueSpy = spyOn(service, 'showClue').and.callFake(() => {});
+        });
+
+        it('should create the clueImages and show them', async () => {
+            service.isChatFocused = false;
+            await service.handleClue(2, differences);
+            expect(showClueSpy).toHaveBeenCalled();
+        });
+
+        it('should not execute if the chat box is focused', async () => {
+            service.isChatFocused = true;
+            await service.handleClue(2, differences);
+            expect(showClueSpy).not.toHaveBeenCalled();
+        });
+
+        it('should handle the clue requests for all positive nbCluesLeft', async () => {
+            service.isChatFocused = false;
+            for (let i = 5; i >= 0; i--) {
+                await service.handleClue(i, differences);
+                expect(showClueSpy).toHaveBeenCalled();
+            }
+        });
+
+        it('should not handle the clue requests when nbCluesLeft < 0', async () => {
+            service.isChatFocused = false;
+            await service.handleClue(-1, differences);
+            expect(showClueSpy).toHaveBeenCalled();
+        });
+    });
 });

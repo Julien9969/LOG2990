@@ -1,17 +1,19 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines, no-restricted-imports, max-len */
+import { Clue } from '@common/clue';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { ClueService } from '../clue/clue.service';
 import { DifferenceValidationService } from '../difference-validation/difference-validation.service';
 import { GameService } from '../game/game.service';
-import { Session } from './session';
+import { ClassicSession } from './classic-session';
 import { SessionService } from './session.service';
 
 describe('Session Service tests', () => {
     let sessionService: SessionService;
-    let session: SinonStubbedInstance<Session>;
     let differenceValidationService: SinonStubbedInstance<DifferenceValidationService>;
+    let stubClassicSession: SinonStubbedInstance<ClassicSession>;
+    let clueService: SinonStubbedInstance<ClueService>;
 
     // TODO : Analyser si ces commentaires sont nécessaires pour les tests
     // const exampleId = 'asd123123';
@@ -21,8 +23,9 @@ describe('Session Service tests', () => {
     // const exampleDictionnary = { asd123123: 'michel', dqqwee12313: 'victor', dasd123: 'Seb', jksoj78: 'Maxime' };
 
     beforeAll(async () => {
-        session = createStubInstance<Session>(Session);
         differenceValidationService = createStubInstance<DifferenceValidationService>(DifferenceValidationService);
+        clueService = createStubInstance<ClueService>(ClueService);
+        stubClassicSession = createStubInstance<ClassicSession>(ClassicSession);
         differenceValidationService.differenceCoordLists = [[{ x: 0, y: 0 }]];
 
         const moduleRef: TestingModule = await Test.createTestingModule({
@@ -42,11 +45,7 @@ describe('Session Service tests', () => {
                 },
                 {
                     provide: ClueService,
-                    useValue: {},
-                },
-                {
-                    provide: Session,
-                    useValue: session,
+                    useValue: clueService,
                 },
                 {
                     provide: DifferenceValidationService,
@@ -65,6 +64,29 @@ describe('Session Service tests', () => {
 
     it('service should be defined', async () => {
         expect(sessionService).toBeDefined();
+    });
+
+    describe('generateClue', () => {
+        const stubClientId = 'fakeId123';
+        let findByClientIdSpy: jest.SpyInstance;
+        let clueServiceGenerateClueSpy: jest.SpyInstance;
+        let stubClue: Clue;
+        beforeEach(() => {
+            stubClassicSession.nbCluesRequested = 0;
+            findByClientIdSpy = jest.spyOn(sessionService, 'findByClientId').mockReturnValue(stubClassicSession);
+            clueServiceGenerateClueSpy = jest.spyOn(clueService, 'generateClue').mockReturnValue({} as Clue);
+            stubClue = {} as Clue;
+        });
+
+        it('should return a clue', async () => {
+            const clue = sessionService.generateClue(stubClientId);
+            expect(clue).toEqual(stubClue);
+        });
+        it('should call findByClientId and clueService.generateClue', async () => {
+            sessionService.generateClue(stubClientId);
+            expect(findByClientIdSpy).toBeCalledTimes(1);
+            expect(clueServiceGenerateClueSpy).toBeCalledTimes(1);
+        });
     });
 
     //     it('addName should add a new name to the nameDictionnary if it doesnt exists', async () => {
@@ -355,38 +377,6 @@ describe('Session Service tests', () => {
     //     //         expect(session.timeElapsed).toEqual(5);
     //     //     });
     //     // });
-
-    //     describe('getClue', () => {
-    //         const gameId = 'gameId';
-    //         const firstSocketId = 'firstSocketId';
-    //         const session: Session = new Session(gameId, firstSocketId);
-    //         beforeEach(() => {
-    //             session.nbCluesRequested = 0;
-    //             session.timeElapsed = 0;
-    //         });
-
-    //         it('should return a clue', async () => {
-    //             const clue = await session.getClue(5);
-    //             expect(instanceOfClue(clue)).toBeTruthy();
-    //         });
-
-    //         it('should return nothing if nbCluesRequested >= 3', async () => {
-    //             session.nbCluesRequested = 3;
-    //             expect(await session.getClue(5)).toEqual(undefined);
-    //             session.nbCluesRequested = 5;
-    //             expect(await session.getClue(5)).toEqual(undefined);
-    //         });
-
-    //         it('should add one request to the nbCluesRequested', async () => {
-    //             await session.getClue(5);
-    //             expect(session.nbCluesRequested).toEqual(1);
-    //         });
-
-    //         it('should add the time indicated by the penalty to the total timer time', async () => {
-    //             await session.getClue(5);
-    //             expect(session.timeElapsed).toEqual(5);
-    //         });
-    //     });
 
     //     describe('verifyGameWon', () => {
     //         const gameId = 'gameId';

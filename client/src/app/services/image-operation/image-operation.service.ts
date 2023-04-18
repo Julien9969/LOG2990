@@ -173,7 +173,7 @@ export class ImageOperationService {
         this.showClue();
     }
 
-    async showClue() {
+    showClue() {
         this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
         this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
     }
