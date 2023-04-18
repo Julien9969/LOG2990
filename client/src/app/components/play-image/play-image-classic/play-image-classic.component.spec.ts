@@ -69,6 +69,7 @@ describe('PlayImageComponent', () => {
             'setCanvasContext',
             'disableCheat',
             'handleCheat',
+            'handleClue',
         ]);
         TestBed.configureTestingModule({
             imports: [HttpClientModule],
@@ -97,6 +98,12 @@ describe('PlayImageComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('handleClue should call imageOperationService.handleClue', () => {
+        imageOperationServiceSpy.handleClue.and.returnValue(Promise.resolve());
+        component.handleClue(1, [{ x: 0, y: 0 }]);
+        expect(imageOperationServiceSpy.handleClue).toHaveBeenCalled();
     });
 
     it('handleCheat should call imageOperationService.handleCheat', async () => {

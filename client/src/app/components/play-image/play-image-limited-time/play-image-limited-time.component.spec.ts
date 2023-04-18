@@ -20,7 +20,7 @@ export class StubImage {
     onload: GlobalEventHandlers['onload'];
 }
 
-fdescribe('PlayImageComponent', () => {
+describe('PlayImageComponent', () => {
     let component: PlayImageLimitedTimeComponent;
     let fixture: ComponentFixture<PlayImageLimitedTimeComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
