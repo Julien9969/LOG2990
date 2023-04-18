@@ -93,8 +93,7 @@ export class SessionService {
      */
     findByClientId(clientId: string): Session {
         for (const session of this.activeSessions) {
-            // console.log(session.players);
-            if (session.players.find((player: Player) => player.socketId === clientId)) return session;
+            if (session.players.find((player: Player) => player?.socketId === clientId)) return session;
         }
     }
     /**
