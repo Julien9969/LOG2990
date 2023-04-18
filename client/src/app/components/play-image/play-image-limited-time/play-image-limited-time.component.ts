@@ -27,7 +27,7 @@ export class PlayImageLimitedTimeComponent extends PlayImage implements AfterVie
     errorMsgPosition: Coordinate;
     errorCounter: number = 0;
 
-    // eslint-disable-next-line max-params
+    // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
     constructor(
         protected readonly mouseService: MouseService,
         protected readonly communicationService: CommunicationService,
@@ -37,7 +37,6 @@ export class PlayImageLimitedTimeComponent extends PlayImage implements AfterVie
     ) {
         super(mouseService, communicationService, audioService, imageOperationService, socket);
     }
-    // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
 
     async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
         await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);

@@ -1,303 +1,216 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines, max-len */
-// /* eslint-disable @typescript-eslint/no-magic-numbers */
-// /* eslint-disable @typescript-eslint/no-empty-function */
-// import { HttpClientModule, HttpResponse } from '@angular/common/http';
-// import { ComponentFixture, TestBed } from '@angular/core/testing';
-// import { PlayImageLimitedTimeComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
-// import { AudioService } from '@app/services/audio/audio.service';
-// import { CommunicationService } from '@app/services/communication/communication.service';
-// import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
-// import { InGameService } from '@app/services/in-game/in-game.service';
-// import { MouseService } from '@app/services/mouse/mouse.service';
-// import { of } from 'rxjs';
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-empty-function */
+import { HttpClientModule, HttpResponse } from '@angular/common/http';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
+import { AudioService } from '@app/services/audio/audio.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
+import { MouseService } from '@app/services/mouse/mouse.service';
+import { Game } from '@common/game';
+import { GuessResult } from '@common/guess-result';
+import { of } from 'rxjs';
 
-// export class StubImage {
-//     src: string;
-//     crossOrigin: string;
-//     onload: GlobalEventHandlers['onload'];
-// }
+export class StubImage {
+    src: string;
+    crossOrigin: string;
+    onload: GlobalEventHandlers['onload'];
+}
 
-// describe('PlayImageComponent', () => {
-//     let component: PlayImageLimitedTimeComponent;
-//     let fixture: ComponentFixture<PlayImageLimitedTimeComponent>;
-//     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
-//     let mouseServiceSpy: jasmine.SpyObj<MouseService>;
-//     let imageOperationServiceSpy: jasmine.SpyObj<ImageOperationService>;
-//     let audioServiceSpy: jasmine.SpyObj<AudioService>;
-//     let inGameServiceSpy: jasmine.SpyObj<InGameService>;
+fdescribe('PlayImageComponent', () => {
+    let component: PlayImageLimitedTimeComponent;
+    let fixture: ComponentFixture<PlayImageLimitedTimeComponent>;
+    let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
+    let mouseServiceSpy: jasmine.SpyObj<MouseService>;
+    let imageOperationServiceSpy: jasmine.SpyObj<ImageOperationService>;
+    let audioServiceSpy: jasmine.SpyObj<AudioService>;
+    let inGameServiceSpy: jasmine.SpyObj<InGameService>;
+    let game: Game;
 
-//     beforeEach(async () => {
-//         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['customPost', 'sendCoordinates', 'getImageURL']);
-//         communicationServiceSpy.customPost.and.returnValue(of(0));
-//         communicationServiceSpy.getImageURL.and.returnValue('assets/tests/image.bmp');
-//         audioServiceSpy = jasmine.createSpyObj('AudioServiceMock', ['playAudio']);
-//         inGameServiceSpy = jasmine.createSpyObj('InGameServiceMock', [
-//             'submitCoordinates',
-//             'retrieveSocketId',
-//             'sendDifferenceFound',
-//             'listenDifferenceFound',
-//             'connect',
-//             'playerExited',
-//             'listenOpponentLeaves',
-//             'playerWon',
-//         ]);
+    beforeEach(async () => {
+        communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['customPost', 'sendCoordinates', 'getImageURL']);
+        communicationServiceSpy.customPost.and.returnValue(of(0));
+        communicationServiceSpy.getImageURL.and.returnValue('assets/tests/image.bmp');
+        audioServiceSpy = jasmine.createSpyObj('AudioServiceMock', ['playAudio']);
+        inGameServiceSpy = jasmine.createSpyObj('InGameServiceMock', [
+            'submitCoordinates',
+            'retrieveSocketId',
+            'sendDifferenceFound',
+            'listenDifferenceFound',
+            'connect',
+            'playerExited',
+            'listenOpponentLeaves',
+            'playerWon',
+            'listenNewGame',
+            'submitCoordinatesLimitedTime',
+        ]);
 
-//         inGameServiceSpy.socketService = jasmine.createSpyObj('SocketServiceMock', ['on']);
+        inGameServiceSpy.socketService = jasmine.createSpyObj('SocketServiceMock', ['on']);
 
-//         const fakeResponse = {
-//             body: {
-//                 correct: true,
-//                 alreadyFound: false,
-//                 differenceNum: 0,
-//             },
-//             statusText: 'OK',
-//         };
-//         communicationServiceSpy.sendCoordinates.and.returnValue(
-//             of(new HttpResponse<object>({ status: 201, statusText: 'Created', body: fakeResponse })),
-//         );
+        game = {
+            id: '1',
+            name: 'testName',
+            imageMain: 1,
+            imageAlt: 1,
+            scoreBoardSolo: [['Bob', 1]],
+            scoreBoardMulti: [['Bob', 1]],
+            isValid: false,
+            isHard: false,
+            differenceCount: 2,
+        };
 
-//         mouseServiceSpy = jasmine.createSpyObj('MouseServiceMock', ['clickProcessing']);
-//         mouseServiceSpy.mousePosition = { x: 0, y: 0 };
+        const fakeResponse = {
+            body: {
+                correct: true,
+                alreadyFound: false,
+                differenceNum: 0,
+            },
+            statusText: 'OK',
+        };
+        communicationServiceSpy.sendCoordinates.and.returnValue(
+            of(new HttpResponse<object>({ status: 201, statusText: 'Created', body: fakeResponse })),
+        );
 
-//         imageOperationServiceSpy = jasmine.createSpyObj('ImageOperationServiceMock', [
-//             'pixelBlink',
-//             'restorePixel',
-//             'originalImgContext',
-//             'modifiedImgContext',
-//             'setCanvasContext',
-//             'disableCheat',
-//             'handleCheat',
-//         ]);
-//         TestBed.configureTestingModule({
-//             imports: [HttpClientModule],
-//             declarations: [PlayImageLimitedTimeComponent],
-//             providers: [
-//                 { provide: CommunicationService, useValue: communicationServiceSpy },
-//                 { provide: MouseService, useValue: mouseServiceSpy },
-//                 { provide: ImageOperationService, useValue: imageOperationServiceSpy },
-//                 { provide: Image, useValue: StubImage },
-//                 { provide: AudioService, useValue: audioServiceSpy },
-//                 { provide: InGameService, useValue: inGameServiceSpy },
-//             ],
-//         }).compileComponents();
-//     });
+        mouseServiceSpy = jasmine.createSpyObj('MouseServiceMock', ['clickProcessing']);
+        mouseServiceSpy.mousePosition = { x: 0, y: 0 };
 
-//     beforeEach(() => {
-//         fixture = TestBed.createComponent(PlayImageLimitedTimeComponent);
-//         component = fixture.componentInstance;
-//         fixture.detectChanges();
-//     });
+        imageOperationServiceSpy = jasmine.createSpyObj('ImageOperationServiceMock', [
+            'pixelBlink',
+            'restorePixel',
+            'originalImgContext',
+            'modifiedImgContext',
+            'setCanvasContext',
+            'disableCheat',
+            'handleCheat',
+            'handleClue',
+        ]);
+        TestBed.configureTestingModule({
+            imports: [HttpClientModule],
+            declarations: [PlayImageLimitedTimeComponent],
+            providers: [
+                { provide: CommunicationService, useValue: communicationServiceSpy },
+                { provide: MouseService, useValue: mouseServiceSpy },
+                { provide: ImageOperationService, useValue: imageOperationServiceSpy },
+                { provide: Image, useValue: StubImage },
+                { provide: AudioService, useValue: audioServiceSpy },
+                { provide: InGameService, useValue: inGameServiceSpy },
+            ],
+        }).compileComponents();
+    });
 
-//     beforeEach(() => {
-//         component.imageCanvas1.nativeElement = document.createElement('canvas');
-//         component.imageCanvas2.nativeElement = document.createElement('canvas');
-//     });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(PlayImageLimitedTimeComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-//     // it('should create', () => {
-//     //     expect(component).toBeTruthy();
-//     // });
+    beforeEach(() => {
+        component.imageCanvas1.nativeElement = document.createElement('canvas');
+        component.imageCanvas2.nativeElement = document.createElement('canvas');
+    });
 
-//     // describe('get', () => {
-//     //     it('mouse should return mouseService', () => {
-//     //         expect(component.mouse).toEqual(mouseServiceSpy);
-//     //     });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 
-//     //     it('canvasContext1 should return canvas context', () => {
-//     //         expect(component.canvasContext1).toEqual(component.imageCanvas1.nativeElement.getContext('2d') as CanvasRenderingContext2D);
-//     //     });
+    it('ngOnInit should set error counter to 0 and listen to differences found', () => {
+        component.errorCounter = 3;
+        inGameServiceSpy.listenDifferenceFound.and.callFake((callback: (guess: GuessResult) => void) => {
+            callback({ isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' });
+        });
+        const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
+        component.ngOnInit();
+        expect(component.errorCounter).toEqual(0);
+        expect(inGameServiceSpy.listenDifferenceFound).toHaveBeenCalled();
+        expect(updateDiffFoundSpy).toHaveBeenCalledWith({
+            isCorrect: false,
+            differencesByPlayer: [],
+            differencePixelList: [],
+            winnerName: 'winnerName',
+        });
+    });
 
-//     //     it('canvasContext2 should return canvas context', () => {
-//     //         expect(component.canvasContext2).toEqual(component.imageCanvas2.nativeElement.getContext('2d') as CanvasRenderingContext2D);
-//     //     });
-//     // });
+    it('ngOnInit should listen to newGame that call receiveNewGame in call back', () => {
+        const data = [{}, 1];
+        const receiveNewGameSpy = spyOn(component, 'receiveNewGame' as any).and.callFake(() => {});
+        component.ngOnInit();
+        expect(inGameServiceSpy.listenNewGame).toHaveBeenCalled();
+        inGameServiceSpy.listenNewGame.calls.mostRecent().args[0](data as any);
+        expect(receiveNewGameSpy).toHaveBeenCalled();
+    });
 
-//     // it('ngOnInit should set error counter to 0 and listen to differences found', () => {
-//     //     component.errorCounter = 3;
-//     //     inGameServiceSpy.listenDifferenceFound.and.callFake((callback: (guess: GuessResult) => void) => {
-//     //         callback({ isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' });
-//     //     });
-//     //     const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
-//     //     component.ngOnInit();
-//     //     expect(component.errorCounter).toEqual(0);
-//     //     expect(inGameServiceSpy.listenDifferenceFound).toHaveBeenCalled();
-//     //     expect(updateDiffFoundSpy).toHaveBeenCalledWith({
-//     //         isCorrect: false,
-//     //         differencesByPlayer: [],
-//     //         differencePixelList: [],
-//     //         winnerName: 'winnerName',
-//     //     });
-//     // });
+    it('ngAfterViewInit should call getContext and loadImage', () => {
+        spyOn(component, 'afterViewInit');
+        component.ngAfterViewInit();
+        expect(component.afterViewInit).toHaveBeenCalled();
+    });
 
-//     // it('ngAfterViewInit should call getContext and loadImage', () => {
-//     //     spyOn(component, 'loadImage');
-//     //     component.ngAfterViewInit();
-//     //     expect(component.loadImage).toHaveBeenCalledTimes(1);
-//     // });
+    it('submitLimitedTimeCoordinates should call socket.submitCoordinatesLimitedTime', async () => {
+        component.submitLimitedTimeCoordinates();
+        expect(inGameServiceSpy.submitCoordinatesLimitedTime).toHaveBeenCalled();
+    });
 
-//     // it('handleCheat should call imageOperationService.handleCheat', async () => {
-//     //     imageOperationServiceSpy.handleCheat.and.returnValue(Promise.resolve());
-//     //     await component.handleCheat();
-//     //     expect(imageOperationServiceSpy.handleCheat).toHaveBeenCalled();
-//     // });
+    it('handle clue should call imageOperationService.handleClue', async () => {
+        await component.handleClue(1, [{ x: 0, y: 0 }]);
+        expect(imageOperationServiceSpy.handleClue).toHaveBeenCalled();
+    });
 
-//     // describe('sendPosition', () => {
-//     //     it('sendPosition should call the right functions', fakeAsync(() => {
-//     //         const event = new MouseEvent('event');
-//     //         const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
-//     //         inGameServiceSpy.submitCoordinates.and.callFake(async () => {
-//     //             return Promise.resolve({ isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' });
-//     //         });
-//     //         component.sendPosition(event);
+    describe('sendPosition', () => {
+        it('should call mouseService.clickProcessing', () => {
+            spyOn(component, 'submitLimitedTimeCoordinates').and.callFake(() => {});
+            const mouseEvent = new MouseEvent('click');
+            component.sendPosition(mouseEvent);
+            expect(mouseServiceSpy.clickProcessing).toHaveBeenCalled();
+        });
 
-//     //         tick(3000);
+        it('should call submitLimitedTimeCoordinates', () => {
+            spyOn(component, 'submitLimitedTimeCoordinates').and.callFake(() => {});
+            const mouseEvent = new MouseEvent('click');
+            component.sendPosition(mouseEvent);
+            expect(component.submitLimitedTimeCoordinates).toHaveBeenCalled();
+        });
+    });
 
-//     //         expect(mouseServiceSpy.clickProcessing).toHaveBeenCalledWith(event);
-//     //         expect(updateDiffFoundSpy).toHaveBeenCalledWith({
-//     //             isCorrect: false,
-//     //             differencesByPlayer: [],
-//     //             differencePixelList: [],
-//     //             winnerName: 'winnerName',
-//     //         });
-//     //     }));
-//     //     it('sendPosition should catch the error in the promise', fakeAsync(() => {
-//     //         const event = new MouseEvent('event');
-//     //         inGameServiceSpy.submitCoordinates.and.callFake(async () => {
-//     //             throw new Error();
-//     //         });
-//     //         component.sendPosition(event);
+    describe('updateDiffFound', () => {
+        it('should call the right functions and make errorCounter = 0 when guessResult is correct', () => {
+            const guessResult: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
+            component.updateDiffFound(guessResult);
 
-//     //         tick(3000);
+            expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('success');
+            expect(component.errorCounter).toEqual(0);
+        });
+        it('should handle a wrong guess', () => {
+            const guessResult: GuessResult = { isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
+            const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
+            component.updateDiffFound(guessResult);
 
-//     //         expect(mouseServiceSpy.clickProcessing).toHaveBeenCalledWith(event);
-//     //     }));
-//     // });
+            expect(audioServiceSpy.playAudio).not.toHaveBeenCalledWith('success');
+            expect(handleErrorGuessSpy).toHaveBeenCalled();
+        });
+    });
 
-//     // describe('updateDiffFound', () => {
-//     //     it('should the right functions and make errorCounter = 0 when guessResult is correct and the score has changed', () => {
-//     //         const guessResult: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
-//     //         spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
-//     //             return true;
-//     //         });
-//     //         const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
-//     //         component.updateDiffFound(guessResult);
+    describe('receiveNewGame', () => {
+        it('should call loadImage and setCanvasContext', async () => {
+            const loadImageSpy = spyOn(component, 'loadImage' as any).and.callFake(() => {});
+            await component.receiveNewGame(game);
+            expect(loadImageSpy).toHaveBeenCalled();
+            expect(imageOperationServiceSpy.setCanvasContext).toHaveBeenCalled();
+        });
 
-//     //         expect(component.lastDifferenceFound).toEqual(guessResult);
-//     //         expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('success');
-//     //         expect(diffFoundUpdateEmitSpy).toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
-//     //         expect(component.errorCounter).toEqual(0);
-//     //         expect(imageOperationServiceSpy.pixelBlink).toHaveBeenCalledWith(guessResult.differencePixelList);
-//     //     });
-//     //     it('should handle a false guess', () => {
-//     //         const guessResult: GuessResult = { isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
-//     //         spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
-//     //             return true;
-//     //         });
-//     //         const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
-//     //         const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
-//     //         component.updateDiffFound(guessResult);
+        it('should not call loadImage and setCanvasContext if game is invalid', async () => {
+            const loadImageSpy = spyOn(component, 'loadImage' as any).and.callFake(() => {});
+            await component.receiveNewGame(undefined as any);
+            expect(loadImageSpy).not.toHaveBeenCalled();
+            expect(imageOperationServiceSpy.setCanvasContext).not.toHaveBeenCalled();
+        });
+    });
 
-//     //         expect(component.lastDifferenceFound).not.toEqual(guessResult);
-//     //         expect(audioServiceSpy.playAudio).not.toHaveBeenCalledWith('success');
-//     //         expect(diffFoundUpdateEmitSpy).not.toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
-//     //         expect(imageOperationServiceSpy.pixelBlink).not.toHaveBeenCalledWith(guessResult.differencePixelList);
-//     //         expect(handleErrorGuessSpy).toHaveBeenCalled();
-//     //     });
-//     //     it('should handle a difference already received', () => {
-//     //         const guessResult: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
-//     //         spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
-//     //             return false;
-//     //         });
-//     //         const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
-//     //         const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
-//     //         component.updateDiffFound(guessResult);
-
-//     //         expect(component.lastDifferenceFound).not.toEqual(guessResult);
-//     //         expect(audioServiceSpy.playAudio).not.toHaveBeenCalledWith('success');
-//     //         expect(diffFoundUpdateEmitSpy).not.toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
-//     //         expect(imageOperationServiceSpy.pixelBlink).not.toHaveBeenCalledWith(guessResult.differencePixelList);
-//     //         expect(handleErrorGuessSpy).toHaveBeenCalled();
-//     //     });
-//     // });
-//     // describe('hasNbDifferencesChanged', () => {
-//     //     it('should return false when did not changed', () => {
-//     //         component.lastDifferenceFound.differencesByPlayer = [
-//     //             ['socket1', 1],
-//     //             ['socket2', 2],
-//     //         ];
-//     //         const differenceByPlayer: [string, number][] = [
-//     //             ['socket1', 1],
-//     //             ['socket2', 2],
-//     //         ];
-//     //         const result: boolean = component.hasNbDifferencesChanged(differenceByPlayer);
-//     //         expect(result).toEqual(false);
-//     //     });
-//     //     it('should return true when changed', () => {
-//     //         component.lastDifferenceFound.differencesByPlayer = [
-//     //             ['socket1', 1],
-//     //             ['socket2', 2],
-//     //         ];
-//     //         const differenceByPlayer: [string, number][] = [
-//     //             ['socket1', 1],
-//     //             ['socket2', 3],
-//     //         ];
-//     //         const result: boolean = component.hasNbDifferencesChanged(differenceByPlayer);
-//     //         expect(result).toEqual(true);
-//     //     });
-//     //     it('should return true when changed', () => {
-//     //         component.lastDifferenceFound.differencesByPlayer = [['socket1', 1]];
-//     //         const differenceByPlayer: [string, number][] = [
-//     //             ['socket1', 1],
-//     //             ['socket2', 1],
-//     //         ];
-//     //         const result: boolean = component.hasNbDifferencesChanged(differenceByPlayer);
-//     //         expect(result).toEqual(true);
-//     //     });
-//     // });
-
-//     // describe('handleErrorGuess', () => {
-//     //     it('handleErrorGuess should set errorMsgPosition, call errorTimer and increment errorCounter and set errorGuess to false after 1s', () => {
-//     //         jasmine.clock().install();
-//     //         component.errorCounter = 0;
-//     //         component.mouse.mousePosition = { x: 0, y: 1 };
-//     //         component.handleErrorGuess();
-//     //         expect(component.errorGuess).toEqual(true);
-//     //         jasmine.clock().tick(1000);
-//     //         expect(component.errorMsgPosition).toEqual({ x: 0, y: 1 });
-//     //         expect(component.errorCounter).toEqual(1);
-//     //         expect(component.errorGuess).toEqual(false);
-//     //         jasmine.clock().uninstall();
-//     //     });
-
-//     //     it('handleErrorGuess should call playAudio with "error" when errorCounter is less than 3', () => {
-//     //         component.errorCounter = 1; // will be incremented to 2 in handleErrorGuess
-//     //         component.handleErrorGuess();
-//     //         expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('error');
-//     //         expect(component.errorCounter).toEqual(2);
-//     //     });
-
-//     //     it('handleErrorGuess should call playAudio with "manyErrors" when errorCounter is equal to 3 and reset the count', () => {
-//     //         component.errorCounter = 2;
-//     //         component.handleErrorGuess();
-//     //         expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('manyErrors');
-//     //         expect(component.errorCounter).toEqual(0);
-//     //     });
-//     // });
-
-//     // it('loadImage should load image on canvas', async () => {
-//     //     spyOn(component, 'drawImageOnCanvas');
-//     //     await component.loadImage(component.canvasContext1, 0);
-//     //     expect(component.drawImageOnCanvas).toHaveBeenCalledWith(component.canvasContext1, jasmine.any(Image));
-//     //     expect(communicationServiceSpy.getImageURL).toHaveBeenCalled();
-//     // });
-
-//     // it('drawImageOnCanvas should call drawImage function', () => {
-//     //     const drawSpy = spyOn(component.canvasContext1, 'drawImage');
-//     //     component.drawImageOnCanvas(component.canvasContext1, new Image());
-//     //     expect(drawSpy).toHaveBeenCalled();
-//     // });
-
-//     // it('ngOnDestroy should call imageOperationService.disableCheat', () => {
-//     //     component.ngOnDestroy();
-//     //     expect(imageOperationServiceSpy.disableCheat).toHaveBeenCalled();
-//     // });
-// });
+    it('ngOnDestroy should call onDestroy', () => {
+        spyOn(component, 'onDestroy').and.callFake(() => {});
+        component.ngOnDestroy();
+        expect(component.onDestroy).toHaveBeenCalled();
+    });
+});

@@ -28,10 +28,6 @@ export class PlayImage {
         protected readonly socket: InGameService,
     ) {}
 
-    get mouse(): MouseService {
-        return this.mouseService;
-    }
-
     get canvasContext1(): CanvasRenderingContext2D {
         return this.imageCanvas1.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
     }

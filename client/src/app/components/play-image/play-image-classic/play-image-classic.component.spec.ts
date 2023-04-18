@@ -107,7 +107,7 @@ describe('PlayImageComponent', () => {
 
     describe('get', () => {
         it('mouse should return mouseService', () => {
-            expect(component.mouse).toEqual(mouseServiceSpy);
+            expect(component['mouseService']).toEqual(mouseServiceSpy);
         });
 
         it('canvasContext1 should return canvas context', () => {
@@ -262,7 +262,7 @@ describe('PlayImageComponent', () => {
         it('handleErrorGuess should set errorMsgPosition, call errorTimer and increment errorCounter and set errorGuess to false after 1s', () => {
             jasmine.clock().install();
             component.errorCounter = 0;
-            component.mouse.mousePosition = { x: 0, y: 1 };
+            component['mouseService'].mousePosition = { x: 0, y: 1 };
             component.handleErrorGuess();
             expect(component.errorGuess).toEqual(true);
             jasmine.clock().tick(1000);
