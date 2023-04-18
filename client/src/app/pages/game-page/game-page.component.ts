@@ -2,6 +2,7 @@ import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/
 import { MatDialog } from '@angular/material/dialog';
 import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
+import { SLICE_LAST_INDEX } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { GameService } from '@app/services/game/game.service';
 import { HistoryService } from '@app/services/history.service';
@@ -74,7 +75,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         if (this.sessionId === undefined || this.gameID === undefined) {
-            window.location.replace('/home');
+            // Redirection à la page principale
+            const pagePath = window.location.pathname.split('/').slice(0, SLICE_LAST_INDEX);
+            window.location.replace(pagePath.join('/') + '/home');
         }
         this.getGameInfos();
         this.inGameSocket.retrieveSocketId().then((userSocketId) => {
