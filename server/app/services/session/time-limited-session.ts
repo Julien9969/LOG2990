@@ -95,7 +95,7 @@ export class LimitedTimeSession extends Session {
         try {
             this.differenceValidationService.loadDifferences(this.gameID.toString());
         } catch (e: unknown) {
-            return this.decideNewGame();
+            return await this.decideNewGame();
         }
         return newGame;
     }
