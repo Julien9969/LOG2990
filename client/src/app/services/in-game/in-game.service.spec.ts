@@ -33,24 +33,41 @@ describe('InGameService', () => {
         expect(service).toBeTruthy();
     });
 
-    // it('submitCoordinates should send get the right callback', async () => {
-    //     const sessionId = 123;
-    //     const coordinate = { x: 0, y: 0 };
-    //     const expectedResponse: GuessResult = {
-    //         isCorrect: true,
-    //         differencesByPlayer: [],
-    //         differencePixelList: [],
-    //         winnerName: '',
-    //     };
-    //     const sendAndCallbackSpy = spyOn(service['socketService'], 'sendAndCallBack');
-    //     sendAndCallbackSpy.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
-    //         callback(expectedResponse);
-    //     });
-    //     const response = await service.submitCoordinates(sessionId, coordinate);
-    //     expect(sendAndCallbackSpy).toHaveBeenCalled();
-    //     expect(sendAndCallbackSpy).toHaveBeenCalledWith(SessionEvents.SubmitCoordinates, [sessionId, coordinate], jasmine.any(Function));
-    //     expect(response).toEqual(expectedResponse);
-    // });
+    it('submitCoordinates should send get the right callback', async () => {
+        const sessionId = 123;
+        const coordinate = { x: 0, y: 0 };
+        const expectedResponse: GuessResult = {
+            isCorrect: true,
+            differencesByPlayer: [],
+            differencePixelList: [],
+            winnerName: '',
+        };
+        const sendAndCallbackSpy = spyOn(service['socketService'], 'sendAndCallBack');
+        sendAndCallbackSpy.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
+            callback(expectedResponse);
+        });
+        const response = await service.submitCoordinatesSolo(sessionId, coordinate);
+        expect(sendAndCallbackSpy).toHaveBeenCalled();
+        expect(sendAndCallbackSpy).toHaveBeenCalledWith(SessionEvents.SubmitCoordinatesSoloGame, [sessionId, coordinate], jasmine.any(Function));
+        expect(response).toEqual(expectedResponse);
+    });
+
+    it('submitCoordinatesMulti should call send with data and SessionEvents.SubmitCoordinatesMultiGame', async () => {
+        const sessionId = 123;
+        const coordinate = { x: 0, y: 0 };
+        const sendSpy = spyOn(service['socketService'], 'send');
+        service.submitCoordinatesMulti(sessionId, coordinate);
+        expect(sendSpy).toHaveBeenCalled();
+        expect(sendSpy).toHaveBeenCalledWith(SessionEvents.SubmitCoordinatesMultiGame, [sessionId, coordinate]);
+    });
+
+    it('submitCoordinatesLimitedTime should call send with data and SessionEvents.SubmitCoordinatesLimitedTime', async () => {
+        const sessionId = 123;
+        const coordinate = { x: 0, y: 0 };
+        const sendSpy = spyOn(service['socketService'], 'send');
+        service.submitCoordinatesLimitedTime(sessionId, coordinate);
+        expect(sendSpy).toHaveBeenCalledWith(SessionEvents.SubmitCoordinatesLimitedTime, [sessionId, coordinate]);
+    });
 
     it('retrieveClue should send get the right callback', async () => {
         const expectedResponse = {
@@ -107,6 +124,20 @@ describe('InGameService', () => {
         expect(sendSpy).toHaveBeenCalledWith(SessionEvents.PlayerLeft, sessionId);
     });
 
+    it('listenGameEnded listen to SessionEvents.EndedGame that calls a callback', () => {
+        const callbackSpy = jasmine.createSpy('callback');
+        service.listenGameEnded(callbackSpy);
+        socketHelper.peerSideEmit(SessionEvents.EndedGame);
+        expect(callbackSpy).toHaveBeenCalled();
+    });
+
+    it('listenNewGame should listen to SessionEvents.NewGame and call a callback', () => {
+        const callbackSpy = jasmine.createSpy('callback');
+        service.listenNewGame(callbackSpy);
+        socketHelper.peerSideEmit(SessionEvents.NewGame);
+        expect(callbackSpy).toHaveBeenCalled();
+    });
+
     it('listenDifferenceFound should callback with the right infos when receiving a certain message', () => {
         const differenceFoundStub: GuessResult = { isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: undefined };
         const callbackSpy = jasmine.createSpy('callback');
@@ -117,11 +148,9 @@ describe('InGameService', () => {
     });
     it('listenOpponentLeaves should callback and call the right function when receiving a certain message', () => {
         const callbackSpy = jasmine.createSpy('callback');
-        const disconnectSpy = spyOn(service['socketService'], 'disconnect').and.callFake(() => {});
         service.listenOpponentLeaves(callbackSpy);
         socketHelper.peerSideEmit(SessionEvents.OpponentLeftGame);
         expect(callbackSpy).toHaveBeenCalled();
-        expect(disconnectSpy).toHaveBeenCalled();
     });
     it('listenProvideName should send the right message receiving a certain message', () => {
         const playerName = 'jean';

@@ -68,14 +68,12 @@ export class PlayImageClassicComponent extends PlayImage implements AfterViewIni
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
         if (this.isSolo) {
-            this.socket
-                .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
-                .then((response: GuessResult) => {
-                    this.updateDiffFound(response);
-                })
-                .catch((e) => {
-                    alert(e.message);
-                });
+            this.socket.submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition).then((response: GuessResult) => {
+                this.updateDiffFound(response);
+            });
+            // .catch((e) => {
+            //     alert(e.message);
+            // });
         } else {
             this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
         }

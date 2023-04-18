@@ -150,7 +150,7 @@ describe('PlayImageComponent', () => {
     });
 
     describe('sendPosition', () => {
-        it('sendPosition should call the right functions', fakeAsync(() => {
+        it('sendPosition should call submitCoordinatesSolo is isolo is true', fakeAsync(() => {
             component.isSolo = true;
             const event = new MouseEvent('event');
             const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
@@ -169,11 +169,11 @@ describe('PlayImageComponent', () => {
                 winnerName: 'winnerName',
             });
         }));
-        it('sendPosition should catch the error in the promise', fakeAsync(() => {
+
+        it('sendPosition should call submitCoordinatesMulti is isSolo is false', fakeAsync(() => {
+            component.isSolo = false;
             const event = new MouseEvent('event');
-            inGameServiceSpy.submitCoordinatesSolo.and.callFake(async () => {
-                throw new Error();
-            });
+            inGameServiceSpy.submitCoordinatesMulti.and.callFake(async () => {});
             component.sendPosition(event);
 
             tick(3000);

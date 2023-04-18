@@ -5,6 +5,7 @@ import { SocketClientService } from '@app/services/socket-client/socket-client.s
 import { SocketTestHelper } from '@common/socket-test-helper';
 import { Socket } from 'socket.io-client';
 import { MatchMakingService } from './match-making.service';
+import { SessionEvents } from '@common/session.gateway.events';
 
 class SocketClientServiceMock extends SocketClientService {
     override connect() {}
@@ -90,6 +91,21 @@ describe('MatchMakingService', () => {
         service.opponentLeft(callbackSpy);
         socketHelper.peerSideEmit('opponentLeft');
         expect(callbackSpy).toHaveBeenCalled();
+    });
+
+    it('startSoloLimitedTimeSession should call socketService.sendAndCallBack with "StartLimitedTimeSession" true and a callback', () => {
+        const sendSpy = spyOn(service['socketService'], 'sendAndCallBack');
+        const callback = jasmine.createSpy('callback');
+        service.startSoloLimitedTimeSession(callback);
+        expect(sendSpy).toHaveBeenCalled();
+        expect(sendSpy).toHaveBeenCalledWith(SessionEvents.StartLimitedTimeSession, true, callback);
+    });
+
+    it('startMultiLimitedTimeSession should call socketService.send with "StartLimitedTimeSession" false and a callback', () => {
+        const sendSpy = spyOn(service['socketService'], 'send');
+        service.startMultiLimitedTimeSession();
+        expect(sendSpy).toHaveBeenCalled();
+        expect(sendSpy).toHaveBeenCalledWith(SessionEvents.StartLimitedTimeSession, false);
     });
 
     it('joinRoom should call socketService.send with "joinRoom" and an objet with gameId and playerName', () => {

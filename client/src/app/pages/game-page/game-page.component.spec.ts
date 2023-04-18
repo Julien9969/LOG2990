@@ -26,13 +26,14 @@ import { of } from 'rxjs';
 import { GamePageComponent } from './game-page.component';
 
 @Component({
-    selector: 'app-play-image',
+    selector: 'app-play-image-classic',
     template: '<img>',
 })
 export class StubPlayImageComponent {
     @Input() imageMainId!: string;
     @Input() imageAltId!: string;
     @Input() sessionID!: number;
+    @Input() isSolo!: boolean;
     playerName: string;
     handleClue() {}
 }
