@@ -1,57 +1,87 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GameConstants } from '@common/game-constants';
-import { Test, TestingModule } from '@nestjs/testing';
+// import { GameConstants } from '@common/game-constants';
+// import { Test, TestingModule } from '@nestjs/testing';
 import mongoose from 'mongoose';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
-import { DifferenceValidationService } from '../difference-validation/difference-validation.service';
-import { GameService } from '../game/game.service';
+import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
+import { GameService } from '@app/services/game/game.service';
 import { ClassicSession } from './classic-session';
-import { Session } from './session';
+// import { Session } from './session';
 
-export class GameServiceStub {
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-    yay = 123;
-    getGameConstants(): GameConstants {
-        return {
-            time: 100,
-            penalty: 5,
-            reward: 10,
-        };
-    }
-}
+// export class GameServiceStub {
+//     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+//     yay = 123;
+//     getGameConstants(): GameConstants {
+//         return {
+//             time: 100,
+//             penalty: 5,
+//             reward: 10,
+//         };
+//     }
+// }
+jest.mock('mongoose');
 
 describe('Session tests', () => {
     let classicSession: ClassicSession;
     let differenceValidationService: SinonStubbedInstance<DifferenceValidationService>;
-    let session: SinonStubbedInstance<Session>;
-    let gameServiceStub: GameServiceStub;
+    // let session: SinonStubbedInstance<Session>;
+    let gameServiceStub: GameService;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         differenceValidationService = createStubInstance<DifferenceValidationService>(DifferenceValidationService);
         differenceValidationService.differenceCoordLists = [[{ x: 0, y: 0 }]];
         // gameService = createStubInstance<GameService>(GameService);
-        gameServiceStub = new GameServiceStub();
-        gameServiceStub.yay = 0;
-        const moduleRef: TestingModule = await Test.createTestingModule({
-            providers: [
-                ClassicSession,
-                {
-                    provide: DifferenceValidationService,
-                    useValue: differenceValidationService,
-                },
-                {
-                    provide: Session,
-                    useValue: session,
-                },
-                {
-                    provide: GameService,
-                    useValue: gameServiceStub,
-                },
-            ],
-        }).compile();
+        // session = createStubInstance<Session>(Session);
+        gameServiceStub = jest.createMockFromModule<GameService>('@app/services/game/game.service');
+        gameServiceStub.getGameConstants = jest.fn().mockReturnValue({
+            time: 100,
+            penalty: 5,
+            reward: 10,
+        });
 
-        classicSession = moduleRef.get<ClassicSession>(ClassicSession);
+        jest.spyOn(mongoose, 'isValidObjectId').mockReturnValue(true);
+
+        jest.spyOn(DifferenceValidationService.prototype, 'loadDifferences').mockImplementation(() => {
+            // eslint-disable-next-line no-invalid-this
+            DifferenceValidationService.prototype.differenceCoordLists = [[]];
+        });
+
+        // const module: TestingModule = await Test.createTestingModule({
+        //     providers: [
+        //         ClassicSession,
+        //         {
+        //             provide: DifferenceValidationService,
+        //             useValue: differenceValidationService,
+        //         },
+        //         {
+        //             provide: Session,
+        //             useValue: session,
+        //         },
+        //         {
+        //             provide: GameService,
+        //             useValue: gameServiceStub,
+        //         },
+        //     ],
+        // }).compile();
+
+        // classicSession = module.get<ClassicSession>(ClassicSession);
+        const gameID = 'gameId';
+        const players = [
+            {
+                name: 'name',
+                socketId: 'firstSocketId',
+                differencesFound: [23],
+            },
+            {
+                name: 'name',
+                socketId: 'secondSocketId',
+                differencesFound: [23],
+            },
+        ];
+        classicSession = new ClassicSession(gameServiceStub as GameService, gameID, players);
+        // gameServiceStub.getGameConstants();
+        classicSession.differenceValidationService = differenceValidationService;
     });
 
     afterEach(() => {
@@ -67,27 +97,24 @@ describe('Session tests', () => {
         const gameId = 'gameId';
         const firstSocketId = 'firstSocketId';
         const secondSocketId = 'secondSocketId';
-        jest.spyOn(DifferenceValidationService.prototype, 'loadDifferences').mockImplementation(() => {
-            // eslint-disable-next-line no-invalid-this
-            DifferenceValidationService.prototype.differenceCoordLists = [[]];
-        });
-        jest.spyOn(mongoose, 'isValidObjectId').mockImplementation(() => {
-            return true;
-        });
-        console.log(gameServiceStub.yay);
-        const sessionSolo = new ClassicSession(gameServiceStub as any, gameId, [{ name: 'name', socketId: firstSocketId, differencesFound: [23] }]);
-        const sessionMulti = new ClassicSession(gameServiceStub as any, gameId, [
-            { name: 'name', socketId: firstSocketId, differencesFound: [] },
-            { name: 'name', socketId: secondSocketId, differencesFound: [] },
-        ]);
+
+        // const sessionSolo = new ClassicSession(gameServiceStub as any, gameId, [{ name: 'name', socketId: firstSocketId, differencesFound: [23] }]);
+        // const sessionMulti = new ClassicSession(gameServiceStub as any, gameId, [
+        //     { name: 'name', socketId: firstSocketId, differencesFound: [] },
+        //     { name: 'name', socketId: secondSocketId, differencesFound: [] },
+        // ]);
+
         it('SoloPlayer Game: tryguess should throw error if validateGuess returns false', () => {
             jest.spyOn(DifferenceValidationService.prototype, 'validateGuess').mockImplementation(() => {
                 return false;
             });
+
+            jest.spyOn(mongoose, 'isValidObjectId').mockReturnValue(true);
+
             let error: Error;
 
             try {
-                sessionSolo.tryGuess({ x: 12, y: 13 }, firstSocketId);
+                classicSession.tryGuess({ x: 12, y: 13 }, firstSocketId);
             } catch (e) {
                 error = e;
             }
