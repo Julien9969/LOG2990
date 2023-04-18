@@ -270,7 +270,7 @@ export class ImageOperationService {
 
         const pointer: HTMLImageElement = new Image();
         const extension = isPointerFlipped ? 'Left.png' : 'Right.png';
-        pointer.src = '../../../assets/logo/AmongPointing' + extension;
+        pointer.src = '/assets/logo/AmongPointing' + extension;
 
         // pour attendre que l'image soit téléversé correctement
         await new Promise<void>((resolve) => {
@@ -278,6 +278,7 @@ export class ImageOperationService {
                 resolve();
             };
         });
+
         const pointerHeight = Math.floor(IMAGE_HEIGHT * POINTER_TO_CANVAS_RATIO);
         const pointerWidth = Math.floor(IMAGE_WIDTH * POINTER_TO_CANVAS_RATIO);
 
