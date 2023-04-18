@@ -108,9 +108,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         this.dialog.closeAll();
 
         switch (dialogTypes) {
-            case 'clue':
-                this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
-                break;
             case 'quit':
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
                 break;

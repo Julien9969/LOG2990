@@ -33,9 +33,4 @@ export class PopupDialogComponent implements OnInit {
             this.message = this.data[1];
         }
     }
-
-    getClueNumber(): number {
-        const noMagicNumber = 10;
-        return noMagicNumber;
-    }
 }
