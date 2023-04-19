@@ -77,6 +77,7 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
     }
     async reset() {
+        this.imageOperationService.reset();
         this.ngOnInit();
         await this.ngAfterViewInit();
     }

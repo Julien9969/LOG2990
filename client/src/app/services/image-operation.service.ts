@@ -33,7 +33,12 @@ export class ImageOperationService {
             clearInterval(interval);
         });
         this.intervalIds = [];
-        this.allDifferencesList = [];
+        this.allDifferencesList = undefined as any;
+        clearInterval(this.cheatInterval);
+        this.cheatInterval = 0;
+        this.cheatImagesData = undefined as any;
+        this.newestTimerId = 0
+        this.oldestTimerId = 0
     }
 
     // Jamais utilise
