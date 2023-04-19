@@ -6,6 +6,7 @@ import { GameService } from '@app/services/game/game.service';
 import { ClassicSession } from '@app/services/session/classic-session';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
+import { LimitedTimeSession } from '@app/services/session/time-limited-session';
 import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
@@ -129,7 +130,7 @@ describe('SessionGateway', () => {
     //     let getClueSpy: jest.SpyInstance;
     //     beforeEach(() => {
     //         findSessionByClientIdSpy = jest.spyOn(sessionService, 'findByClientId').mockImplementation(() => stubSession);
-    //         getClueSpy = jest.spyOn(stubSession, 'getClue').mockImplementation(async () => {
+    //         getClueSpy = jest.spyOn(stubSession, 'getClue').mockImplementation(() => {
     //             return {
     //                 coordinates: [{ x: 0, y: 0 }],
     //                 nbCluesLeft: 2,
@@ -166,7 +167,8 @@ describe('SessionGateway', () => {
         let playerWonSpy: jest.SpyInstance;
 
         const stubGuess: [number, Coordinate] = [11, { x: 1, y: 3 }];
-        let testSession: ClassicSession;
+        let testSessionClassic: ClassicSession;
+        let testSessionLimitedTime: LimitedTimeSession;
 
         beforeEach(() => {
             findBySessionIdSpy = jest.spyOn(sessionService, 'findBySessionId').mockImplementation(() => stubSession);
@@ -177,7 +179,7 @@ describe('SessionGateway', () => {
 
         describe('when solo session', () => {
             beforeEach(() => {
-                testSession = {
+                testSessionClassic = {
                     time: 100,
                     gameID: 'game-id',
                     isSolo: true,
@@ -185,7 +187,7 @@ describe('SessionGateway', () => {
                     tryGuess: (coord, id) => {},
                 } as ClassicSession;
                 findBySessionIdSpy.mockImplementation(() => {
-                    return testSession;
+                    return testSessionClassic;
                 });
             });
 
@@ -199,7 +201,7 @@ describe('SessionGateway', () => {
             });
 
             it('sends system message when incorrect guess', () => {
-                tryGuessSpy = jest.spyOn(testSession, 'tryGuess').mockImplementation(() => {
+                tryGuessSpy = jest.spyOn(testSessionClassic, 'tryGuess').mockImplementation(() => {
                     return {
                         isCorrect: false,
                         winnerName: '',
@@ -214,7 +216,7 @@ describe('SessionGateway', () => {
             });
 
             it('tries guess and sends system message when correct but no winner name', () => {
-                tryGuessSpy = jest.spyOn(testSession, 'tryGuess').mockImplementation(() => {
+                tryGuessSpy = jest.spyOn(testSessionClassic, 'tryGuess').mockImplementation(() => {
                     return {
                         isCorrect: true,
                         winnerName: '',
@@ -229,7 +231,7 @@ describe('SessionGateway', () => {
             });
 
             it('tries guess and sends system message when correct, and calls playerWon', () => {
-                tryGuessSpy = jest.spyOn(testSession, 'tryGuess').mockImplementation(() => {
+                tryGuessSpy = jest.spyOn(testSessionClassic, 'tryGuess').mockImplementation(() => {
                     return {
                         isCorrect: true,
                         winnerName: 'winner',
@@ -245,7 +247,7 @@ describe('SessionGateway', () => {
 
         describe('when multiplayer session', () => {
             beforeEach(() => {
-                testSession = {
+                testSessionClassic = {
                     time: 100,
                     gameID: 'game-id',
                     isSolo: false,
@@ -253,29 +255,29 @@ describe('SessionGateway', () => {
                     tryGuess: (coord, id) => {},
                 } as ClassicSession;
                 findBySessionIdSpy.mockImplementation(() => {
-                    return testSession;
+                    return testSessionClassic;
                 });
             });
 
-            // it('tries guess and sends system message and log when incorrect, and emits message to client', () => {
-            //     tryGuessSpy = jest.spyOn(testSession, 'tryGuess').mockImplementation(() => {
-            //         return {
-            //             isCorrect: false,
-            //             winnerName: '',
-            //         } as GuessResult;
-            //     });
-            //     const clientEmitSpy = jest.spyOn(stubSocket, 'emit');
+            it('tries guess and sends system message and log when incorrect, and emits message to client', () => {
+                tryGuessSpy = jest.spyOn(testSessionClassic, 'tryGuess').mockImplementation(() => {
+                    return {
+                        isCorrect: false,
+                        winnerName: '',
+                    } as GuessResult;
+                });
+                const clientEmitSpy = jest.spyOn(stubSocket, 'emit');
 
-            //     gateway.handleCoordinatesSubmissionMulti(stubSocket, stubGuess);
+                gateway.handleCoordinatesSubmissionMulti(stubSocket, stubGuess);
 
-            //     expect(tryGuessSpy).toBeCalled();
-            //     expect(logSpy).toBeCalled();
-            //     expect(sendSystemMessageSpy).toBeCalledWith(stubSocket, 'guess_bad');
-            //     expect(clientEmitSpy).toBeCalled();
-            // });
+                expect(tryGuessSpy).toBeCalled();
+                expect(logSpy).toBeCalled();
+                expect(sendSystemMessageSpy).toBeCalledWith(stubSocket, 'guess_bad');
+                expect(clientEmitSpy).toBeCalled();
+            });
 
             it('tries guess and sends system message when correct', () => {
-                tryGuessSpy = jest.spyOn(testSession, 'tryGuess').mockImplementation(() => {
+                tryGuessSpy = jest.spyOn(testSessionClassic, 'tryGuess').mockImplementation(() => {
                     return {
                         isCorrect: true,
                         winnerName: 'winner',
@@ -283,7 +285,7 @@ describe('SessionGateway', () => {
                 });
                 const clientEmitSpy = jest.spyOn(stubSocket, 'emit');
 
-                gateway.handleCoordinatesSubmissionSolo(stubSocket, stubGuess);
+                gateway.handleCoordinatesSubmissionMulti(stubSocket, stubGuess);
 
                 expect(tryGuessSpy).toBeCalled();
                 expect(clientEmitSpy).not.toBeCalled();
@@ -292,7 +294,7 @@ describe('SessionGateway', () => {
 
         it('does not try guessing when invalid session and warns in log', () => {
             findBySessionIdSpy.mockImplementationOnce(() => undefined);
-            gateway.handleCoordinatesSubmissionSolo(stubSocket, stubGuess);
+            gateway.handleCoordinatesSubmissionMulti(stubSocket, stubGuess);
 
             expect(findBySessionIdSpy).toBeCalled();
             expect(logSpy).toBeCalled();
@@ -304,7 +306,76 @@ describe('SessionGateway', () => {
                 throw new Error();
             });
             const clientEmitSpy = jest.spyOn(stubSocket, 'emit').mockImplementation();
-            gateway.handleCoordinatesSubmissionSolo(stubSocket, stubGuess);
+            gateway.handleCoordinatesSubmissionMulti(stubSocket, stubGuess);
+
+            expect(logSpy).toBeCalled();
+            expect(clientEmitSpy).not.toBeCalled();
+        });
+
+        describe('when limitedTime session', () => {
+            let sendNewGameSpy: jest.SpyInstance;
+            beforeEach(() => {
+                testSessionLimitedTime = {
+                    time: 100,
+                    gameID: 'game-id',
+                    isSolo: false,
+                    stopTimer: () => {},
+                    tryGuess: (coord, id) => {},
+                } as LimitedTimeSession;
+                findBySessionIdSpy.mockImplementation(() => {
+                    return testSessionLimitedTime;
+                });
+                sendNewGameSpy = jest.spyOn(gateway, 'sendNewGame').mockImplementation();
+            });
+
+            it('tries guess and sends system message and log when incorrect, and emits message to client', async () => {
+                tryGuessSpy = jest.spyOn(testSessionLimitedTime, 'tryGuess').mockImplementation(async () => {
+                    return {
+                        isCorrect: false,
+                        winnerName: '',
+                    } as GuessResult;
+                });
+                const clientEmitSpy = jest.spyOn(stubSocket, 'emit');
+                await gateway.handleCoordinatesSubmissionLimitedTime(stubSocket, stubGuess);
+
+                expect(tryGuessSpy).toBeCalled();
+                expect(sendSystemMessageSpy).toBeCalledWith(stubSocket, 'guess_bad');
+                expect(clientEmitSpy).toBeCalled();
+                expect(sendNewGameSpy).not.toHaveBeenCalledWith(stubSocket, testSessionLimitedTime);
+            });
+
+            it('tries guess and sends system message when correct', async () => {
+                tryGuessSpy = jest.spyOn(testSessionLimitedTime, 'tryGuess').mockImplementation(async () => {
+                    return {
+                        isCorrect: true,
+                        winnerName: 'winner',
+                    } as GuessResult;
+                });
+                const clientEmitSpy = jest.spyOn(stubSocket, 'emit');
+
+                await gateway.handleCoordinatesSubmissionLimitedTime(stubSocket, stubGuess);
+
+                expect(tryGuessSpy).toBeCalled();
+                expect(clientEmitSpy).toBeCalled();
+                expect(sendNewGameSpy).toHaveBeenCalledWith(stubSocket, testSessionLimitedTime);
+            });
+        });
+
+        it('does not try guessing when invalid session and warns in log', async () => {
+            findBySessionIdSpy.mockImplementationOnce(() => undefined);
+            await gateway.handleCoordinatesSubmissionLimitedTime(stubSocket, stubGuess);
+
+            expect(findBySessionIdSpy).toBeCalled();
+            expect(logSpy).toBeCalled();
+            expect(tryGuessSpy).not.toBeCalled();
+        });
+
+        it('logs a message when invalid coordinates and does not emit to client', async () => {
+            tryGuessSpy.mockImplementationOnce(() => {
+                throw new Error();
+            });
+            const clientEmitSpy = jest.spyOn(stubSocket, 'emit').mockImplementation();
+            await gateway.handleCoordinatesSubmissionLimitedTime(stubSocket, stubGuess);
 
             expect(logSpy).toBeCalled();
             expect(clientEmitSpy).not.toBeCalled();
@@ -359,7 +430,9 @@ describe('SessionGateway', () => {
 
         it('sends system message to gameRoom, disconnects client and writes logs', () => {
             gateway.playerLeft(stubSocket, 0);
-
+            jest.spyOn(SessionService.prototype, 'findBySessionId').mockImplementation(() => {
+                return { isTimeLimited: false } as any;
+            });
             expect(sendSystemMessageSpy).toBeCalled();
             expect(disconnectSpy).toBeCalled();
             expect(logSpy).toBeCalled();
@@ -554,9 +627,9 @@ describe('SessionGateway', () => {
         it('should call delete and dont catch an error, and return sessionId', () => {
             const sessionId = 123;
             const deleteSpy = jest.spyOn(sessionService, 'delete').mockImplementation(() => {});
-            const result = gateway.closeSession(sessionId);
+            const result = gateway.closeSession(stubSocket, sessionId);
 
-            expect(deleteSpy).toHaveBeenCalledWith(sessionId);
+            expect(deleteSpy).toHaveBeenCalledWith(sessionId, stubSocket.id);
             expect(logger.error).not.toHaveBeenCalled();
             expect(result).toEqual(sessionId);
         });
@@ -567,9 +640,9 @@ describe('SessionGateway', () => {
             const deleteSpy = jest.spyOn(sessionService, 'delete').mockImplementation(() => {
                 throw error;
             });
-            const result = gateway.closeSession(sessionId);
+            const result = gateway.closeSession(stubSocket, sessionId);
 
-            expect(deleteSpy).toHaveBeenCalledWith(sessionId);
+            expect(deleteSpy).toHaveBeenCalledWith(sessionId, stubSocket.id);
             expect(logger.error).toHaveBeenCalledWith(error);
             expect(result).toEqual(sessionId);
         });
@@ -612,6 +685,50 @@ describe('SessionGateway', () => {
             expect(startTimerSpy).toHaveBeenCalledWith(stubSocket, sessionId);
             expect(result).toBeUndefined();
         });
+        it('limited solo: should call the right functions', async () => {
+            const sessionId = 123;
+            const gameId = 'gameId';
+            const isSolo = true;
+            const limitedTimeSessionStub = { id: sessionId } as Session;
+            const startTimerSpy = jest.spyOn(gateway, 'startLimitedTimeSessionTimer').mockImplementation(() => {});
+            const createNewLimitedTimeSessionSpy = jest.spyOn(sessionService, 'createNewLimitedTimeSession').mockImplementation(() => {
+                return sessionId;
+            });
+            jest.spyOn(server, 'allSockets').mockImplementation(async () => {
+                return Promise.resolve(new Set([stubSocket.id, stubSocket.id]));
+            });
+            const sendNewGameSpy = jest.spyOn(gateway, 'sendNewGame').mockImplementation(async () => {});
+            jest.spyOn(gateway, 'getSession').mockImplementation(() => {
+                return limitedTimeSessionStub;
+            });
+            const result = await gateway.startLimitedTimeSession(stubSocket, isSolo);
+            expect(logger.log).toHaveBeenCalledTimes(2);
+            expect(createNewLimitedTimeSessionSpy).toHaveBeenCalledWith(stubSocket.id);
+            expect(startTimerSpy).toHaveBeenCalledWith(stubSocket, sessionId);
+            expect(sendNewGameSpy).toHaveBeenCalledWith(stubSocket, limitedTimeSessionStub);
+        });
+        it('limited multi: should call the right functions', async () => {
+            const sessionId = 123;
+            const gameId = 'gameId';
+            const isSolo = false;
+            const limitedTimeSessionStub = { id: sessionId } as Session;
+            const startTimerSpy = jest.spyOn(gateway, 'startLimitedTimeSessionTimer').mockImplementation(() => {});
+            const createNewLimitedTimeSessionSpy = jest.spyOn(sessionService, 'createNewLimitedTimeSession').mockImplementation(() => {
+                return sessionId;
+            });
+            jest.spyOn(server, 'allSockets').mockImplementation(async () => {
+                return Promise.resolve(new Set([stubSocket.id, stubSocket.id]));
+            });
+            const sendNewGameSpy = jest.spyOn(gateway, 'sendNewGame').mockImplementation(async () => {});
+            jest.spyOn(gateway, 'getSession').mockImplementation(() => {
+                return limitedTimeSessionStub;
+            });
+            const result = await gateway.startLimitedTimeSession(stubSocket, isSolo);
+            expect(logger.log).toHaveBeenCalledTimes(2);
+            expect(createNewLimitedTimeSessionSpy).toHaveBeenCalledWith(stubSocket.id, 'second-socket-id');
+            expect(startTimerSpy).toHaveBeenCalledWith(stubSocket, sessionId);
+            expect(sendNewGameSpy).toHaveBeenCalledWith(stubSocket, limitedTimeSessionStub);
+        });
     });
 
     describe('getGameRoom', () => {
@@ -646,7 +763,7 @@ describe('SessionGateway', () => {
         jest.spyOn(sessionService, 'findByClientId').mockReturnValue(stubSession);
         gateway.handleDisconnect(stubSocket);
 
-        expect(deleteSpy).toBeCalledWith(stubSession.id);
+        expect(deleteSpy).toBeCalledWith(stubSession.id, stubSocket.id);
     });
 
     it('handleDisconnect should not call sessionService.delete if session does not exist', () => {
@@ -665,5 +782,47 @@ describe('SessionGateway', () => {
         gateway.handleDisconnect(stubSocket);
 
         expect(deleteSpy).not.toBeCalled();
+    });
+
+    it('handleClueRequest', () => {
+        const systemMessageSpy = jest.spyOn(gateway, 'sendSystemMessage').mockImplementation(() => {});
+        const generateClueSpy = jest.spyOn(sessionService, 'generateClue').mockImplementation(() => {
+            return { coordinates: [{ x: 123, y: 33 }], nbCluesLeft: 0 };
+        });
+        const response = gateway.handleClueRequest(stubSocket);
+        expect(systemMessageSpy).toHaveBeenCalledWith(stubSocket, 'useClue');
+        expect(generateClueSpy).toHaveBeenCalledWith(stubSocket.id);
+        expect(response).toEqual({ coordinates: [{ x: 123, y: 33 }], nbCluesLeft: 0 });
+    });
+
+    describe('sendNewGame', () => {
+        let testSessionLimitedTime: LimitedTimeSession;
+        // const gameEndedSpy = jest.spyOn(gateway, 'limitedTimeGameEnded').mockImplementation();
+        it('should call the right functions when a game is chosen', async () => {
+            testSessionLimitedTime = {
+                nDifferencesFound: 2,
+                decideNewGame() {},
+            } as LimitedTimeSession;
+            const gameStub: Game = { id: 'game-id' } as Game;
+            const decideNewGameSpy = jest.spyOn(LimitedTimeSession.prototype, 'decideNewGame').mockImplementation(async () => {
+                return gameStub;
+            });
+            const clientEmitSpy = jest.spyOn(stubSocket, 'emit');
+            await gateway.sendNewGame(stubSocket, testSessionLimitedTime);
+            expect(decideNewGameSpy).EntityDataModule.forRoot(entityConfig),.toHaveBeenCalled();
+        });
+        it('should call the right functions when a game is undefined', async () => {
+            testSessionLimitedTime = {
+                nDifferencesFound: 2,
+                decideNewGame() {},
+            } as LimitedTimeSession;
+            const gameStub: Game = { id: 'game-id' } as Game;
+            const decideNewGameSpy = jest.spyOn(LimitedTimeSession.prototype, 'decideNewGame').mockImplementation(async () => {
+                return undefined;
+            });
+            const clientEmitSpy = jest.spyOn(stubSocket, 'emit');
+            await gateway.sendNewGame(stubSocket, testSessionLimitedTime);
+            expect(decideNewGameSpy).not.toHaveBeenCalled();
+        });
     });
 });
