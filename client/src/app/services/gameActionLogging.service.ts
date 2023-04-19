@@ -29,7 +29,7 @@ export class GameActionLoggingService {
         return new Date().getTime() - this.startTime;
     }
     logAction(event: string, data: any) {
-        if (event === 'startSession') {
+        if (event === 'startSession' || event === 'getClientId') {
             this.actionLog = [];
             this.setTimeZero();
         }
@@ -45,6 +45,7 @@ export class GameActionLoggingService {
                 this.timerUpdateFunction(loggedAction[2]);
                 break;
             case 'submitCoordinates':
+            case 'differenceFound':
                 this.diffFoundFunction(loggedAction[2]);
                 break;
             case 'CHEATLOGGER':
