@@ -5,6 +5,7 @@ import { Message } from '@common/message';
 import { SessionEvents } from '@common/session.gateway.events';
 import { SystemMessage } from '@common/systemMessage';
 import { SystemCode } from './constantes.service';
+import { GameActionLoggingService } from './gameActionLogging.service';
 @Injectable({
     providedIn: 'root',
 })
@@ -13,8 +14,11 @@ export class ChatService {
     formElement: ElementRef<HTMLFormElement>;
     clientId: string;
 
-    constructor(public socketService: SocketClientService) {
+    constructor(public socketService: SocketClientService, private loggingService: GameActionLoggingService) {
         this.start();
+        this.loggingService.systemErrorFunction = (data: { systemCode: string; playerName: string }) => {
+            this.receiveMessage(this.createSystemMessage(data.systemCode, data.playerName));
+        };
     }
     start() {
         this.messageList = [];

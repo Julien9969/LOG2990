@@ -140,7 +140,7 @@ export class ImageOperationService {
         }
         if (this.cheatInterval) {
             this.disableCheat();
-            this.replayService.logAction('CHEATLOGGER', { isStarting: false, pixelList: [] });
+            this.replayService.logAction('CHEATLOGGER', { isStarting: false, pixelList: [], diffList: [] });
         } else {
             this.allDifferencesList = await this.inGameService.cheatGetAllDifferences(sessionId);
 
@@ -149,16 +149,21 @@ export class ImageOperationService {
                 differencesInOneList.push(...differences);
             });
 
-            this.replayService.logAction('CHEATLOGGER', { isStarting: true, pixelList: differencesInOneList });
+            this.replayService.logAction('CHEATLOGGER', {
+                isStarting: true,
+                pixelList: differencesInOneList,
+                diffList: [...this.allDifferencesList],
+            });
             await this.createImageDataCheat(differencesInOneList);
 
             await this.cheatBlink();
         }
     }
-    async handleCheatReplay(isStarting: boolean, pixelList: Coordinate[]): Promise<void> {
+    async handleCheatReplay(isStarting: boolean, pixelList: Coordinate[], diffList: Coordinate[][]): Promise<void> {
         if (!isStarting) {
             this.disableCheat();
         } else {
+            this.allDifferencesList = diffList;
             await this.createImageDataCheat(pixelList);
             await this.cheatBlink();
         }
@@ -168,7 +173,6 @@ export class ImageOperationService {
      * Créer l'interval de clignotement pour la triche
      */
     async cheatBlink(): Promise<void> {
-        clearInterval(this.cheatInterval);
         this.cheatInterval = window.setInterval(() => {
             this.originalImgContext.putImageData(this.cheatImagesData, 0, 0);
             this.modifiedImgContext.putImageData(this.cheatImagesData, 0, 0);
@@ -220,7 +224,6 @@ export class ImageOperationService {
      */
     private async cheatRemoveDiff(diffToRemove: Coordinate[]): Promise<void> {
         const differencesInOneList: Coordinate[] = [];
-
         this.allDifferencesList.forEach((differenceList, index) => {
             if (this.isSameDifference(differenceList, diffToRemove)) {
                 this.allDifferencesList[index] = [];
@@ -232,7 +235,6 @@ export class ImageOperationService {
         this.updateBaseImagesSave(diffToRemove);
         this.createImageDataCheat(differencesInOneList);
     }
-
     /**
      * met les pixels de l'image de original dans l'image de modifier
      *
@@ -245,7 +247,6 @@ export class ImageOperationService {
             this.modifiedImageSave.data.set(originalPixel, pixelIndex);
         });
     }
-
     private isSameDifference(differenceList: Coordinate[], diffToRemove: Coordinate[]): boolean {
         return differenceList.length !== 0 && differenceList[0].x === diffToRemove[0].x && differenceList[0].y === diffToRemove[0].y;
     }

@@ -8,7 +8,8 @@ import { GuessResult } from '@common/guess-result';
 export class GameActionLoggingService {
     timerUpdateFunction: (time: string) => void;
     diffFoundFunction: (data: GuessResult) => void;
-    cheatFunction: (data: { isStarting: boolean; pixelList: Coordinate[] }) => void;
+    cheatFunction: (data: { isStarting: boolean; pixelList: Coordinate[]; diffList: Coordinate[][] }) => void;
+    systemErrorFunction: (data: { systemCode: string; playerName: string }) => void;
     intervalPlayAll: any;
     isRecording: boolean = true; // moreLike Is not replaying
     startTime: number;
@@ -49,6 +50,8 @@ export class GameActionLoggingService {
             case 'CHEATLOGGER':
                 await this.cheatFunction(loggedAction[2]);
                 break;
+            case 'systemMessageFromServer':
+                await this.systemErrorFunction(loggedAction[2]);
         }
     }
 

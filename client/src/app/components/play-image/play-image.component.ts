@@ -64,8 +64,8 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
             this.updateDiffFound(guessResult);
         };
 
-        this.loggingService.cheatFunction = async (data: { isStarting: boolean; pixelList: Coordinate[] }) => {
-            await this.imageOperationService.handleCheatReplay(data.isStarting, data.pixelList);
+        this.loggingService.cheatFunction = async (data: { isStarting: boolean; pixelList: Coordinate[]; diffList: Coordinate[][] }) => {
+            await this.imageOperationService.handleCheatReplay(data.isStarting, data.pixelList, data.diffList);
         };
     }
 
