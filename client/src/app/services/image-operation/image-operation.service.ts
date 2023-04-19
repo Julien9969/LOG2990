@@ -173,18 +173,6 @@ export class ImageOperationService {
         this.showClue();
     }
 
-    showClue() {
-        this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
-        this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
-    }
-
-    async removeClue() {
-        this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
-        this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
-        this.clueOriginalImageData = this.originalImageSave;
-        this.clueModifiedImageData = this.modifiedImageSave;
-    }
-
     /**
      * Créer l'interval de clignotement pour la triche
      */
@@ -203,6 +191,18 @@ export class ImageOperationService {
     disableCheat(): void {
         clearInterval(this.cheatInterval);
         this.cheatInterval = 0;
+    }
+
+    private showClue() {
+        this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
+        this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
+    }
+
+    private removeClue() {
+        this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
+        this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
+        this.clueOriginalImageData = this.originalImageSave;
+        this.clueModifiedImageData = this.modifiedImageSave;
     }
 
     /**

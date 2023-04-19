@@ -228,19 +228,23 @@ describe('ImageOperationService', () => {
 
     describe('handleClue', () => {
         let showClueSpy: jasmine.Spy;
+        let createImagesDataClueSpy: jasmine.Spy;
         beforeEach(() => {
-            showClueSpy = spyOn(service, 'showClue').and.callFake(() => {});
+            createImagesDataClueSpy = spyOn(service, 'createImagesDataClue' as any).and.callFake(() => {});
+            showClueSpy = spyOn(service, 'showClue' as any).and.callFake(() => {});
         });
 
         it('should create the clueImages and show them', async () => {
             service.isChatFocused = false;
             await service.handleClue(2, differences);
+            expect(createImagesDataClueSpy).toHaveBeenCalled();
             expect(showClueSpy).toHaveBeenCalled();
         });
 
         it('should not execute if the chat box is focused', async () => {
             service.isChatFocused = true;
             await service.handleClue(2, differences);
+            expect(createImagesDataClueSpy).not.toHaveBeenCalled();
             expect(showClueSpy).not.toHaveBeenCalled();
         });
 
@@ -248,6 +252,7 @@ describe('ImageOperationService', () => {
             service.isChatFocused = false;
             for (let i = 5; i >= 0; i--) {
                 await service.handleClue(i, differences);
+                expect(createImagesDataClueSpy).toHaveBeenCalled();
                 expect(showClueSpy).toHaveBeenCalled();
             }
         });
