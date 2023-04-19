@@ -29,7 +29,7 @@ export class GameActionLoggingService {
         return new Date().getTime() - this.startTime;
     }
     logAction(event: string, data: any) {
-        if (event === 'startSession') {
+        if (event === 'startClassicSession') {
             this.actionLog = [];
             this.setTimeZero();
         }
@@ -44,7 +44,7 @@ export class GameActionLoggingService {
             case 'timerUpdate':
                 this.timerUpdateFunction(loggedAction[2]);
                 break;
-            case 'submitCoordinates':
+            case 'submitCoordinatesSolo':
                 this.diffFoundFunction(loggedAction[2]);
                 break;
             case 'CHEATLOGGER':
@@ -52,6 +52,7 @@ export class GameActionLoggingService {
                 break;
             case 'systemMessageFromServer':
                 await this.systemErrorFunction(loggedAction[2]);
+                // TODO: rajouter submit coord Multi et remplacer par enums plz
         }
     }
 

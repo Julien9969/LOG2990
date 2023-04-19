@@ -42,7 +42,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     constructor(
         private readonly dialog: MatDialog,
         private readonly communicationService: CommunicationService,
-        readonly socket: InGameService,
         private readonly socketClient: SocketClientService,
         private loggingService: GameActionLoggingService,
         private readonly inGameSocket: InGameService,
@@ -95,11 +94,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.inGameSocket.listenTimerUpdate((time: string) => {
             this.time = time;
         });
-        // Ce code était sur la branche de Max, important pour replay??
-        // this.loggingService.timerUpdateFunction = (time: string) => {
-        //     this.time = time;
-        // };
-        // this.socket.listenProvideName(this.playerName);
+        this.loggingService.timerUpdateFunction = (time: string) => {
+            this.time = time;
+        };
+        
         this.inGameSocket.listenProvideName(this.playerName);
 
         this.initHistory();
@@ -157,7 +155,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
     async replay() {
         await this.playImageComponent.reset();
-        this.socket.socketService.loggingService.replayAllAction();
+        this.inGameSocket.socketService.loggingService.replayAllAction();
     }
     ngOnDestroy(): void {
         this.playerExited();

@@ -1,11 +1,11 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { PlayImageComponent } from '@app/components/play-image/play-image.component';
+import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
 import { GameActionLoggingService } from '@app/services/gameActionLogging.service';
-import { InGameService } from '@app/services/in-game.service';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
+import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
@@ -15,7 +15,7 @@ import { WinnerInfo } from '@common/winner-info';
     styleUrls: ['./replay-page.component.scss'],
 })
 export class ReplayPageComponent implements OnInit, OnDestroy {
-    @ViewChild(PlayImageComponent) playImageComponent: PlayImageComponent;
+    @ViewChild(PlayImageClassicComponent) playImageComponent: PlayImageClassicComponent;
     userSocketId: string;
 
     playerName: string;
