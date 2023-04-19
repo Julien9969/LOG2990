@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
 import { InGameService } from '@app/services/in-game.service';
 import { Coordinate } from '@common/coordinate';
+import { GameActionLoggingService } from './gameActionLogging.service';
 
 @Injectable({
     providedIn: 'root',
@@ -25,7 +26,7 @@ export class ImageOperationService {
     private cheatImagesData: ImageData;
     private allDifferencesList: Coordinate[][];
 
-    constructor(private readonly inGameService: InGameService) {}
+    constructor(private readonly inGameService: InGameService, private replayService: GameActionLoggingService) {}
 
     get contextOriginal(): CanvasRenderingContext2D {
         return this.originalImgContext;
@@ -34,7 +35,12 @@ export class ImageOperationService {
     get contextModified(): CanvasRenderingContext2D {
         return this.modifiedImgContext;
     }
-
+    getSpeedMultiplier() {
+        if (this.replayService.isRecording) {
+            return 1;
+        }
+        return 1 / this.replayService.speedMultiplier;
+    }
     setCanvasContext(original: CanvasRenderingContext2D, modified: CanvasRenderingContext2D): void {
         this.originalImgContext = original;
         this.modifiedImgContext = modified;
@@ -85,7 +91,7 @@ export class ImageOperationService {
                     return done();
                 }
                 count++;
-            }, BLINK_PERIOD_MS);
+            }, BLINK_PERIOD_MS * this.getSpeedMultiplier());
         });
     }
 
@@ -134,6 +140,7 @@ export class ImageOperationService {
         }
         if (this.cheatInterval) {
             this.disableCheat();
+            this.replayService.logAction('CHEATLOGGER', { isStarting: false, pixelList: [] });
         } else {
             this.allDifferencesList = await this.inGameService.cheatGetAllDifferences(sessionId);
 
@@ -142,8 +149,17 @@ export class ImageOperationService {
                 differencesInOneList.push(...differences);
             });
 
+            this.replayService.logAction('CHEATLOGGER', { isStarting: true, pixelList: differencesInOneList });
             await this.createImageDataCheat(differencesInOneList);
 
+            await this.cheatBlink();
+        }
+    }
+    async handleCheatReplay(isStarting: boolean, pixelList: Coordinate[]): Promise<void> {
+        if (!isStarting) {
+            this.disableCheat();
+        } else {
+            await this.createImageDataCheat(pixelList);
             await this.cheatBlink();
         }
     }
@@ -152,6 +168,7 @@ export class ImageOperationService {
      * Créer l'interval de clignotement pour la triche
      */
     async cheatBlink(): Promise<void> {
+        clearInterval(this.cheatInterval);
         this.cheatInterval = window.setInterval(() => {
             this.originalImgContext.putImageData(this.cheatImagesData, 0, 0);
             this.modifiedImgContext.putImageData(this.cheatImagesData, 0, 0);
@@ -159,10 +176,11 @@ export class ImageOperationService {
             setTimeout(() => {
                 this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
                 this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
-            }, CHEAT_PERIOD_MS);
-        }, CHEAT_PERIOD_MS * 2);
+            }, CHEAT_PERIOD_MS * this.getSpeedMultiplier());
+        }, CHEAT_PERIOD_MS * 2 * this.getSpeedMultiplier());
     }
     clearAllIntervals() {
+        clearInterval(this.cheatInterval);
         this.intervalIds.forEach((interval) => {
             clearInterval(interval);
         });
@@ -178,7 +196,7 @@ export class ImageOperationService {
      *
      * @param differences liste des pixels a mettre en vert
      */
-    private async createImageDataCheat(differences: Coordinate[]): Promise<void> {
+    async createImageDataCheat(differences: Coordinate[]): Promise<void> {
         const cheatImageData = structuredClone(this.originalImageSave);
 
         differences.forEach((difference) => {

@@ -41,7 +41,6 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         private loggingService: GameActionLoggingService,
     ) {
         this.isLoaded = false;
-
         this.isSolo = window.history.state.isSolo;
         if (!this.isSolo) {
             this.opponentName = window.history.state.opponentName;
@@ -49,6 +48,7 @@ export class SoloGamePageComponent implements OnInit, OnDestroy {
         this.playerName = window.history.state.playerName;
         this.sessionId = window.history.state.sessionId;
         this.gameID = window.history.state.gameID;
+        this.loggingService.isRecording = true;
     }
 
     @HostListener('window:beforeunload', ['$event'])

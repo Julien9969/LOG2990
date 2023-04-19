@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
+import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
 @Injectable({
     providedIn: 'root',
@@ -7,17 +8,19 @@ import { GuessResult } from '@common/guess-result';
 export class GameActionLoggingService {
     timerUpdateFunction: (time: string) => void;
     diffFoundFunction: (data: GuessResult) => void;
-    cheatFunction: () => void;
+    cheatFunction: (data: { isStarting: boolean; pixelList: Coordinate[] }) => void;
     intervalPlayAll: any;
-    isRecording: boolean = true;
+    isRecording: boolean = true; // moreLike Is not replaying
     startTime: number;
-    baseTimeIncrement = 250;
-    speedMultiplier = 2;
+    baseTimeIncrement = 47;
+    speedMultiplier = 1;
     lastTimeReplayed: number = 0;
     actionLog: [number, string, any][] = [];
+
     constructor() {
         this.setTimeZero();
     }
+
     setTimeZero(): void {
         this.startTime = new Date().getTime();
     }
@@ -43,21 +46,26 @@ export class GameActionLoggingService {
             case 'submitCoordinates':
                 this.diffFoundFunction(loggedAction[2]);
                 break;
-            case 'cheatGetAllDifferences':
-                this.cheatFunction();
+            case 'CHEATLOGGER':
+                await this.cheatFunction(loggedAction[2]);
                 break;
         }
     }
 
     async replayAllAction() {
+        this.isRecording = false;
         let time = 0;
         this.lastTimeReplayed = time;
 
         console.log(this.actionLog);
+        if (this.actionLog.length === 0) {
+            return;
+        }
         this.intervalPlayAll = setInterval(() => {
             time += this.baseTimeIncrement * this.speedMultiplier;
             this.replayActionsToTime(time);
             if (this.lastTimeReplayed > this.actionLog.slice(-1)[0][0]) {
+                this.isRecording = false;
                 clearInterval(this.intervalPlayAll);
             }
         }, this.baseTimeIncrement);
