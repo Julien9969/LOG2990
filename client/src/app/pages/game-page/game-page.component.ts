@@ -60,7 +60,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     unloadHandler(event: BeforeUnloadEvent) {
         event.preventDefault();
         this.historyService.setPlayerQuit(this.time, this.isSolo);
-
         event.returnValue = false;
     }
 
@@ -148,6 +147,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
         this.inGameSocket.disconnect();
+        if (this.gameInfos.differenceCount !== this.nDiffFoundMainPlayer) this.historyService.setPlayerQuit(this.time, this.isSolo);
     }
 
     private initHistory() {
