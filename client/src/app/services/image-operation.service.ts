@@ -28,10 +28,20 @@ export class ImageOperationService {
 
     constructor(private readonly inGameService: InGameService, private replayService: GameActionLoggingService) {}
 
+    reset() {
+        this.intervalIds.forEach((interval) => {
+            clearInterval(interval);
+        });
+        this.intervalIds = [];
+        this.allDifferencesList = [];
+    }
+
+    // Jamais utilise
     get contextOriginal(): CanvasRenderingContext2D {
         return this.originalImgContext;
     }
 
+    // Jamais utilise
     get contextModified(): CanvasRenderingContext2D {
         return this.modifiedImgContext;
     }

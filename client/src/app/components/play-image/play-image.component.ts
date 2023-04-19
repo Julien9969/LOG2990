@@ -36,7 +36,9 @@ export class PlayImageComponent implements AfterViewInit, OnInit, OnDestroy {
         public imageOperationService: ImageOperationService,
         private readonly socket: InGameService,
         private loggingService: GameActionLoggingService,
-    ) {}
+    ) {
+        this.imageOperationService.reset();
+    }
 
     get mouse(): MouseService {
         return this.mouseService;
