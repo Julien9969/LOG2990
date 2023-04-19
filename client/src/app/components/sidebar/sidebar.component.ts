@@ -23,7 +23,6 @@ export class SidebarComponent implements AfterViewInit {
 
     constructor(private formBuilder: FormBuilder, public chatService: ChatService, public imageOperationService: ImageOperationService) {
         this.chatService.formElement = this.formElement;
-        this.chatService.start();
     }
 
     ngAfterViewInit() {
