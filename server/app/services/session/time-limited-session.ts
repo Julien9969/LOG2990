@@ -44,9 +44,8 @@ export class LimitedTimeSession extends Session {
      * @param guess La coordonnée de l'essai
      * @returns Le résultat de l'essai
      */
-    // TO DO:
-    // eslint-disable-next-line no-unused-vars
-    async tryGuess(guess: Coordinate, _socketId: string): Promise<GuessResult> {
+    // TODO:
+    async tryGuess(guess: Coordinate, socketId: string): Promise<GuessResult> {
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
         let isCorrect = false;
         let diffPixelList: Coordinate[] = [];
@@ -136,8 +135,7 @@ export class LimitedTimeSession extends Session {
      * @returns boolean qui indique si la demande d'indice est approuvée
      */
     handleClueRequest(): boolean {
-        this.nbCluesRequested++;
-        const clueIsAllowed = this.nbCluesRequested <= 3;
+        const clueIsAllowed = ++this.nbCluesRequested <= 3;
         if (clueIsAllowed) {
             this.time -= 5;
         }
