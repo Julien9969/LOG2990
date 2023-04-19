@@ -178,7 +178,8 @@ describe('Session tests', () => {
         });
         await soloSession.decideNewGame();
         expect(soloSession.playedGames).toEqual(['gameId']);
-        expect(soloSession.decideNewGame).toHaveBeenCalledTimes(2);
+        // On attend un seul appel car le spy est crée pendant l'éxecution du 1er appel de la fonction
+        expect(soloSession.decideNewGame).toHaveBeenCalledTimes(1);
     });
 
     it('decideNewGame should return undefined if there is no more game to play', async () => {
