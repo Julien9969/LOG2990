@@ -1,3 +1,4 @@
+import { ElementRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -5,8 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NavigationEnd, Router } from '@angular/router';
-import { CommunicationService } from '@app/services/communication.service';
-import { MatchMakingService } from '@app/services/match-making.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { MatchMakingService } from '@app/services/match-making/match-making.service';
 import { of } from 'rxjs';
 import { MatchMakingDialogComponent } from './match-making-dialog.component';
 
@@ -72,6 +73,7 @@ describe('MatchMakingDialogComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(MatchMakingDialogComponent);
         component = fixture.componentInstance;
+        component.box = new ElementRef<HTMLInputElement>(document.createElement('input'));
         fixture.detectChanges();
     });
 
@@ -261,6 +263,16 @@ describe('MatchMakingDialogComponent', () => {
             matchMakingSpy.opponentJoined.calls.mostRecent().args[0](playerName);
             expect(component.opponentName).toEqual(playerName);
             expect(component.dialogInfos.template).toEqual('acceptPairing');
+        });
+
+        it('should call matchMaking.acceptOpponent in the callback if the gameId is limited-time', () => {
+            const playerName = 'Player 1';
+            spyOn(component, 'acceptOpponent');
+            component.gameInfo.id = 'limited-time';
+            component.commonMatchMakingFeatures();
+            expect(component.matchMaking.opponentJoined).toHaveBeenCalledWith(jasmine.any(Function));
+            matchMakingSpy.opponentJoined.calls.mostRecent().args[0](playerName);
+            expect(component.acceptOpponent).toHaveBeenCalled();
         });
 
         it('should call matchMaking.opponentLeft with a callback that dialogInfo to waitingRoom', () => {

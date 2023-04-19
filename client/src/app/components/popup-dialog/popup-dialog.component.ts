@@ -1,8 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { AudioService } from '@app/services/audio.service';
-import { ImageOperationService } from '@app/services/image-operation.service';
+import { AudioService } from '@app/services/audio/audio.service';
+import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
+
 /**
  * @title Inject des données lorsqu'on ouvre un dialogue
  */
@@ -16,6 +17,10 @@ export class PopupDialogComponent implements OnInit {
 
     message = '';
     playerWon = false;
+
+    deleteMessage = '';
+    buttonCallback: () => Promise<void>;
+
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: [string, string, { gameId: string; playerName: string }],
         private imageOperationService: ImageOperationService,

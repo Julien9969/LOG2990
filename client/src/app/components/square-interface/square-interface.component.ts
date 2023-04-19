@@ -3,8 +3,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { ErrorDuringLoadingComponent } from '@app/components/error-during-loading/error-during-loading.component';
 import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
 import { DELAY_BEFORE_BUTTONS_UPDATE, GAMES_PER_PAGE } from '@app/constants/utils-constants';
-import { GameService } from '@app/services/game.service';
-import { MatchMakingService } from '@app/services/match-making.service';
+import { GameService } from '@app/services/game/game.service';
+import { MatchMakingService } from '@app/services/match-making/match-making.service';
 import { Game } from '@common/game';
 
 @Component({
@@ -86,18 +86,17 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
      */
     async deleteGame(gameId: string): Promise<void> {
         await this.gameService.deleteGame(gameId);
-        this.reloadWindow();
+        this.gameService.reloadWindow();
+    }
+
+    async resetLeaderboard(gameId: string): Promise<void> {
+        await this.gameService.resetLeaderboard(gameId);
+        this.gameService.reloadWindow();
     }
 
     baseMatchMakingFeatures(): void {
         this.matchMaking.updateRoomView(async () => {
             await this.reachableGames();
         });
-    }
-
-    // Cette fonction est un wrapper autour de window.location.reload(), pour pouvoir la mock.
-    // Elle n'est pas couverte par les tests.
-    private reloadWindow() {
-        window.location.reload();
     }
 }

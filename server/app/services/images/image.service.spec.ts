@@ -110,7 +110,7 @@ describe('Image Service tests', () => {
         } catch (error) {
             e = error;
         }
-        expect(e).toEqual(new Error('Image non existante.'));
+        expect(e).toEqual(new Error('Image non existante'));
     });
 
     it('deleteImage should create new differenceDetectionService, compare the 2 images path and get the results', async () => {

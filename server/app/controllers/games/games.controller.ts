@@ -1,9 +1,24 @@
+import { GameConstantsInput } from '@app/interfaces/game-constants-input';
 import { GameImageInput } from '@app/interfaces/game-image-input';
 import { GameService } from '@app/services/game/game.service';
 import { Utils } from '@app/services/utils/utils.service';
 import { Game } from '@common/game';
 import { InputGame } from '@common/input-game';
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Logger,
+    Param,
+    Patch,
+    Post,
+    UploadedFiles,
+    UseInterceptors,
+} from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 /**
@@ -11,7 +26,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
  */
 @Controller('games')
 export class GamesController {
-    constructor(private readonly gameService: GameService) {}
+    constructor(private readonly gameService: GameService, private readonly logger: Logger) {}
 
     /**
      * Crée un nouveau jeu avec les informations fournies
@@ -60,6 +75,11 @@ export class GamesController {
         return await this.gameService.findAll();
     }
 
+    @Get('constants')
+    getGameConstants() {
+        return this.gameService.getGameConstants();
+    }
+
     /**
      * Obtient les informations d'un jeu.
      *
@@ -77,12 +97,69 @@ export class GamesController {
     }
 
     /**
+     * Supprime tous les jeux de la persistance
+     */
+    @Delete()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async deleteAllGames() {
+        await this.gameService.deleteAllGames();
+    }
+
+    /**
+     * Réinitialise les meilleurs temps de tous les jeux en persistance
+     */
+    @Delete('leaderboards')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async resetAllLeaderboards() {
+        await this.gameService.resetAllLeaderboards();
+    }
+
+    /**
+     * Réinitialise les meilleurs temps d'un jeu du id donné
+     *
+     * @param id L'identifiant du jeu
+     */
+    @Delete('leaderboards/:id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async resetLeaderboard(@Param('id') id: string) {
+        try {
+            await this.gameService.resetLeaderboard(id);
+        } catch (e: unknown) {
+            if (e instanceof Error) this.logger.error(e.message);
+        }
+    }
+
+    /**
      * Detruit un element jeu specifique, dans la memoire de la session et dans la persistance
      *
      * @param params une id de l'element game a detruire
      */
     @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
     async deleteById(@Param('id') id: string) {
-        await this.gameService.delete(id);
+        try {
+            await this.gameService.delete(id);
+        } catch (e: unknown) {
+            if (e instanceof Error) this.logger.error(e.message);
+        }
+    }
+
+    /**
+     * Modifie les constantes de jeu globales (temps d'une partie en temps limité, pénalité d'indice et bonus de différence trouvée)
+     *
+     * @param gameConstsInput Les valeurs modifiees de constantes de jeu
+     */
+    @Patch('constants')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async configureConstants(@Body() gameConstsInput: GameConstantsInput) {
+        if (!gameConstsInput) {
+            throw new HttpException('Il manque un corps dans la requete', HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            this.gameService.updateConstants(gameConstsInput);
+        } catch (err) {
+            throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+        }
     }
 }

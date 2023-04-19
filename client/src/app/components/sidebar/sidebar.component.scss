@@ -17,29 +17,31 @@
 }
 
 .message {
-    width: 100%;
     border-top: solid 1px #474444;
+    font-size: large;
     padding: 20px;
     margin-top: 10px;
-
-    max-width: 15vw;
+    width: 90%;
     overflow-wrap: break-word;
 }
 
 .otherUserMessage {
-    width: 100%;
     align-self: left;
     color: blue;
     text-align: left;
 }
 .thisUserMessage > p {
-    width: 100%;
     text-align: right;
 }
 .systemMessage {
-    width: 100%;
     align-self: left;
     color: #ff0000;
+    text-align: left;
+}
+
+.classementEvent {
+    align-self: left;
+    color: #32b145;
     text-align: left;
 }
 
@@ -47,8 +49,17 @@
     display: flex;
     flex-direction: column-reverse;
     height: 90vh;
-    min-width: 15vw;
 }
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+#sender {
+    margin-bottom: 2%;
+}
+
 .send-message-form {
     input {
         width: 98%;
@@ -56,7 +67,6 @@
 }
 
 button {
-    width: 100%;
     background-color: #f5efef;
     border: 3px solid black;
     border-radius: 0 0 0 0;

@@ -1,19 +1,17 @@
-import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { ChatService } from '@app/services/chat.service';
-import { ImageOperationService } from '@app/services/image-operation.service';
+import { ChatService } from '@app/services/chat/chat.service';
+import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
+
 @Component({
     selector: 'app-sidebar',
     templateUrl: './sidebar.component.html',
     styleUrls: ['./sidebar.component.scss'],
 })
-export class SidebarComponent implements AfterViewInit {
-    @Input()
-    playerName: string;
-    @Input()
-    sessionID: number;
-    @Input()
-    isSolo: boolean;
+export class SidebarComponent implements AfterViewInit, AfterViewChecked {
+    @Input() playerName: string;
+    @Input() sessionID: number;
+    @Input() isSolo: boolean;
     @ViewChild('chatContainer') chatContainer: ElementRef<HTMLDivElement>;
     @ViewChild('formGroup') formElement: ElementRef<HTMLFormElement>;
 
@@ -22,12 +20,21 @@ export class SidebarComponent implements AfterViewInit {
     });
 
     constructor(private formBuilder: FormBuilder, public chatService: ChatService, public imageOperationService: ImageOperationService) {
-        this.chatService.formElement = this.formElement;
+        // this.chatService.formElement = this.formElement; // De branche de max, necessaire?
+        this.chatService.start();
     }
 
     ngAfterViewInit() {
         this.chatService.giveNameToServer(this.playerName);
     }
+
+    ngAfterViewChecked() {
+        if (this.chatService.newMessage) {
+            this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+            this.chatService.newMessage = false;
+        }
+    }
+
     formatedTime(time: number): string {
         return new Date(time).toUTCString();
     }
@@ -48,9 +55,5 @@ export class SidebarComponent implements AfterViewInit {
             }
         }
         this.messageForm.reset();
-    }
-
-    scrollToBottom() {
-        this.formElement.nativeElement.scrollIntoView();
     }
 }

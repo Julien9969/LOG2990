@@ -14,11 +14,11 @@ import {
     MAX_TITLE_LENGTH,
     // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
     // eslint-disable-next-line prettier/prettier
-    SUCCESS_MESSAGE_DISPLAYED_TIME,
+    SUCCESS_MESSAGE_DISPLAYED_TIME
 } from '@app/constants/utils-constants';
 import { ActiveCanvas } from '@app/interfaces/active-canvas';
-import { CommunicationService } from '@app/services/communication.service';
-import ValidateImageService from '@app/services/validate-image.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import ValidateImageService from '@app/services/validate-server/validate-image.service';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { GameCreationFormComponent } from './game-creation-form.component';
 

@@ -65,6 +65,8 @@ export const ALLOWED_RADIUS = [0, 3, NINE_PIXELS, FIFTEEN_PIXELS];
 
 export const DEFAULT_RADIUS = 3;
 
+export const DELAY_FOCUS = 100;
+
 // for validate-image.service
 
 export const IMAGE_WIDTH = 640;
@@ -87,3 +89,7 @@ export const PATH_TO_VALID_IMAGE = '/assets/test-assets/image_empty.bmp';
 export const PATH_TO_WRONG_BIT_DEPTH_IMAGE = '/assets/test-assets/image_wrong_bit_depth.bmp';
 export const PATH_TO_WRONG_RES_IMAGE = '/assets/test-assets/image_wrong_res.bmp';
 export const VALID_IMAGE_ID = 1999;
+
+// for utility functions
+
+export const SLICE_LAST_INDEX = -1;

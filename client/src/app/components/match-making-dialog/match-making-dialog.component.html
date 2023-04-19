@@ -1,54 +1,66 @@
 <div *ngIf="dialogInfos.template === 'nameForm'" #nameForm>
     <h1 id="title" mat-dialog-title>Entrez votre nom.</h1>
-        <form class="name-form">
-            <mat-form-field class="full-width">
-                <mat-label>Nom de joueur</mat-label>
-                <input
-                    #box
-                    type="text"
-                    (keyup)="this.playerName = box.value"
-                    matInput
-                    [formControl]="nameFormControl"
-                    placeholder="Ex. Michel : 3 - 12 lettres"
-                />
-                <mat-error *ngIf="!nameFormControl.hasError('required')"> Entrez un nom valide </mat-error>
-                <mat-error *ngIf="nameFormControl.hasError('required')"> Nom de joueur <strong>requis</strong> </mat-error>
-            </mat-form-field>
-        </form>
-        <mat-dialog-actions class="button-row">
-            <button *ngIf="gameInfo.isSolo" mat-button matDialogClose [disabled]="!this.nameFormControl.valid" (click)="navigateToSoloGame()" aria-label="Jouer">Jouer</button>
-            <button *ngIf="!gameInfo.isSolo" mat-button [disabled]="!this.nameFormControl.valid" (click)="joinGame()" aria-label="Continuer">Continuer</button>
-            <button mat-button matDialogClose aria-label="Retour">Retour</button>
-        </mat-dialog-actions>
+    <form class="name-form">
+        <mat-form-field class="full-width">
+            <mat-label>Nom de joueur</mat-label>
+            <input
+                #box
+                type="text"
+                autofocus
+                (keyup)="this.playerName = box.value"
+                matInput
+                [formControl]="nameFormControl"
+                placeholder="Ex. Michel : 3 - 12 lettres"
+            />
+            <mat-error *ngIf="!nameFormControl.hasError('required')"> Entrez un nom valide </mat-error>
+            <mat-error *ngIf="nameFormControl.hasError('required')"> Nom de joueur <strong>requis</strong> </mat-error>
+        </mat-form-field>
+    </form>
+    <mat-dialog-actions class="button-row">
+        <button
+            *ngIf="gameInfo.isSolo"
+            mat-button
+            matDialogClose
+            [disabled]="!this.nameFormControl.valid"
+            (click)="navigateToGame()"
+            aria-label="Jouer"
+        >
+            Jouer
+        </button>
+        <button *ngIf="!gameInfo.isSolo" mat-button [disabled]="!this.nameFormControl.valid" (click)="joinGame()" aria-label="Continuer">
+            Continuer
+        </button>
+        <button mat-button matDialogClose aria-label="Retour">Retour</button>
+    </mat-dialog-actions>
 </div>
 
 <div *ngIf="dialogInfos.template === 'waitingRoom'" #waitingRoom>
     <h1 id="title" mat-dialog-title>En attente d'un autre joueur...</h1>
-    <h2 id="message" *ngIf="dialogInfos.message" mat-dialog-title>{{dialogInfos.message}}</h2>
+    <h2 id="message" *ngIf="dialogInfos.message" mat-dialog-title>{{ dialogInfos.message }}</h2>
     <mat-dialog-actions class="button-row">
-        <button mat-button matDialogClose routerLink="/selection-view" (click)="leaveWaiting()" aria-label="OUI">Retourner à la selection</button>
+        <button mat-button matDialogClose (click)="leaveWaiting()" aria-label="OUI">Retourner à la selection</button>
     </mat-dialog-actions>
 </div>
 
 <div *ngIf="dialogInfos.template === 'acceptPairing'" #acceptPairing>
-    <h1 id="title" mat-dialog-title>Vous avez été associé à {{opponentName}}.</h1>
-    <h2 id="message" *ngIf="dialogInfos.message" mat-dialog-title>{{dialogInfos.message}}</h2>
+    <h1 id="title" mat-dialog-title>Vous avez été associé à {{ opponentName }}.</h1>
+    <h2 id="message" *ngIf="dialogInfos.message" mat-dialog-title>{{ dialogInfos.message }}</h2>
     <mat-dialog-actions class="button-row">
         <button mat-button (click)="acceptOpponent()" aria-label="OUI">OUI</button>
         <button mat-button (click)="rejectOpponent()" aria-label="NON">NON</button>
     </mat-dialog-actions>
-</div> 
+</div>
 
 <div *ngIf="dialogInfos.template === 'rejected'" #rejected>
-    <h1 id="title" mat-dialog-title>Vous avez été rejeté par {{opponentName}}.</h1>
+    <h1 id="title" mat-dialog-title>Vous avez été rejeté par {{ opponentName }}.</h1>
     <mat-dialog-actions class="button-row">
-        <button mat-button matDialogClose routerLink="/selection-view" (click)="leaveWaiting()" aria-label="RETOUR">Retour à la selection</button>
+        <button mat-button matDialogClose (click)="leaveWaiting()" aria-label="RETOUR">Retour à la selection</button>
     </mat-dialog-actions>
 </div>
 
 <div *ngIf="dialogInfos.template === 'gameDelete'" #delete>
     <h1 id="title" mat-dialog-title>Ce jeu vient d'être supprimé.</h1>
     <mat-dialog-actions class="button-row">
-        <button mat-button matDialogClose routerLink="/selection-view" (click)="window.location.reload()" aria-label="RETOUR">Retour à la selection</button>
+        <button mat-button matDialogClose (click)="window.location.reload()" aria-label="RETOUR">Retour à la selection</button>
     </mat-dialog-actions>
 </div>

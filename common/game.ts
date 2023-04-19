@@ -8,9 +8,6 @@ export interface UnsavedGame {
     isHard: boolean;
     differenceCount: number;
     radius?: number;
-    time: number;
-    penalty: number;
-    reward: number;
 }
 
 export interface Game extends UnsavedGame {
