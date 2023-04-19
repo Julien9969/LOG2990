@@ -267,6 +267,116 @@ describe('Session Service tests', () => {
             expect(mathSpy).toHaveBeenCalledTimes(2);
         });
     });
+    describe('addToList', () => {
+        it('should call generateUniqueId and put the value to the session.id and push the new session', () => {
+            sessionService.activeSessions = [];
+            const spy = jest.spyOn(sessionService['activeSessions'], 'push').mockImplementation(() => {
+                return null;
+            });
+            sessionService.addToList(session);
+            expect(spy).toHaveBeenCalledWith(session);
+        });
+    });
+    describe('delete', () => {
+        const classicGameStub = {
+            isTimeLimited: false,
+            players: [{ name: 'name1' }, { name: 'name2' }],
+            deletePlayer: (socketId: string) => {
+                return socketId;
+            },
+        };
+        const soloLimitedTimeGameStub = {
+            isTimeLimited: true,
+            players: [{ name: 'name1' }, { name: 'name2' }],
+            deletePlayer: (socketId: string) => {
+                return socketId;
+            },
+        };
+        const multiLimitedTimeGameStub = {
+            isTimeLimited: true,
+            players: [{ name: 'name1' }, { name: 'name2' }],
+            deletePlayer: (socketId: string) => {
+                return socketId;
+            },
+        };
+        const deletePlayerSpy = jest.spyOn(classicGameStub, 'deletePlayer');
+
+        const id = 123;
+        const index = 1;
+        const socketId = 'socketId';
+        it('Classic Session should call deleteFromActiveSessions with the right index', () => {
+            const deleteFromActiveSessionsSpy = jest.spyOn(sessionService, 'deleteFromActiveSessions').mockImplementation();
+            jest.spyOn(Array.prototype, 'indexOf').mockImplementation(() => {
+                return index;
+            });
+            const findBySpy = jest.spyOn(sessionService, 'findBySessionId').mockImplementation(() => {
+                return classicGameStub as any;
+            });
+            sessionService.activeSessions = [{ id: 'session0' }, { id: 'session1' }] as any;
+            sessionService.delete(id, socketId);
+            expect(findBySpy).toHaveBeenCalledWith(id);
+            expect(deletePlayerSpy).not.toHaveBeenCalledWith(socketId);
+            expect(deleteFromActiveSessionsSpy).toHaveBeenCalledWith(index);
+        });
+
+        it('solo LimiteTimeSession Session should call deleteFromActiveSessions with the right index', () => {
+            const deleteFromActiveSessionsSpy = jest.spyOn(sessionService, 'deleteFromActiveSessions').mockImplementation();
+            jest.spyOn(Array.prototype, 'indexOf').mockImplementation(() => {
+                return index;
+            });
+            const findBySpy = jest.spyOn(sessionService, 'findBySessionId').mockImplementation(() => {
+                return soloLimitedTimeGameStub as any;
+            });
+            sessionService.activeSessions = [{ id: 'session0' }, { id: 'session1' }] as any;
+            sessionService.delete(id, socketId);
+            expect(findBySpy).toHaveBeenCalledWith(id);
+            expect(deletePlayerSpy).not.toHaveBeenCalledWith(socketId);
+            expect(deleteFromActiveSessionsSpy).not.toHaveBeenCalledWith(index);
+        });
+
+        it('multi LimiteTimeSession Session should call deleteFromActiveSessions with the right index', () => {
+            const deleteFromActiveSessionsSpy = jest.spyOn(sessionService, 'deleteFromActiveSessions').mockImplementation();
+            jest.spyOn(Array.prototype, 'indexOf').mockImplementation(() => {
+                return index;
+            });
+            const findBySpy = jest.spyOn(sessionService, 'findBySessionId').mockImplementation(() => {
+                return multiLimitedTimeGameStub as any;
+            });
+            sessionService.activeSessions = [{ id: 'session0' }, { id: 'session1' }] as any;
+            sessionService.delete(id, socketId);
+            expect(findBySpy).toHaveBeenCalledWith(id);
+            expect(deletePlayerSpy).not.toHaveBeenCalledWith(socketId);
+            expect(deleteFromActiveSessionsSpy).not.toHaveBeenCalledWith(index);
+        });
+    });
+
+    describe('deleteFromActiveSessions', () => {
+        it('should stopTimer and splice', () => {
+            const sessionStub = { id: 'session0', stopTimer: () => {} };
+            const sessionStub1 = { id: 'session1', stopTimer: () => {} };
+
+            sessionService.activeSessions = [sessionStub, sessionStub1] as any;
+            const stopTimerSpy = jest.spyOn(sessionStub, 'stopTimer');
+            sessionService.deleteFromActiveSessions(0);
+            expect(stopTimerSpy).toHaveBeenCalled();
+            expect(sessionService.activeSessions).toEqual([sessionStub1]);
+        });
+    });
+    describe('generateClue', () => {
+        it('should call generate clue', () => {
+            const sessionStub = { id: 'session0' };
+
+            sessionService['clueService' as any] = { generateClue: () => {} };
+            jest.spyOn(sessionService, 'findByClientId').mockImplementation(() => {
+                return sessionStub as any;
+            });
+            jest.spyOn(sessionService['clueService'], 'generateClue').mockImplementation(() => {
+                return { coordinates: [{ x: 123, y: 123 }], nbCluesLeft: 4 };
+            });
+            const response = sessionService.generateClue('socketId');
+            expect(response).toEqual({ coordinates: [{ x: 123, y: 123 }], nbCluesLeft: 4 });
+        });
+    });
 });
 
 //     describe('tryGuess function', () => {
@@ -684,17 +794,6 @@ describe('Session Service tests', () => {
 //     afterEach(() => {
 //         jest.restoreAllMocks();
 //         jest.clearAllMocks();
-//     });
-
-//     describe('addToList', () => {
-//         it('should call generateUniqueId and put the value to the session.id and push the new session', () => {
-//             sessionService.activeSessions = [];
-//             const spy = jest.spyOn(sessionService['activeSessions'], 'push').mockImplementation(() => {
-//                 return null;
-//             });
-//             sessionService.addToList(session);
-//             expect(spy).toHaveBeenCalledWith(session);
-//         });
 //     });
 
 //     it('session getNotFoundDifferences should return a list of difference', () => {
