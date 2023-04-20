@@ -801,6 +801,7 @@ describe('SessionGateway', () => {
             testSessionLimitedTime = {
                 nDifferencesFound: 2,
                 decideNewGame() {},
+                stopTimer() {},
             } as LimitedTimeSession;
             const gameStub: Game = { id: 'game-id' } as Game;
             const decideNewGameSpy = jest.spyOn(LimitedTimeSession.prototype, 'decideNewGame').mockImplementation(async () => {
@@ -814,6 +815,7 @@ describe('SessionGateway', () => {
             testSessionLimitedTime = {
                 nDifferencesFound: 2,
                 decideNewGame() {},
+                stopTimer() {},
             } as LimitedTimeSession;
             const gameStub: Game = { id: 'game-id' } as Game;
             const decideNewGameSpy = jest.spyOn(LimitedTimeSession.prototype, 'decideNewGame').mockImplementation(async () => {
