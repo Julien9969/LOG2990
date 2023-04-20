@@ -1,4 +1,4 @@
-/* eslint-disable max-lines */
+/* eslint-disable max-lines */ // Les modifications ajoutées sont nécessaires
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 import {
@@ -202,18 +202,6 @@ export class ImageOperationService {
         this.showClue();
     }
 
-    async showClue() {
-        this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
-        this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
-    }
-
-    async removeClue() {
-        this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
-        this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
-        this.clueOriginalImageData = this.originalImageSave;
-        this.clueModifiedImageData = this.modifiedImageSave;
-    }
-
     /**
      * Créer l'interval de clignotement pour la triche
      */
@@ -261,6 +249,18 @@ export class ImageOperationService {
         });
 
         this.cheatImagesData = cheatImageData;
+    }
+
+    private showClue() {
+        this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
+        this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
+    }
+
+    private removeClue() {
+        this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
+        this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
+        this.clueOriginalImageData = this.originalImageSave;
+        this.clueModifiedImageData = this.modifiedImageSave;
     }
 
     /**
