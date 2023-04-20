@@ -33,7 +33,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     nbCluesLeft = 3;
 
     penalty: number = 0;
-
+    reward: number = 0;
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
         private readonly dialog: MatDialog,
@@ -75,6 +75,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         const gameConsts = await this.gameService.getGameConstants();
         const startTime = gameConsts.time as number;
         this.penalty = gameConsts.penalty as number;
+        this.reward = gameConsts.reward as number;
         this.time = this.formatTime(startTime);
         this.inGameSocket.retrieveSocketId().then((userSocketId: string) => {
             this.userSocketId = userSocketId;
