@@ -43,7 +43,7 @@ export class ImageOperationService {
     private clueOriginalImageData: ImageData;
     private clueModifiedImageData: ImageData;
 
-    constructor(private readonly inGameService: InGameService, private replayService: GameActionLoggingService) {}
+    constructor(private readonly inGameService: InGameService, public replayService: GameActionLoggingService) {}
     // constructor(private readonly inGameService: InGameService) {}
 
     reset() {

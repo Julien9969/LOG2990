@@ -17,6 +17,8 @@ export class GameActionLoggingService {
     getClueFunction: (data: { nClueLeft: number; diffList: Coordinate[] }) => void;
     messageFunction: (data: any) => void;
     clearChatFunction: () => void;
+    imageMain: ImageData;
+    imageAlt: ImageData;
     intervalPlayAll: any;
     isRecording: boolean = true; // moreLike Is not replaying
     startTime: number;
