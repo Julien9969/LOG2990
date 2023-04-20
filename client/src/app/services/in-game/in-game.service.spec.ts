@@ -10,21 +10,17 @@ import { WinnerInfo } from '@common/winner-info';
 import { Socket } from 'socket.io-client';
 import { InGameService } from './in-game.service';
 
-class SocketClientServiceMock extends SocketClientService {
-    override connect() {}
-}
-
 describe('InGameService', () => {
     let service: InGameService;
-    let socketServiceMock: SocketClientServiceMock;
+    let socketServiceSpy: jasmine.SpyObj<SocketClientService>;
     let socketHelper: SocketTestHelper;
 
     beforeEach(async () => {
         socketHelper = new SocketTestHelper();
-        socketServiceMock = new SocketClientServiceMock();
-        socketServiceMock['socket'] = socketHelper as unknown as Socket;
+        socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['connect', 'disconnect', 'on', 'sendAndCallBack', 'send']);
+        socketServiceSpy['socket'] = socketHelper as unknown as Socket;
         TestBed.configureTestingModule({
-            providers: [{ provide: SocketClientService, useValue: socketServiceMock }],
+            providers: [{ provide: SocketClientService, useValue: socketServiceSpy }],
         });
         service = TestBed.inject(InGameService);
     });

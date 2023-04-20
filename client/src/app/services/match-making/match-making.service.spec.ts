@@ -7,21 +7,22 @@ import { Socket } from 'socket.io-client';
 import { MatchMakingService } from './match-making.service';
 import { SessionEvents } from '@common/session.gateway.events';
 
-class SocketClientServiceMock extends SocketClientService {
-    override connect() {}
-}
+// class SocketClientServiceMock extends SocketClientService {
+//     override connect() {}
+// }
 
 describe('MatchMakingService', () => {
     let service: MatchMakingService;
-    let socketServiceMock: SocketClientServiceMock;
     let socketHelper: SocketTestHelper;
+    let socketClientServiceSpy: jasmine.SpyObj<SocketClientService>;
 
     beforeEach(async () => {
         socketHelper = new SocketTestHelper();
-        socketServiceMock = new SocketClientServiceMock();
-        socketServiceMock['socket'] = socketHelper as unknown as Socket;
+
+        socketClientServiceSpy = jasmine.createSpyObj('SocketClientService', ['connect', 'isSocketAlive', 'send', 'sendAndCallBack', 'on']);
+        socketClientServiceSpy['socket'] = socketHelper as unknown as Socket;
         TestBed.configureTestingModule({
-            providers: [{ provide: SocketClientService, useValue: socketServiceMock }],
+            providers: [{ provide: SocketClientService, useValue: socketClientServiceSpy }],
         });
         service = TestBed.inject(MatchMakingService);
     });

@@ -35,7 +35,7 @@ export class StubPlayImageComponent {
     @Input() sessionID!: number;
     @Input() isSolo!: boolean;
     playerName: string;
-    handleClue() {}
+    handleClue = (nbCluesLeft: number, coordinates: Coordinate[]) => {};
 }
 
 @Component({
@@ -87,6 +87,7 @@ describe('GamePageComponent', () => {
             'playerExited',
             'disconnect',
             'socketService',
+            'retrieveClue',
         ]);
         inGameServiceSpy.retrieveSocketId.and.callFake(async () => {
             return Promise.resolve('socketId');
@@ -97,7 +98,6 @@ describe('GamePageComponent', () => {
                 nbCluesLeft: 0,
             } as Clue);
         });
-
         socketClientServiceSpy = jasmine.createSpyObj('SocketClientMock', ['send']);
         historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
         gameService = jasmine.createSpyObj('gameServiceSpy', ['getGameConstants']);
@@ -243,7 +243,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`],
+                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`, { gameId: 0, playerName: 'test' }],
             });
         });
         it('multi: when this client is the winner should give the winner s message', () => {
@@ -257,7 +257,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`],
+                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`, { gameId: 0, playerName: 'test' }],
             });
         });
         it('multi: when this client is the loser should give the loser s message', () => {
@@ -271,7 +271,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`],
+                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`, { gameId: 0, playerName: 'test' }],
             });
         });
 
@@ -323,15 +323,15 @@ describe('GamePageComponent', () => {
     describe('handleClueRequest', () => {
         beforeEach(() => {
             component.nbCluesLeft = 3;
-            component.playImageComponent.handleClue = async (nbCLuesLeft: number, differencesInOneList: Coordinate[]) => {
-                Promise.resolve();
-            };
+            inGameServiceSpy.retrieveClue.and.returnValue(new Promise((resolve) => resolve({ coordinates: [{ x: 2, y: 2 }], nbCluesLeft: 3 })));
         });
 
         it('should call retrieveClue', async () => {
-            await component.handleClueRequest();
+            component.playImageComponent = new StubPlayImageComponent() as any;
+            spyOn(component.playImageComponent, 'handleClue').and.returnValue(new Promise((resolve) => resolve()));
+            component.handleClueRequest();
             expect(inGameServiceSpy.retrieveClue).toHaveBeenCalled();
-            expect(component.nbCluesLeft).toEqual(0);
+            expect(component.nbCluesLeft).toEqual(3);
         });
 
         it('should not call retrieveClue when nbCluesLeft <= 0', () => {

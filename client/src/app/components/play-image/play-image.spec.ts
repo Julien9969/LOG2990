@@ -113,8 +113,7 @@ describe('PlayImageComponent', () => {
         it('handleErrorGuess should set errorMsgPosition, call errorTimer and increment errorCounter and set errorGuess to false after 1s', () => {
             jasmine.clock().install();
             component.errorCounter = 0;
-            component['mouseService'].mousePosition = { x: 0, y: 1 };
-            component.handleErrorGuess();
+            component.handleErrorGuess({ x: 0, y: 1 });
             expect(component.errorGuess).toEqual(true);
             jasmine.clock().tick(1000);
             expect(component.errorMsgPosition).toEqual({ x: 0, y: 1 });
@@ -125,14 +124,14 @@ describe('PlayImageComponent', () => {
 
         it('handleErrorGuess should call playAudio with "error" when errorCounter is less than 3', () => {
             component.errorCounter = 1; // will be incremented to 2 in handleErrorGuess
-            component.handleErrorGuess();
+            component.handleErrorGuess({ x: 0, y: 1 });
             expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('error');
             expect(component.errorCounter).toEqual(2);
         });
 
         it('handleErrorGuess should call playAudio with "manyErrors" when errorCounter is equal to 3 and reset the count', () => {
             component.errorCounter = 2;
-            component.handleErrorGuess();
+            component.handleErrorGuess({ x: 0, y: 0 });
             expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('manyErrors');
             expect(component.errorCounter).toEqual(0);
         });
