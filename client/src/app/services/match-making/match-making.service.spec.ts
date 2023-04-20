@@ -11,7 +11,7 @@ import { SessionEvents } from '@common/session.gateway.events';
 //     override connect() {}
 // }
 
-describe('MatchMakingService', () => {
+fdescribe('MatchMakingService', () => {
     let service: MatchMakingService;
     let socketHelper: SocketTestHelper;
     let socketClientServiceSpy: jasmine.SpyObj<SocketClientService>;
@@ -20,6 +20,10 @@ describe('MatchMakingService', () => {
         socketHelper = new SocketTestHelper();
 
         socketClientServiceSpy = jasmine.createSpyObj('SocketClientService', ['connect', 'isSocketAlive', 'send', 'sendAndCallBack', 'on']);
+        socketClientServiceSpy.on.and.callFake((event: string, action: (data: any) => void): any => {
+            socketHelper.on(event, action as any);
+        });
+
         socketClientServiceSpy['socket'] = socketHelper as unknown as Socket;
         TestBed.configureTestingModule({
             providers: [{ provide: SocketClientService, useValue: socketClientServiceSpy }],
