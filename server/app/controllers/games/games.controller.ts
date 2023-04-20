@@ -75,6 +75,11 @@ export class GamesController {
         return await this.gameService.findAll();
     }
 
+    /**
+     * Obtient les trois constantes de jeu
+     *
+     * @returns Un objet GameConstants avec les trois constantes.
+     */
     @Get('constants')
     getGameConstants() {
         return this.gameService.getGameConstants();
