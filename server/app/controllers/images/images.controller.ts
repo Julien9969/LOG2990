@@ -73,10 +73,22 @@ export class ImageController {
         return result;
     }
 
+    /**
+     * Vérifie la validité d'une image
+     *
+     * @param files la nouvelle image
+     * @returns un boolean vrai si l'image est valide, faux si l'image est invalide
+     */
     private notValidGameImageInput(files: GameImageInput): boolean {
         return !files || !files.mainFile || !files.altFile;
     }
 
+    /**
+     * Vérifie la validité d'une entrée
+     *
+     * @param radius le nouveau radius
+     * @returns un boolean vrai si le nouveau radius est valide, faux si le nouveau radius est invalide
+     */
     private notValidRadius(radius: { radius: string }): boolean {
         return !radius || !radius.radius;
     }
