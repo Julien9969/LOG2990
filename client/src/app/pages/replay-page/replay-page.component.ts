@@ -139,6 +139,9 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
         this.playImageComponent.imageOperationService.clearAllIntervals();
         this.replay();
     }
+    setReplaySpeed(newSpeed: number) {
+        this.loggingService.speedMultiplier = newSpeed;
+    }
     ngOnDestroy(): void {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);

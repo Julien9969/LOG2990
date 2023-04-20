@@ -19,15 +19,24 @@
                 [imageAltId]="gameInfos.imageAlt"
             >
             </app-play-image>
+
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="isSolo"></app-sidebar>
         </div>
+        <mat-toolbar color="primary" id="replay-controller">
+            <div>
+                <button mat-button (click)="resetAndReplay()">rejouer2</button>
+                <button mat-button (click)="setReplaySpeed(1)">*1</button>
+                <button mat-button (click)="setReplaySpeed(2)">*2</button>
+                <button mat-button (click)="setReplaySpeed(4)">*4</button>
+            </div>
+        </mat-toolbar>
+
         <div id="bottom-bar">
             <mat-toolbar color="primary">
                 <button mat-button (click)="openDialog('quit')" id="quit-button" aria-label="Quitter">
                     <mat-icon>home</mat-icon>
                     Quitter
                 </button>
-                <button mat-button (click)="resetAndReplay()">rejouer</button>
 
                 <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span>
                 <button mat-button (click)="openDialog('clue')" id="clue-button" aria-label="Indice">

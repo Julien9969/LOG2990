@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
+import { ChatEvents } from '@common/chat.gateway.events';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
+
 @Injectable({
     providedIn: 'root',
 })
@@ -10,6 +12,8 @@ export class GameActionLoggingService {
     diffFoundFunction: (data: GuessResult) => void;
     cheatFunction: (data: { isStarting: boolean; pixelList: Coordinate[]; diffList: Coordinate[][] }) => void;
     systemErrorFunction: (data: { systemCode: string; playerName: string }) => void;
+    messageFunction: (data: any) => void;
+    clearChatFunction: () => void;
     intervalPlayAll: any;
     isRecording: boolean = true; // moreLike Is not replaying
     startTime: number;
@@ -31,6 +35,8 @@ export class GameActionLoggingService {
     logAction(event: string, data: any) {
         if (event === 'startSession' || event === 'getClientId') {
             this.actionLog = [];
+            this.isRecording = true;
+
             this.setTimeZero();
         }
         if (this.isRecording) {
@@ -39,6 +45,7 @@ export class GameActionLoggingService {
     }
 
     // TODO: refactor loggedAction as enum for readability
+    // TODO:use enums for messages
     async replayAction(loggedAction: [number, string, any]) {
         switch (loggedAction[1]) {
             case 'timerUpdate':
@@ -53,6 +60,9 @@ export class GameActionLoggingService {
                 break;
             case 'systemMessageFromServer':
                 await this.systemErrorFunction(loggedAction[2]);
+                break;
+            case ChatEvents.MessageFromServer:
+                this.messageFunction(loggedAction[2]);
         }
     }
 
@@ -60,7 +70,7 @@ export class GameActionLoggingService {
         this.isRecording = false;
         let time = 0;
         this.lastTimeReplayed = time;
-
+        this.clearChatFunction();
         console.log(this.actionLog);
         if (this.actionLog.length === 0) {
             return;
