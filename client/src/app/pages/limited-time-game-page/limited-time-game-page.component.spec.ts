@@ -1,306 +1,274 @@
 /* eslint-disable max-lines, max-len */
-// /* eslint-disable @typescript-eslint/no-magic-numbers */
-// /* eslint-disable @typescript-eslint/no-explicit-any */
-// /* eslint-disable no-with */
-// /* eslint-disable @typescript-eslint/no-empty-function */
-// /* eslint-disable no-unused-vars */
-// /* eslint-disable max-classes-per-file */
-// import { Component, Input } from '@angular/core';
-// import { ComponentFixture, TestBed } from '@angular/core/testing';
-// import { MatDialog } from '@angular/material/dialog';
-// import { MatIconModule } from '@angular/material/icon';
-// import { MatToolbarModule } from '@angular/material/toolbar';
-// import { PlayImageLimitedTimeComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
-// import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-with */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable no-unused-vars */
+/* eslint-disable max-classes-per-file */
+import { Component, Input } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { By } from '@angular/platform-browser';
+import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
+import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
+// import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
+import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
 // import { CommunicationService } from '@app/services/communication/communication.service';
+import { GameService } from '@app/services/game/game.service';
+import { HistoryService } from '@app/services/history/history.service';
+import { InGameService } from '@app/services/in-game/in-game.service';
+import { Coordinate } from '@common/coordinate';
 // import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 // import { of } from 'rxjs';
 
-// @Component({
-//     selector: 'app-play-image',
-//     template: '<img>',
-// })
-// export class StubPlayImageComponent {
-//     @Input() imageMainId!: string;
-//     @Input() imageAltId!: string;
-//     @Input() sessionID!: number;
-//     playerName: string;
-// }
+@Component({
+    selector: 'app-play-image-limited-time',
+    template: '<img>',
+})
+export class StubPlayImageComponent {
+    @Input() imageMainId!: string;
+    @Input() imageAltId!: string;
+    @Input() sessionID!: number;
+    playerName: string;
+    handleClue = (nbCluesLeft: number, coordinates: Coordinate[]) => {};
+}
 
-// @Component({
-//     selector: 'app-sidebar',
-//     template: '<div></div>',
-// })
-// export class StubAppSidebarComponent {
-//     @Input()
-//     playerName: string;
-//     @Input()
-//     sessionID: number;
-//     @Input()
-//     isSolo: boolean;
-// }
+@Component({
+    selector: 'app-sidebar',
+    template: '<div></div>',
+})
+export class StubAppSidebarComponent {
+    @Input()
+    playerName: string;
+    @Input()
+    sessionID: number;
+    @Input()
+    isSolo: boolean;
+}
 
-// describe('SoloGamePageComponent', () => {
-//     // let component: LimitedTimeComponent;
-//     let fixture: ComponentFixture<LimitedTimeGamePageComponent>;
-//     let dialogSpy: jasmine.SpyObj<MatDialog>;
-//     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
-//     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
-//     let socketServiceSpy: jasmine.SpyObj<SocketClientService>;
+describe('LimitedTimeGamePageComponent', () => {
+    let component: LimitedTimeGamePageComponent;
+    let fixture: ComponentFixture<LimitedTimeGamePageComponent>;
+    let dialogSpy: jasmine.SpyObj<MatDialog>;
+    let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
+    // let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
+    // let socketServiceSpy: jasmine.SpyObj<SocketClientService>;
+    let gameServiceSpy: jasmine.SpyObj<GameService>;
+    let inGameSocketSpy: jasmine.SpyObj<InGameService>;
+    let historyServiceSpy: jasmine.SpyObj<HistoryService>;
 
-//     beforeEach(async () => {
-//         communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['gameInfoGet', 'customGet']);
-//         communicationServiceSpy.gameInfoGet.and.returnValue(
-//             of({
-//                 id: '1',
-//                 name: 'testName',
-//                 imageMain: 1,
-//                 imageAlt: 1,
-//                 scoreBoardSolo: [['Bob', 1]],
-//                 scoreBoardMulti: [['Bob', 1]],
-//                 isValid: false,
-//                 isHard: false,
-//                 differenceCount: 2,
-//                 time: 0,
-//                 penalty: 0,
-//                 reward: 0,
-//             }),
-//         );
-//         socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['send', 'on', 'sendAndCallBack', 'connect', 'isSocketAlive']);
+    const game = {
+        id: '1',
+        name: 'testName',
+        imageMain: 1,
+        imageAlt: 1,
+        scoreBoardSolo: [['Bob', 1]],
+        scoreBoardMulti: [['Bob', 1]],
+        isValid: false,
+        isHard: false,
+        differenceCount: 2,
+        time: 0,
+        penalty: 0,
+        reward: 0,
+    };
 
-//         playImageComponentSpy = jasmine.createSpyObj('PlayImageComponentMock', ['playAudio']);
-//         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
+    const gameConstants = {
+        time: 0,
+        penalty: 0,
+        reward: 0,
+    };
 
-//         TestBed.configureTestingModule({
-//             declarations: [LimitedTimeGamePageComponent, StubPlayImageComponent, StubAppSidebarComponent],
-//             imports: [MatIconModule, MatToolbarModule],
-//             providers: [
-//                 { provide: MatDialog, useValue: dialogSpy },
-//                 { provide: PlayImageLimitedTimeComponent, useValue: playImageComponentSpy },
-//                 { provide: CommunicationService, useValue: communicationServiceSpy },
-//                 { provide: SocketClientService, useValue: socketServiceSpy },
-//             ],
-//         }).compileComponents();
-//     });
+    beforeEach(async () => {
+        // socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['send', 'on', 'sendAndCallBack', 'connect', 'isSocketAlive']);
 
-//     beforeEach(() => {
-//         window.history.pushState({ isSolo: true, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-//         fixture = TestBed.createComponent(LimitedTimeGamePageComponent);
-//         // component = fixture.componentInstance;
-//         fixture.detectChanges();
-//     });
+        dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
-//     // it('should create', () => {
-//     //     expect(component).toBeTruthy();
-//     // });
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['getGameById', 'getGameConstants']);
+        inGameSocketSpy = jasmine.createSpyObj('InGameService', [
+            'listenNewGame',
+            'listenProvideName',
+            'retrieveSocketId',
+            'listenOpponentLeaves',
+            'listenGameEnded',
+            'listenTimerUpdate',
+            'disconnect',
+            'playerExited',
+            'retrieveClue',
+        ]);
 
-//     // it('constructor should call not define opponentName if isSolo is true', () => {
-//     //     expect(component.opponentName).toBeUndefined();
-//     // });
+        inGameSocketSpy.retrieveSocketId.and.returnValue(new Promise((resolve) => resolve('socketId')));
+        historyServiceSpy = jasmine.createSpyObj('HistoryService', [
+            'setPlayerQuit',
+            'setPlayerWon',
+            'setLimitedTimeHistory',
+            'initHistory',
+            'setPlayers',
+        ]);
+        gameServiceSpy.getGameConstants.and.returnValue(
+            new Promise((resolve) => {
+                resolve(gameConstants);
+            }),
+        );
 
-//     // it('constructor should define opponentName if isSolo is false', () => {
-//     //     window.history.pushState({ isSolo: false, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-//     //     const newComponent = TestBed.createComponent(SoloGamePageComponent);
-//     //     expect(newComponent.componentInstance.opponentName).toBeDefined();
-//     // });
-//     // describe('onInit', () => {
-//     //     it('should call  getGameInfos, ', () => {
-//     //         spyOn(component['socket'], 'listenOpponentLeaves').and.callFake(() => {
-//     //             return;
-//     //         });
-//     //         component.sessionId = 123;
-//     //         component.gameID = '123';
-//     //         spyOn(component, 'getGameInfos');
-//     //         component.ngOnInit();
-//     //         expect(component.getGameInfos).toHaveBeenCalled();
-//     //         expect(component.gameInfos).toBeDefined();
-//     //     });
-//     //     it('should call listenProvideName', () => {
-//     //         const listenProvideNameSpy = spyOn(component['socket'], 'listenProvideName').and.callFake(() => {});
-//     //         component.ngOnInit();
+        TestBed.configureTestingModule({
+            declarations: [LimitedTimeGamePageComponent, StubPlayImageComponent, StubAppSidebarComponent],
+            imports: [MatIconModule, MatToolbarModule],
+            providers: [
+                { provide: MatDialog, useValue: dialogSpy },
+                { provide: InGameService, useValue: inGameSocketSpy },
+                { provide: GameService, useValue: gameServiceSpy },
+                { provide: PlayImageLimitedTimeComponent, useValue: playImageComponentSpy },
+                { provide: HistoryService, useValue: historyServiceSpy },
+            ],
+        }).compileComponents();
+    });
 
-//     //         expect(listenProvideNameSpy).toHaveBeenCalledWith(component.playerName);
-//     //     });
-//     //     it('should get the socketId', fakeAsync(() => {
-//     //         const socketId = 'socketId';
-//     //         const socketRetrieveSocketIdSpy = spyOn(component['socket'], 'retrieveSocketId').and.callFake(async () => {
-//     //             return Promise.resolve(socketId);
-//     //         });
-//     //         component.ngOnInit();
-//     //         tick(3000);
-//     //         expect(socketRetrieveSocketIdSpy).toHaveBeenCalled();
-//     //         expect(component.userSocketId).toEqual(socketId);
-//     //         flush();
-//     //     }));
-//     //     it('should listen for opponent leaving', () => {
-//     //         const listenOpponentLeaves = spyOn(component['socket'], 'listenOpponentLeaves').and.callFake((callback: () => void) => {
-//     //             callback();
-//     //         });
-//     //         const openDialogSpy = spyOn(component, 'openDialog').and.callFake(() => {});
-//     //         component.ngOnInit();
+    beforeEach(async () => {
+        window.history.pushState({ isSolo: true, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
+        fixture = TestBed.createComponent(LimitedTimeGamePageComponent);
+        fixture.detectChanges();
+        component = fixture.componentInstance;
+    });
 
-//     //         expect(listenOpponentLeaves).toHaveBeenCalled();
-//     //         expect(openDialogSpy).toHaveBeenCalled();
-//     //     });
-//     //     it('should listen for a player winning', () => {
-//     //         const listenPlayerWonSpy = spyOn(component['socket'], 'listenPlayerWon').and.callFake((callback: (winnerInfo: WinnerInfo) => void) => {
-//     //             callback({ name: 'name', socketId: 'socketId' });
-//     //         });
-//     //         const endGameDialogSpy = spyOn(component, 'endGameDialog').and.callFake(() => {});
-//     //         component.ngOnInit();
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 
-//     //         expect(listenPlayerWonSpy).toHaveBeenCalled();
-//     //         expect(endGameDialogSpy).toHaveBeenCalledWith({ name: 'name', socketId: 'socketId' });
-//     //     });
-//     //     it('should listen for time update', () => {
-//     //         const listenTimerUpdateSpy = spyOn(component['socket'], 'listenTimerUpdate').and.callFake((callback: (time: string) => void) => {
-//     //             callback('35:12');
-//     //         });
-//     //         component.time = '31:12';
-//     //         component.ngOnInit();
+    it('constructor should call not define opponentName if isSolo is true', () => {
+        expect(component.opponentName).toBeUndefined();
+    });
 
-//     //         expect(listenTimerUpdateSpy).toHaveBeenCalled();
-//     //         expect(component.time).toEqual('35:12');
-//     //     });
-//     // });
+    it('constructor should define opponentName if isSolo is false', () => {
+        window.history.pushState({ isSolo: false, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
+        const newComponent = TestBed.createComponent(LimitedTimeGamePageComponent);
+        expect(newComponent.componentInstance.opponentName).toBeDefined();
+    });
+    describe('onInit', () => {
+        it('should listen listenNewGame that call a callback that set nDiffFound ', () => {
+            const data = [game, 1];
+            component.ngOnInit();
+            expect(inGameSocketSpy.listenNewGame).toHaveBeenCalled();
+            inGameSocketSpy.listenNewGame.calls.mostRecent().args[0](data as any);
+            expect(component.nDiffFound).toEqual(1);
+        });
+        it('should call listenProvideName', () => {
+            component.ngOnInit();
+            expect(inGameSocketSpy.listenProvideName).toHaveBeenCalledWith(component.playerName);
+        });
+        it('should get the socketId', async () => {
+            const socketId = 'socketId';
+            await component.ngOnInit();
+            expect(inGameSocketSpy.retrieveSocketId).toHaveBeenCalled();
+            expect(component.userSocketId).toEqual(socketId);
+        });
+        it('should listen for opponent leaving should set isSolo to true', () => {
+            component.ngOnInit();
+            expect(inGameSocketSpy.listenOpponentLeaves).toHaveBeenCalled();
+            inGameSocketSpy.listenOpponentLeaves.calls.mostRecent().args[0]();
+            expect(component.isSolo).toEqual(true);
+        });
+        it('should listen listenGameEnded should call endGameDialog in callback', () => {
+            component.ngOnInit();
 
-//     // describe('handleDiffFoundUpdate', () => {
-//     //     it('solo: should give the right value to n.DiffFoundMainPlayer', () => {
-//     //         const diffFound: [string, number][] = [['socketId', 2]];
-//     //         component.isSolo = true;
-//     //         component.nDiffFoundMainPlayer = 0;
-//     //         component.handleDiffFoundUpdate(diffFound);
-//     //         expect(component.nDiffFoundMainPlayer).toEqual(2);
-//     //     });
-//     //     it('multi: should give the right value to n.DiffFoundMainPlayer', () => {
-//     //         const diffFound: [string, number][] = [
-//     //             ['socketId', 2],
-//     //             ['socketId2', 3],
-//     //         ];
-//     //         component.userSocketId = 'socketId2';
-//     //         component.isSolo = false;
-//     //         component.nDiffFoundMainPlayer = 0;
-//     //         component.handleDiffFoundUpdate(diffFound);
-//     //         expect(component.nDiffFoundMainPlayer).toEqual(3);
-//     //         expect(component.nDiffFoundOpponent).toEqual(2);
-//     //     });
-//     // });
+            expect(inGameSocketSpy.listenGameEnded).toHaveBeenCalled();
+            inGameSocketSpy.listenGameEnded.calls.mostRecent().args[0](false);
+            expect(dialogSpy.open).toHaveBeenCalled();
+        });
+        it('should listen listenTimerUpdate that update time', () => {
+            component.time = '31:12';
+            component.ngOnInit();
+            expect(inGameSocketSpy.listenTimerUpdate).toHaveBeenCalled();
+            inGameSocketSpy.listenTimerUpdate.calls.mostRecent().args[0]('32:13');
+            expect(component.time).toEqual('32:13');
+        });
+    });
 
-//     // describe('endGameDialog', () => {
-//     //     it('solo: when this client is the winner should give the winner s message', () => {
-//     //         const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
-//     //         component.userSocketId = 'socketId';
-//     //         component.time = '9:14';
-//     //         component.isSolo = true;
+    it('playerExited should call inGameSocket.playerExited', () => {
+        component.playerExited();
+        expect(inGameSocketSpy.playerExited).toHaveBeenCalled();
+    });
 
-//     //         component.endGameDialog(winnerInfo);
-//     //         expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-//     //             closeOnNavigation: true,
-//     //             disableClose: true,
-//     //             autoFocus: false,
-//     //             data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`],
-//     //         });
-//     //     });
-//     //     it('multi: when this client is the winner should give the winner s message', () => {
-//     //         const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
-//     //         component.userSocketId = 'socketId';
-//     //         component.time = '9:14';
-//     //         component.isSolo = false;
+    describe('handleClueRequest', () => {
+        beforeEach(() => {
+            component.nbCluesLeft = 3;
+            inGameSocketSpy.retrieveClue.and.returnValue(new Promise((resolve) => resolve({ coordinates: [{ x: 2, y: 2 }], nbCluesLeft: 3 })));
+        });
 
-//     //         component.endGameDialog(winnerInfo);
-//     //         expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-//     //             closeOnNavigation: true,
-//     //             disableClose: true,
-//     //             autoFocus: false,
-//     //             data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`],
-//     //         });
-//     //     });
-//     //     it('multi: when this client is the loser should give the loser s message', () => {
-//     //         const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId2' };
-//     //         component.userSocketId = 'socketId';
-//     //         component.time = '9:14';
-//     //         component.isSolo = false;
+        it('should call retrieveClue', async () => {
+            component.playImageComponent = new StubPlayImageComponent() as any;
+            spyOn(component.playImageComponent, 'handleClue').and.returnValue(new Promise((resolve) => resolve()));
+            component.handleClueRequest();
+            expect(inGameSocketSpy.retrieveClue).toHaveBeenCalled();
+            expect(component.nbCluesLeft).toEqual(3);
+        });
 
-//     //         component.endGameDialog(winnerInfo);
-//     //         expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-//     //             closeOnNavigation: true,
-//     //             disableClose: true,
-//     //             autoFocus: false,
-//     //             data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`],
-//     //         });
-//     //     });
-//     // });
+        it('should not call retrieveClue when nbCluesLeft <= 0', () => {
+            component.nbCluesLeft = 0;
+            component.handleClueRequest();
+            expect(inGameSocketSpy.retrieveClue).not.toHaveBeenCalled();
+        });
+    });
 
-//     // it('getGameInfos should call communicationService.gameInfoGet and set the gameInfos attribute', () => {
-//     //     component.getGameInfos();
-//     //     expect(communicationServiceSpy.gameInfoGet).toHaveBeenCalled();
-//     //     expect(component.gameInfos).toEqual({
-//     //         id: '1',
-//     //         name: 'testName',
-//     //         imageMain: 1,
-//     //         imageAlt: 1,
-//     //         scoreBoardSolo: [['Bob', 1]],
-//     //         scoreBoardMulti: [['Bob', 1]],
-//     //         isValid: false,
-//     //         isHard: false,
-//     //         differenceCount: 2,
-//     //         time: 0,
-//     //         penalty: 0,
-//     //         reward: 0,
-//     //     });
-//     // });
+    describe('endGameDialog', () => {
+        it('should set the message to "vous n avez plus de Temps..." if timerFinished is true', () => {
+            component.endGameDialog(true);
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
+                closeOnNavigation: true,
+                disableClose: true,
+                autoFocus: false,
+                data: ['endGame', `Vous n'avez plus de temps, vous avez trouvé ${component.nDiffFound} différences`],
+            });
+        });
+        it('should set the message to "Vous avez joué à tous..." if timerFinished is false', () => {
+            component.endGameDialog(false);
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
+                closeOnNavigation: true,
+                disableClose: true,
+                autoFocus: false,
+                data: ['endGame', `Vous avez joué à tous les jeux, vous avez trouvé ${component.nDiffFound + 1} différences`],
+            });
+        });
+    });
 
-//     // it('quit button should open quit dialog', () => {
-//     //     const quitButton = fixture.debugElement.query(By.css('#quit-button'));
-//     //     quitButton.triggerEventHandler('click', null);
-//     //     expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-//     //         closeOnNavigation: true,
-//     //         autoFocus: false,
-//     //         data: ['quit'],
-//     //     });
-//     // });
+    it('quit button should open quit dialog', () => {
+        const quitButton = fixture.debugElement.query(By.css('#quit-button'));
+        quitButton.triggerEventHandler('click', null);
+        expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
+            closeOnNavigation: true,
+            autoFocus: false,
+            data: ['quit'],
+        });
+    });
 
-//     // it('clue button should open clue dialog', () => {
-//     //     const clueButton = fixture.debugElement.query(By.css('#clue-button'));
-//     //     clueButton.triggerEventHandler('click', null);
-//     //     expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-//     //         closeOnNavigation: true,
-//     //         autoFocus: false,
-//     //         data: ['clue'],
-//     //     });
-//     // });
+    // Can't test by dispatching event because it will reload the page and make the test crash
+    it('unloadNotification should set event.returnValue to true', () => {
+        const event = new Event('beforeunload');
+        component.unloadNotification(event);
+        // eslint-disable-next-line deprecation/deprecation
+        expect(event.returnValue).toEqual(true);
+    });
 
-//     // // Can't test by dispatching event because it will reload the page and make the test crash
-//     // it('unloadNotification should set event.returnValue to true', () => {
-//     //     const event = new Event('beforeunload');
-//     //     component.unloadNotification(event);
-//     //     // eslint-disable-next-line deprecation/deprecation
-//     //     expect(event.returnValue).toEqual(true);
-//     // });
-
-//     // describe('openDialog', () => {
-//     //     it('openDialog with "clue" as argument call dialog.open with right args', () => {
-//     //         component.openDialog('clue');
-//     //         expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
-//     //     });
-
-//     //     it('openDialog with "quit" as argument call dialog.open with right args', () => {
-//     //         component.openDialog('quit');
-//     //         expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
-//     //     });
-//     //     it('openDialog with "opponentLeftGame" as argument call dialog.open with right args', () => {
-//     //         component.openDialog('opponentLeftGame');
-//     //         expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
-//     //             closeOnNavigation: true,
-//     //             disableClose: true,
-//     //             autoFocus: false,
-//     //             data: ['opponentLeft'],
-//     //         });
-//     //     });
-//     // });
-//     // it('ngOnDestroy should call socketClientService with leaveRoom', () => {
-//     //     socketServiceSpy.send.and.callFake(<T>() => {});
-//     //     component.ngOnDestroy();
-//     //     expect(socketServiceSpy.send).toHaveBeenCalledWith('leaveRoom');
-//     // });
-// });
+    describe('openDialog', () => {
+        it('openDialog with "quit" as argument call dialog.open with right args', () => {
+            component.openDialog('quit');
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
+        });
+        it('openDialog with "opponentLeftGame" as argument call dialog.open with right args', () => {
+            component.openDialog('opponentLeftGame');
+            expect(dialogSpy.open).toHaveBeenCalledWith(PopupDialogComponent, {
+                closeOnNavigation: true,
+                disableClose: true,
+                autoFocus: false,
+                data: ['opponentLeft'],
+            });
+        });
+    });
+    it('ngOnDestroy should call playerExited and inGameSocket.disconnect', () => {
+        spyOn(component, 'playerExited');
+        component.ngOnDestroy();
+        expect(component.playerExited).toHaveBeenCalled();
+        expect(inGameSocketSpy.disconnect).toHaveBeenCalled();
+    });
+});

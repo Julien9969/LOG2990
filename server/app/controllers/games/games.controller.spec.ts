@@ -46,11 +46,29 @@ describe('GameController tests', () => {
         expect(games).toEqual([exampleGame]);
     });
 
-    it('deletebyId should call delete() with the correct id', async () => {
-        const deleteSpy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(async () => {});
-        await controller.deleteById('5');
+    describe('deleteById', () => {
+        it('should call the coresponding service function', async () => {
+            const spy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(async () => {});
+            await controller.deleteById('12');
+            expect(spy).toHaveBeenCalledWith('12');
+        });
 
-        expect(deleteSpy).toBeCalledWith('5');
+        it('should call delete() with the correct id', async () => {
+            const deleteSpy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(async () => {});
+            await controller.deleteById('5');
+
+            expect(deleteSpy).toBeCalledWith('5');
+        });
+
+        it('should log an error when delete fails', async () => {
+            jest.spyOn(controller['gameService'], 'delete').mockImplementation(async () => {
+                throw new Error();
+            });
+            const logErrorSpy = jest.spyOn(logger, 'error').mockImplementation();
+            await controller.deleteById('5');
+
+            expect(logErrorSpy).toBeCalled();
+        });
     });
 
     it('get should return an error if the id is invalid', async () => {
@@ -67,11 +85,6 @@ describe('GameController tests', () => {
         expect(message).toEqual(exampleGame);
     });
 
-    it('deleteById should call the coresponding service function', async () => {
-        const spy = jest.spyOn(controller['gameService'], 'delete').mockImplementation(async () => {});
-        await controller.deleteById('12');
-        expect(spy).toHaveBeenCalledWith('12');
-    });
     it('GetAllGames should call the coresponding service function', async () => {
         const spy = jest.spyOn(controller['gameService'], 'findAll').mockImplementation(async () => {
             return [exampleGame];
@@ -182,6 +195,45 @@ describe('GameController tests', () => {
             }
             expect(controller.configureConstants).rejects.toThrow();
             expect(error).toEqual(new HttpException('', HttpStatus.BAD_REQUEST));
+        });
+    });
+
+    it('deleteAllGames calls gameService deleteAllGames', () => {
+        const deleteAllGamesSpy = jest.spyOn(gameService, 'deleteAllGames').mockImplementation();
+        controller.deleteAllGames();
+
+        expect(deleteAllGamesSpy).toBeCalled();
+    });
+
+    it('resetAllLeaderboards calls gameService resetAllLeaderboards', () => {
+        const resetAllLeaderboardsSpy = jest.spyOn(gameService, 'resetAllLeaderboards').mockImplementation();
+        controller.resetAllLeaderboards();
+
+        expect(resetAllLeaderboardsSpy).toBeCalled();
+    });
+
+    describe('resetLeaderboard', () => {
+        it('should call the coresponding service function', async () => {
+            const spy = jest.spyOn(controller['gameService'], 'resetLeaderboard').mockImplementation(async () => {});
+            await controller.resetLeaderboard('12');
+            expect(spy).toHaveBeenCalledWith('12');
+        });
+
+        it('should call resetLeaderboard() with the correct id', async () => {
+            const resetLeaderboardSpy = jest.spyOn(controller['gameService'], 'resetLeaderboard').mockImplementation(async () => {});
+            await controller.resetLeaderboard('5');
+
+            expect(resetLeaderboardSpy).toBeCalledWith('5');
+        });
+
+        it('should log an error when resetLeaderboard fails', async () => {
+            jest.spyOn(controller['gameService'], 'resetLeaderboard').mockImplementation(async () => {
+                throw new Error();
+            });
+            const logErrorSpy = jest.spyOn(logger, 'error').mockImplementation();
+            await controller.resetLeaderboard('5');
+
+            expect(logErrorSpy).toBeCalled();
         });
     });
 });

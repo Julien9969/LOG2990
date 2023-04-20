@@ -3,6 +3,7 @@ import { GROUP_SIZE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { Game } from '@common/game';
 import { GameConstants } from '@common/game-constants';
+import { DEFAULT_GAME_TIME, DEFAULT_PENALTY_TIME, DEFAULT_REWARD_TIME } from '@common/game-constants-values';
 
 @Injectable({
     providedIn: 'root',
@@ -60,11 +61,44 @@ export class GameService {
         await this.communicationService.deleteRequest(`games/${id}`);
     }
 
+    async resetLeaderboard(id: string): Promise<void> {
+        await this.communicationService.deleteRequest(`games/leaderboards/${id}`);
+    }
+
     async updateGameConstants(gameConsts: GameConstants) {
         await this.communicationService.patchGameConstants(gameConsts);
     }
 
     async getGameConstants(): Promise<GameConstants> {
         return await this.communicationService.getGameConstants();
+    }
+
+    deleteAllGames = async () => {
+        await this.communicationService.deleteRequest('games');
+        this.reloadWindow();
+    };
+
+    resetAllLeaderboards = async () => {
+        await this.communicationService.deleteRequest('games/leaderboards');
+        this.reloadWindow();
+    };
+
+    resetTimeConstants = async () => {
+        const defaultGameConsts: GameConstants = {
+            time: DEFAULT_GAME_TIME,
+            reward: DEFAULT_REWARD_TIME,
+            penalty: DEFAULT_PENALTY_TIME,
+        };
+        await this.communicationService.patchGameConstants(defaultGameConsts);
+        this.reloadWindow();
+    };
+
+    /**
+     * Cette fonction est un wrapper autour de window.location.reload(), pour pouvoir la mock.
+     * Elle est nécessaire pour mettre à jour après un changement de configuration de jeux,
+     * n'est mais pas couverte par les tests puisqu'elle reload le chrome de tests.
+     */
+    reloadWindow() {
+        window.location.reload();
     }
 }

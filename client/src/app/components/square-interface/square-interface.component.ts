@@ -91,18 +91,17 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
      */
     async deleteGame(gameId: string): Promise<void> {
         await this.gameService.deleteGame(gameId);
-        this.reloadWindow();
+        this.gameService.reloadWindow();
+    }
+
+    async resetLeaderboard(gameId: string): Promise<void> {
+        await this.gameService.resetLeaderboard(gameId);
+        this.gameService.reloadWindow();
     }
 
     baseMatchMakingFeatures(): void {
         this.matchMaking.updateRoomView(async () => {
             await this.reachableGames();
         });
-    }
-
-    // Cette fonction est un wrapper autour de window.location.reload(), pour pouvoir la mock.
-    // Elle n'est pas couverte par les tests.
-    private reloadWindow() {
-        window.location.reload();
     }
 }

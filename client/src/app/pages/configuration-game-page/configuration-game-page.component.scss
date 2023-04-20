@@ -1,10 +1,27 @@
 #top {
     padding-top: 2vh;
     position: fixed;
-    height: 7vh;
+    height: 7.5vh;
     justify-content: space-between;
+    align-items: start;
     overflow: visible;
     z-index: 1;
+}
+
+h1 {
+    font-size: 28px;
+}
+
+button {
+    margin-left: 1vw;
+    font-size: 20px;
+    background-color: rgb(213, 219, 216);
+    height: 50px;
+    min-width: auto;
+    transform: translateY(-1vh);
+    mat-icon {
+        margin-right: 10%;
+    }
 }
 
 #topbar-links {

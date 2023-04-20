@@ -1,5 +1,21 @@
+/* eslint-disable max-lines */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
-import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
+// import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
+import {
+    BIT_PER_PIXEL,
+    BLINK_COUNT,
+    BLINK_PERIOD_MS,
+    CANVAS,
+    CHEAT_PERIOD_MS,
+    IMAGE_HEIGHT,
+    IMAGE_WIDTH,
+    RGB_GREEN,
+    RGB_RED,
+    RATIO_POINTER_IMAGE,
+    POINTER_X_OFFSET,
+} from '@app/constants/utils-constants';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 
@@ -8,6 +24,7 @@ import { Coordinate } from '@common/coordinate';
 })
 export class ImageOperationService {
     isChatFocused: boolean = false;
+    cheatInterval: number;
 
     // attributs pour sauvegarder les ids des intervalles et en supporter plusieurs en même temps
     private intervalIds: number[] = [];
@@ -21,20 +38,34 @@ export class ImageOperationService {
     private originalImageSave: ImageData;
     private modifiedImageSave: ImageData;
 
-    private cheatInterval: number;
     private cheatImagesData: ImageData;
     private allDifferencesList: Coordinate[][];
 
-    constructor(private readonly inGameService: InGameService) {}
+    private clueOriginalImageData: ImageData;
+    private clueModifiedImageData: ImageData;
 
-    get contextOriginal(): CanvasRenderingContext2D {
-        return this.originalImgContext;
+    constructor(private readonly inGameService: InGameService, private replayService: GameActionLoggingService) {}
+    // constructor(private readonly inGameService: InGameService) {}
+
+    reset() {
+        this.intervalIds.forEach((interval) => {
+            clearInterval(interval);
+        });
+        this.intervalIds = [];
+        this.allDifferencesList = undefined as any;
+        clearInterval(this.cheatInterval);
+        this.cheatInterval = 0;
+        this.cheatImagesData = undefined as any;
+        this.newestTimerId = 0;
+        this.oldestTimerId = 0;
     }
 
-    get contextModified(): CanvasRenderingContext2D {
-        return this.modifiedImgContext;
+    getSpeedMultiplier() {
+        if (this.replayService.isRecording) {
+            return 1;
+        }
+        return 1 / this.replayService.speedMultiplier;
     }
-
     setCanvasContext(original: CanvasRenderingContext2D, modified: CanvasRenderingContext2D): void {
         this.originalImgContext = original;
         this.modifiedImgContext = modified;
@@ -73,6 +104,7 @@ export class ImageOperationService {
      */
     async createBlinkInterval(differences: Coordinate[]): Promise<void> {
         let count = 0;
+        this.removeClue();
         return new Promise<void>((done) => {
             this.intervalIds[this.newestTimerId] = window.setInterval(() => {
                 if (count % 2 === 0) {
@@ -82,10 +114,11 @@ export class ImageOperationService {
                 }
                 if (count === BLINK_COUNT) {
                     this.setOriginalPixel(differences);
+                    this.showClue();
                     return done();
                 }
                 count++;
-            }, BLINK_PERIOD_MS);
+            }, BLINK_PERIOD_MS * this.getSpeedMultiplier());
         });
     }
 
@@ -134,6 +167,7 @@ export class ImageOperationService {
         }
         if (this.cheatInterval) {
             this.disableCheat();
+            this.replayService.logAction('CHEATLOGGER', { isStarting: false, pixelList: [], diffList: [] });
         } else {
             this.allDifferencesList = await this.inGameService.cheatGetAllDifferences(sessionId);
 
@@ -142,9 +176,44 @@ export class ImageOperationService {
                 differencesInOneList.push(...differences);
             });
 
+            this.replayService.logAction('CHEATLOGGER', {
+                isStarting: true,
+                pixelList: differencesInOneList,
+                diffList: [...this.allDifferencesList],
+            });
             await this.createImageDataCheat(differencesInOneList);
             await this.cheatBlink();
         }
+    }
+    async handleCheatReplay(isStarting: boolean, pixelList: Coordinate[], diffList: Coordinate[][]): Promise<void> {
+        if (!isStarting) {
+            this.disableCheat();
+        } else {
+            this.allDifferencesList = diffList;
+            await this.createImageDataCheat(pixelList);
+            await this.cheatBlink();
+        }
+    }
+
+    /**
+     * Met en place l'affichage de l'indice
+     */
+    async handleClue(nbCluesLeft: number, differences: Coordinate[]) {
+        if (this.isChatFocused) return;
+        await this.createImagesDataClue(nbCluesLeft, differences);
+        this.showClue();
+    }
+
+    async showClue() {
+        this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
+        this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
+    }
+
+    async removeClue() {
+        this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
+        this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
+        this.clueOriginalImageData = this.originalImageSave;
+        this.clueModifiedImageData = this.modifiedImageSave;
     }
 
     /**
@@ -158,10 +227,17 @@ export class ImageOperationService {
             setTimeout(() => {
                 this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
                 this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
-            }, CHEAT_PERIOD_MS);
-        }, CHEAT_PERIOD_MS * 2);
+            }, CHEAT_PERIOD_MS * this.getSpeedMultiplier());
+        }, CHEAT_PERIOD_MS * 2 * this.getSpeedMultiplier());
     }
-
+    clearAllIntervals() {
+        clearInterval(this.cheatInterval);
+        this.cheatInterval = 0;
+        this.intervalIds.forEach((interval) => {
+            clearInterval(interval);
+        });
+        this.intervalIds = [];
+    }
     disableCheat(): void {
         clearInterval(this.cheatInterval);
         this.cheatInterval = 0;
@@ -172,7 +248,7 @@ export class ImageOperationService {
      *
      * @param differences liste des pixels a mettre en vert
      */
-    private async createImageDataCheat(differences: Coordinate[]): Promise<void> {
+    async createImageDataCheat(differences: Coordinate[]): Promise<void> {
         const cheatImageData = structuredClone(this.originalImageSave);
 
         differences.forEach((difference) => {
@@ -190,13 +266,93 @@ export class ImageOperationService {
     }
 
     /**
+     * Crée l'image d'indice avec les pixels d'incides en rouge ou l'indice spéciale
+     *
+     * @param differences liste des pixels a mettre en rouge
+     */
+    private async createImagesDataClue(nbCluesLeft: number, differences: Coordinate[] = []): Promise<void> {
+        if (!nbCluesLeft) {
+            return await this.createlastClueImageData(differences[0]);
+        }
+
+        const clueOriginalImageData = structuredClone(this.originalImageSave);
+        const clueModifiedImageData = structuredClone(this.modifiedImageSave);
+
+        differences.forEach((difference) => {
+            const outsideXInterval = difference.x < 0 || difference.x >= IMAGE_WIDTH;
+            const outsideYInterval = difference.y < 0 || difference.y >= IMAGE_HEIGHT;
+            if (outsideXInterval || outsideYInterval) return;
+            const pixelIndex = (difference.y * CANVAS.width + difference.x) * BIT_PER_PIXEL;
+            const highlightedPixel = new Uint8ClampedArray(BIT_PER_PIXEL);
+            highlightedPixel[0] = RGB_RED.r;
+            highlightedPixel[1] = RGB_RED.g;
+            highlightedPixel[2] = RGB_RED.b;
+            highlightedPixel[3] = RGB_RED.a;
+
+            clueOriginalImageData.data.set(highlightedPixel, pixelIndex);
+            clueModifiedImageData.data.set(highlightedPixel, pixelIndex);
+        });
+
+        this.clueOriginalImageData = clueOriginalImageData;
+        this.clueModifiedImageData = clueModifiedImageData;
+    }
+
+    private async createlastClueImageData(difference: Coordinate) {
+        const contextOriginalImg = this.createBlankCanvas();
+        const contextModifiedImg = this.createBlankCanvas();
+
+        contextOriginalImg.putImageData(this.originalImageSave, 0, 0);
+        contextModifiedImg.putImageData(this.modifiedImageSave, 0, 0);
+
+        const isPointerFlipped = difference.x < IMAGE_WIDTH / 2;
+
+        const pointer: HTMLImageElement = new Image();
+        const extension = isPointerFlipped ? 'Left.png' : 'Right.png';
+        pointer.src = 'assets/logo/AmongPointing' + extension;
+
+        // pour attendre que l'image soit téléversé correctement
+        await new Promise<void>((resolve) => {
+            pointer.onload = () => {
+                resolve();
+            };
+        });
+        const pointerHeight = Math.floor(IMAGE_HEIGHT * RATIO_POINTER_IMAGE);
+        const pointerWidth = Math.floor(IMAGE_WIDTH * RATIO_POINTER_IMAGE);
+
+        contextOriginalImg.drawImage(
+            pointer,
+            isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
+            difference.y - pointerHeight * RATIO_POINTER_IMAGE,
+            pointerWidth,
+            pointerHeight,
+        );
+        contextModifiedImg.drawImage(
+            pointer,
+            isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
+            difference.y - pointerHeight * RATIO_POINTER_IMAGE,
+            pointerWidth,
+            pointerHeight,
+        );
+
+        this.clueOriginalImageData = contextOriginalImg.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        this.clueModifiedImageData = contextModifiedImg.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+    }
+
+    private createBlankCanvas(): CanvasRenderingContext2D {
+        const canvasForOriginalImg = document.createElement('canvas');
+        canvasForOriginalImg.width = IMAGE_WIDTH;
+        canvasForOriginalImg.height = IMAGE_HEIGHT;
+
+        return canvasForOriginalImg.getContext('2d') as CanvasRenderingContext2D;
+    }
+
+    /**
      * Enlève la difference de la liste des diférences et met a jour les images de base et de triche
      *
      * @param diffToRemove liste des pixels a enlever de la liste de triche
      */
     private async cheatRemoveDiff(diffToRemove: Coordinate[]): Promise<void> {
         const differencesInOneList: Coordinate[] = [];
-
         this.allDifferencesList.forEach((differenceList, index) => {
             if (this.isSameDifference(differenceList, diffToRemove)) {
                 this.allDifferencesList[index] = [];
@@ -207,11 +363,10 @@ export class ImageOperationService {
         this.updateBaseImagesSave(diffToRemove);
         this.createImageDataCheat(differencesInOneList);
     }
-
     /**
      * met les pixels de l'image de original dans l'image de modifier
      *
-     * @param difference liste des pixels a mettre a jour dans l'images modifier de base
+     * @param difference liste des pixels a mettre a jour dans l'image modifiée de base
      */
     private updateBaseImagesSave(difference: Coordinate[]): void {
         difference.forEach((diff) => {

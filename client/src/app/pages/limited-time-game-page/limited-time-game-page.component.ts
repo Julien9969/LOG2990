@@ -1,11 +1,11 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CONVERT_TO_MINUTES } from '@app/constants/utils-constants';
+import { CONVERT_TO_MINUTES, SLICE_LAST_INDEX } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
 import { HistoryService } from '@app/services/history/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
-import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
 
@@ -15,6 +15,8 @@ import { SessionEvents } from '@common/session.gateway.events';
     styleUrls: ['./limited-time-game-page.component.scss'],
 })
 export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
+    @ViewChild('appPlayImage') playImageComponent: PlayImageLimitedTimeComponent;
+
     userSocketId: string;
 
     playerName: string;
@@ -23,18 +25,19 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     isSolo: boolean;
 
     sessionId: number;
-    // gameID: string;
     gameInfos: Game;
 
     nDiffFound: number;
 
     time: string = '';
+    nbCluesLeft = 3;
+
+    penalty: number = 0;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
         private readonly dialog: MatDialog,
-        private readonly socket: InGameService,
-        private readonly socketClient: SocketClientService,
+        private readonly inGameSocket: InGameService,
         private readonly gameService: GameService,
         private readonly historyService: HistoryService,
     ) {
@@ -46,7 +49,14 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         }
         this.playerName = window.history.state.playerName;
         this.sessionId = window.history.state.sessionId;
-        // this.gameID = window.history.state.gameID;
+    }
+
+    @HostListener('window:keydown.i')
+    async handleClueRequest() {
+        if (!this.nbCluesLeft || !this.isSolo) return;
+        const clue = await this.inGameSocket.retrieveClue();
+        this.playImageComponent.handleClue(clue.nbCluesLeft, clue.coordinates);
+        this.nbCluesLeft = clue.nbCluesLeft;
     }
 
     @HostListener('window:beforeunload', ['$event'])
@@ -59,25 +69,28 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         if (this.sessionId === undefined) {
-            window.location.replace('/home');
+            // Redirection à la page principale
+            const pagePath = window.location.pathname.split('/').slice(0, SLICE_LAST_INDEX);
+            window.location.replace(pagePath.join('/'));
         }
-        const startTime = (await this.gameService.getGameConstants()).time as number;
+        const gameConsts = await this.gameService.getGameConstants();
+        const startTime = gameConsts.time as number;
+        this.penalty = gameConsts.penalty as number;
         this.time = this.formatTime(startTime);
-        // this.getGameInfos();
-        this.socket.retrieveSocketId().then((userSocketId: string) => {
+        this.inGameSocket.retrieveSocketId().then((userSocketId: string) => {
             this.userSocketId = userSocketId;
         });
-        this.socket.listenOpponentLeaves(() => {
+        this.inGameSocket.listenOpponentLeaves(() => {
             this.isSolo = true;
         });
-        this.socket.listenGameEnded((timerFinished: boolean) => {
+        this.inGameSocket.listenGameEnded((timerFinished: boolean) => {
             this.endGameDialog(timerFinished);
         });
-        this.socket.listenTimerUpdate((time: string) => {
+        this.inGameSocket.listenTimerUpdate((time: string) => {
             this.time = time;
         });
-        this.socket.listenProvideName(this.playerName);
-        this.socket.listenNewGame((data: [Game, number]) => {
+        this.inGameSocket.listenProvideName(this.playerName);
+        this.inGameSocket.listenNewGame((data: [Game, number]) => {
             this.nDiffFound = data[1];
         });
         this.historyService.initHistory('Temps limité', this.isSolo);
@@ -86,7 +99,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     }
 
     playerExited() {
-        this.socket.playerExited(this.sessionId);
+        this.inGameSocket.playerExited(this.sessionId);
     }
 
     endGameDialog(timerFinished: boolean) {
@@ -109,9 +122,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         this.dialog.closeAll();
 
         switch (dialogTypes) {
-            case 'clue':
-                this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
-                break;
             case 'quit':
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
                 break;
@@ -126,7 +136,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.playerExited();
-        this.socketClient.send(SessionEvents.LeaveRoom);
-        this.socket.disconnect();
+        this.inGameSocket.disconnect();
     }
 }

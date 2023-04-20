@@ -1,27 +1,6 @@
-import { ALLOWED_NB_CLUES, TIME_CONST } from '@app/services/constants/services.const';
+import { TIME_CONST } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
-import { Clue } from '@common/clue';
-import { Coordinate } from '@common/coordinate';
 import { Player } from '@common/player';
-
-// export interface SessionInterface {
-//     gameID: string;
-//     id: number;
-//     nGuesses: number;
-//     nPenalties: number;
-//     time: number;
-//     timerId: NodeJS.Timeout;
-//     differenceValidationService: DifferenceValidationService;
-//     players: Player[];
-
-//     nbCluesRequested: number = 0;
-
-//     stopTimer();
-//     // tryGuess(guess: Coordinate, socketId: string): GuessResult;
-//     buildGuessResult(isCorrect: boolean, differencePixelList: Coordinate[]): GuessResult;
-//     get formatedTime(): string;
-//     get isSolo(): boolean;
-// }
 
 export class Session {
     gameID: string;
@@ -33,6 +12,8 @@ export class Session {
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
     players: Player[];
     nbCluesRequested: number = 0;
+    isTimeLimited: boolean;
+    penalty: number;
 
     /**
      * Retourne si la session est en solo ou multi-joueur
@@ -48,6 +29,7 @@ export class Session {
      * @returns Le temps en format mm:ss
      */
     get formatedTime(): string {
+        if (this.time <= 0) return '0:00';
         const minutes = Math.floor(this.time / TIME_CONST.minute);
         const seconds = this.time % TIME_CONST.minute;
         return minutes + ':' + seconds.toString().padStart(2, '0');
@@ -58,23 +40,4 @@ export class Session {
     stopTimer() {
         clearInterval(this.timerId);
     }
-
-    /**
-     * Offre un indice sous la forme d'une liste de pixels
-     * dans laquelle une des différences non-trouvé s'y trouve
-     *
-     * @return la liste de pixel correspondant à l'indice (pixels qui changerons de couleur sur l'écran)
-     */
-    async getClue(penalty: number): Promise<Clue | void> {
-        if (this.nbCluesRequested >= 3) return;
-        this.nbCluesRequested++;
-        this.time += penalty;
-        const clue: Clue = {
-            coordinates: [{ x: 0, y: 0 } as Coordinate],
-            nbCluesLeft: ALLOWED_NB_CLUES - this.nbCluesRequested,
-        };
-        return clue;
-    }
-
-    // tryGuess(guess: Coordinate, socketId: string): GuessResult;
 }

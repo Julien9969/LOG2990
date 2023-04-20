@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
-import { HistoryService } from '@app/services/history/history.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
+import { HistoryService } from '@app/services/history/history.service';
 
 describe('HistoryService', () => {
     let service: HistoryService;

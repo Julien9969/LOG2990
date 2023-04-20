@@ -19,6 +19,7 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
     });
 
     constructor(private formBuilder: FormBuilder, public chatService: ChatService, public imageOperationService: ImageOperationService) {
+        // this.chatService.formElement = this.formElement; // De branche de max, necessaire?
         this.chatService.start();
     }
 

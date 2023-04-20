@@ -1,0 +1,48 @@
+span.horizontal-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    mat-icon {
+        transform: translateY(-40%)
+    }
+}
+
+span.vertical-bar {
+    height: 10vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+mat-icon {
+    font-size: 44px;
+    padding: 20px;
+    cursor: pointer;
+    margin: 0 7px;
+}
+
+mat-icon:hover {
+    color: rgba(215, 13, 13, 0.858);
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    background-color: black;
+    color: #e24f4f;
+    text-align: center;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 6px;
+    position: fixed;
+    z-index: 1;
+    right: 1.5vw;
+    top: 7.8vh;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}

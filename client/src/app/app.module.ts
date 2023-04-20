@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { PlayImageLimitedTimeComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
+import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
 import { SidebarComponent } from '@app/components/sidebar/sidebar.component';
 import { SquareInterfaceComponent } from '@app/components/square-interface/square-interface.component';
 import { AppRoutingModule } from '@app/modules/app-routing.module';
@@ -14,6 +14,7 @@ import { AppMaterialModule } from '@app/modules/material.module';
 import { AppComponent } from '@app/pages/app/app.component';
 import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
+import { DataResetComponent } from './components/data-reset/data-reset.component';
 import { DrawBottomBarComponent } from './components/draw-bottom-bar/draw-bottom-bar.component';
 import { ErrorDuringLoadingComponent } from './components/error-during-loading/error-during-loading.component';
 import { GameCreationFormComponent } from './components/game-creation-form/game-creation-form.component';
@@ -21,14 +22,16 @@ import { HistoryPopupComponent } from './components/history-popup/history-popup.
 import { ImageDifferencePopupComponent } from './components/image-difference-popup/image-difference-popup.component';
 import { LimitedTimeSelectionComponent } from './components/limited-time-selection/limited-time-selection.component';
 import { MatchMakingDialogComponent } from './components/match-making-dialog/match-making-dialog.component';
-import { PlayImageClassicComponent } from './components/play-image-classic/play-image-classic.component';
+import { PlayImageClassicComponent } from './components/play-image/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from './components/popup-dialog/popup-dialog.component';
+import { TimeConstantsPopupComponent } from './components/time-constants-popup/time-constants-popup.component';
 import { TimeConstantsComponent } from './components/time-constants/time-constants.component';
 import { UploadImageSquareComponent } from './components/upload-image-square/upload-image-square.component';
 import { ConfigurationGameComponent } from './pages/configuration-game-page/configuration-game-page.component';
 import { GameCreationPageComponent } from './pages/game-creation-page/game-creation-page.component';
 import { GamePageComponent } from './pages/game-page/game-page.component';
 import { GameSelectionPageComponent } from './pages/game-selection-page/game-selection-page.component';
+import { ReplayPageComponent } from './pages/replay-page/replay-page.component';
 /**
  * Main module that is used in main.ts.
  * All automatically generated components will appear in this module.
@@ -37,6 +40,7 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
  */
 @NgModule({
     declarations: [
+        ReplayPageComponent,
         AppComponent,
         MainPageComponent,
         GameSelectionPageComponent,
@@ -58,6 +62,8 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
         LimitedTimeSelectionComponent,
         LimitedTimeGamePageComponent,
         TimeConstantsComponent,
+        TimeConstantsPopupComponent,
+        DataResetComponent,
     ],
     imports: [
         AppMaterialModule,

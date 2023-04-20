@@ -49,7 +49,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     @HostListener('window:keydown.enter', ['$event'])
     handleKeyDown(event: KeyboardEvent) {
         event.preventDefault();
-        this.navigateToGame();
+        this.validateAndContinue();
     }
 
     ngOnInit(): void {
@@ -105,44 +105,32 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         this.matchMaking.leaveWaiting(this.gameInfo.id);
     }
 
-    navigateToGame() {
+    validateAndContinue() {
         if (this.nameFormControl.valid) {
-            if (this.gameInfo.id === 'limited-time') this.navigateToSoloLimitedTimeGame();
-            else if (this.gameInfo.isSolo) this.navigateToSoloGame();
+            if (this.gameInfo.isSolo) this.navigateToSoloGame();
             else this.joinGame();
         }
     }
 
-    navigateToMultiGame(sessionID: number): void {
-        this.router.navigateByUrl(this.routerLink, {
-            state: { isSolo: false, gameID: this.gameInfo.id, playerName: this.playerName, opponentName: this.opponentName, sessionId: sessionID },
-        });
-    }
-
     navigateToSoloGame(): void {
-        this.matchMaking.startSoloSession(this.gameInfo.id, (newSessionId: number) => {
-            this.router.navigateByUrl('solo-game', {
-                state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
-            });
-        });
-    }
-
-    navigateToSoloLimitedTimeGame(): void {
-        this.matchMaking.startSoloLimitedTimeSession((newSessionId: number) => {
+        const navigationCallback = (newSessionId: number) => {
             this.router.navigateByUrl(this.routerLink, {
                 state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
             });
-        });
+        };
+        if (this.gameInfo.id === 'limited-time') this.matchMaking.startSoloLimitedTimeSession(navigationCallback);
+        else this.matchMaking.startSoloSession(this.gameInfo.id, navigationCallback);
     }
+
     startMultiSession(gameId: string) {
         this.matchMaking.startMultiSession(gameId);
     }
 
     commonMatchMakingFeatures(): void {
-        this.matchMaking.receiveSessionId((sessionId: number) => {
-            // if ((this.gameInfo.id = 'limited-time')) this.navigateToMultiGame(sessionId);
-            // else this.navigateToMultiGame(sessionId);
-            this.navigateToMultiGame(sessionId);
+        this.matchMaking.receiveSessionId((id: number) => {
+            this.router.navigateByUrl(this.routerLink, {
+                state: { isSolo: false, gameID: this.gameInfo.id, playerName: this.playerName, opponentName: this.opponentName, sessionId: id },
+            });
         });
 
         this.matchMaking.onOpponentJoined((opponentName: string) => {

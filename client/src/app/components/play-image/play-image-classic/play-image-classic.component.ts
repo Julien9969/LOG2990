@@ -1,7 +1,8 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { ERROR_TIMEOUT } from '@app/constants/utils-constants';
+import { PlayImage } from '@app/components/play-image/play-image';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { MouseService } from '@app/services/mouse/mouse.service';
@@ -10,10 +11,10 @@ import { GuessResult } from '@common/guess-result';
 
 @Component({
     selector: 'app-play-image-classic',
-    templateUrl: './play-image-classic.component.html',
-    styleUrls: ['./play-image-classic.component.scss'],
+    templateUrl: '../play-image.component.html',
+    styleUrls: ['../play-image.component.scss'],
 })
-export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestroy {
+export class PlayImageClassicComponent extends PlayImage implements AfterViewInit, OnInit, OnDestroy {
     @ViewChild('canvas1', { static: false }) imageCanvas1!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas2', { static: false }) imageCanvas2!: ElementRef<HTMLCanvasElement>;
 
@@ -32,23 +33,18 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
         differencePixelList: [{ x: 0, y: 0 }],
         winnerName: undefined,
     };
-    errorGuess: boolean = false;
 
     // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
     constructor(
-        private readonly mouseService: MouseService,
-        private readonly communicationService: CommunicationService,
-        private readonly audioService: AudioService,
-        private readonly imageOperationService: ImageOperationService,
-        private readonly socket: InGameService,
-    ) {}
-
-    get canvasContext1(): CanvasRenderingContext2D {
-        return this.imageCanvas1.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
-    }
-
-    get canvasContext2(): CanvasRenderingContext2D {
-        return this.imageCanvas2.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
+        protected readonly mouseService: MouseService,
+        protected readonly communicationService: CommunicationService,
+        protected readonly audioService: AudioService,
+        readonly imageOperationService: ImageOperationService,
+        protected readonly socket: InGameService,
+        private loggingService: GameActionLoggingService,
+    ) {
+        super(mouseService, communicationService, audioService, imageOperationService, socket);
+        this.imageOperationService.reset();
     }
 
     @HostListener('window:keydown.t', ['$event'])
@@ -56,36 +52,42 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
         await this.imageOperationService.handleCheat(this.sessionID);
     }
 
+    async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
+        this.loggingService.logAction('HINTLOGGER', { nClueLeft: nbCLuesLeft, diffList: differencesInOneList });
+        await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);
+    }
+
     ngOnInit(): void {
         this.errorCounter = 0;
-        this.lastDifferenceFound = {
-            isCorrect: false,
-            differencesByPlayer: [],
-            differencePixelList: [{ x: 0, y: 0 }],
-            winnerName: undefined,
-        };
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
+        this.loggingService.diffFoundFunction = (guessResult: GuessResult) => {
+            this.updateDiffFound(guessResult);
+        };
+
+        this.loggingService.cheatFunction = async (data: { isStarting: boolean; pixelList: Coordinate[]; diffList: Coordinate[][] }) => {
+            await this.imageOperationService.handleCheatReplay(data.isStarting, data.pixelList, data.diffList);
+        };
+        this.loggingService.getClueFunction = (data: { nClueLeft: number; diffList: Coordinate[] }) => {
+            this.handleClue(data.nClueLeft, data.diffList);
+        };
     }
 
-    async ngAfterViewInit(): Promise<void> {
-        await this.loadImage(this.canvasContext1, this.imageMainId);
-        await this.loadImage(this.canvasContext2, this.imageAltId);
-        this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
+    async reset() {
+        this.imageOperationService.reset();
+        this.ngOnInit();
+        await this.ngAfterViewInit();
     }
-
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
         if (this.isSolo) {
-            this.socket
-                .submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition)
-                .then((response: GuessResult) => {
-                    this.updateDiffFound(response);
-                })
-                .catch((e) => {
-                    alert(e.message);
-                });
+            this.socket.submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition).then((response: GuessResult) => {
+                this.updateDiffFound(response);
+            });
+            // .catch((e) => {
+            //     alert(e.message);
+            // });
         } else {
             this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
         }
@@ -97,47 +99,14 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
      * @param guessResult résultat du serveur après avoir demander de valider les coordonnés de la différence trouvé
      */
     updateDiffFound(guessResult: GuessResult): void {
-        if (guessResult.isCorrect && this.hasNbDifferencesChanged(guessResult.differencesByPlayer)) {
-            this.lastDifferenceFound = guessResult;
+        if (guessResult.isCorrect) {
             this.audioService.playAudio('success');
-            this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
+            this.diffFoundUpdate.emit(guessResult.differencesByPlayer);
             this.errorCounter = 0;
             this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
-            this.handleErrorGuess();
+            this.handleErrorGuess(guessResult.differencePixelList[0]);
         }
-    }
-
-    handleErrorGuess(): void {
-        this.errorMsgPosition = { x: this.mouseService.mousePosition.x, y: this.mouseService.mousePosition.y };
-        this.errorGuess = true;
-        window.setTimeout(() => {
-            this.errorGuess = false;
-        }, ERROR_TIMEOUT);
-        this.errorCounter++;
-
-        if (this.errorCounter % 3 === 0) {
-            this.audioService.playAudio('manyErrors');
-            this.errorCounter = 0;
-        } else {
-            this.audioService.playAudio('error');
-        }
-    }
-
-    async loadImage(canvasContext: CanvasRenderingContext2D, imageId: number): Promise<void> {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        return new Promise<void>((done) => {
-            img.onload = async () => {
-                this.drawImageOnCanvas(canvasContext, img);
-                return done();
-            };
-            img.src = this.communicationService.getImageURL(imageId);
-        });
-    }
-
-    drawImageOnCanvas(canvasContext: CanvasRenderingContext2D, img: HTMLImageElement): void {
-        canvasContext.drawImage(img, 0, 0);
     }
 
     hasNbDifferencesChanged(differencesByPlayer: [userSocketId: string, nDifferences: number][]): boolean {
@@ -154,7 +123,11 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
         return false;
     }
 
+    async ngAfterViewInit(): Promise<void> {
+        await this.afterViewInit();
+    }
+
     ngOnDestroy(): void {
-        this.imageOperationService.disableCheat();
+        this.onDestroy();
     }
 }

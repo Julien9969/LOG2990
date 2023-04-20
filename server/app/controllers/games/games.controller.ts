@@ -97,11 +97,45 @@ export class GamesController {
     }
 
     /**
-     * Détruit un element jeu spécifique, dans la mémoire de la session et dans la persistance
+     * Supprime tous les jeux de la persistance
+     */
+    @Delete()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async deleteAllGames() {
+        await this.gameService.deleteAllGames();
+    }
+
+    /**
+     * Réinitialise les meilleurs temps de tous les jeux en persistance
+     */
+    @Delete('leaderboards')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async resetAllLeaderboards() {
+        await this.gameService.resetAllLeaderboards();
+    }
+
+    /**
+     * Réinitialise les meilleurs temps d'un jeu du id donné
+     *
+     * @param id L'identifiant du jeu
+     */
+    @Delete('leaderboards/:id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async resetLeaderboard(@Param('id') id: string) {
+        try {
+            await this.gameService.resetLeaderboard(id);
+        } catch (e: unknown) {
+            if (e instanceof Error) this.logger.error(e.message);
+        }
+    }
+
+    /**
+     * Detruit un element jeu specifique, dans la memoire de la session et dans la persistance
      *
      * @param params une id de l'element game a détruire
      */
     @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
     async deleteById(@Param('id') id: string) {
         try {
             await this.gameService.delete(id);

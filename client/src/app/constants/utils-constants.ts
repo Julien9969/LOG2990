@@ -91,13 +91,13 @@ export const PATH_TO_WRONG_BIT_DEPTH_IMAGE = '/assets/test-assets/image_wrong_bi
 export const PATH_TO_WRONG_RES_IMAGE = '/assets/test-assets/image_wrong_res.bmp';
 export const VALID_IMAGE_ID = 1999;
 
-// for game timer constants
+// for utility functions
 
-export const MAX_GAME_TIME = 120;
-export const MIN_GAME_TIME = 10;
+export const SLICE_LAST_INDEX = -1;
 
-export const MAX_PENALTY_TIME = 15;
-export const MIN_PENALTY_TIME = 0;
+/**
+ * constantes image-operation service
+ */
 
-export const MAX_REWARD_TIME = 30;
-export const MIN_REWARD_TIME = 0;
+export const RATIO_POINTER_IMAGE = 0.4;
+export const POINTER_X_OFFSET = 15;

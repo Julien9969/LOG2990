@@ -3,20 +3,11 @@ import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gatew
 import { GameConstantsInput } from '@app/interfaces/game-constants-input';
 import {
     DEFAULT_GAME_LEADERBOARD,
-    DEFAULT_GAME_TIME,
-    DEFAULT_PENALTY_TIME,
-    DEFAULT_REWARD_TIME,
     DIFFERENCE_LISTS_FOLDER,
     // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
     // eslint-disable-next-line prettier/prettier
     DIFFERENCE_LISTS_PREFIX,
     GAME_CONSTS_PATH,
-    MAX_GAME_TIME,
-    MAX_PENALTY_TIME,
-    MAX_REWARD_TIME,
-    MIN_GAME_TIME,
-    MIN_PENALTY_TIME,
-    MIN_REWARD_TIME,
 } from '@app/services/constants/services.const';
 import { DifferenceDetectionService } from '@app/services/difference-detection/difference-detection.service';
 import { ImageService } from '@app/services/images/image.service';
@@ -24,9 +15,20 @@ import { Utils } from '@app/services/utils/utils.service';
 import { FinishedGame } from '@common/finishedGame';
 import { Game, UnsavedGame } from '@common/game';
 import { GameConstants } from '@common/game-constants';
+import {
+    DEFAULT_GAME_TIME,
+    DEFAULT_PENALTY_TIME,
+    DEFAULT_REWARD_TIME,
+    MAX_GAME_TIME,
+    MAX_PENALTY_TIME,
+    MAX_REWARD_TIME,
+    MIN_GAME_TIME,
+    MIN_PENALTY_TIME,
+    MIN_REWARD_TIME,
+} from '@common/game-constants-values';
 import { ImageComparisonResult } from '@common/image-comparison-result';
 import { InputGame } from '@common/input-game';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
 import mongoose, { Model } from 'mongoose';
@@ -42,6 +44,7 @@ export class GameService {
         @InjectModel('Game') private gameModel: Model<GameDocument>,
         private readonly imageService: ImageService,
         private readonly matchMakingGateway: MatchmakingGateway,
+        private readonly logger: Logger,
     ) {
         this.loadGameConstants();
     }
@@ -106,6 +109,20 @@ export class GameService {
         fs.unlinkSync(`${DIFFERENCE_LISTS_FOLDER}/${DIFFERENCE_LISTS_PREFIX}${game.id}.json`);
 
         this.matchMakingGateway.notifyGameDeleted(id);
+    }
+
+    /**
+     * Supprime tous les jeux de la persistance
+     */
+    async deleteAllGames() {
+        const allGames = await this.findAll();
+        allGames.forEach((game) => {
+            try {
+                this.delete(game.id);
+            } catch (err) {
+                this.logger.error(`Le jeu ${game.id} n'a pas pu être supprimé.`);
+            }
+        });
     }
 
     /**
@@ -198,6 +215,33 @@ export class GameService {
     }
 
     /**
+     * Réinitialise les meilleurs temps d'un jeu de la persistance
+     *
+     * @param gameId L'identifiant du jeu à réinitialiser
+     */
+    async resetLeaderboard(gameId: string) {
+        try {
+            this.gameModel.updateOne({ _id: gameId }, { scoreBoardSolo: DEFAULT_GAME_LEADERBOARD, scoreBoardMulti: DEFAULT_GAME_LEADERBOARD }).exec();
+        } catch (err) {
+            throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Réinitialise les meilleurs temps de tous les jeux en persistance
+     */
+    async resetAllLeaderboards() {
+        const allGames = await this.findAll();
+        allGames.forEach((game) => {
+            try {
+                this.resetLeaderboard(game.id);
+            } catch (err) {
+                this.logger.error(`Les meilleurs temps du jeu ${game.id} n'ont pas pu être réinitialiser.`);
+            }
+        });
+    }
+
+    /**
      * Valide et modifie les constantes de jeu en persistance
      *
      * @param gameConstsInput Les valeurs modifiees de constantes de jeu
@@ -253,7 +297,7 @@ export class GameService {
 
     private verifyGameId(id: string): void {
         if (!mongoose.isValidObjectId(id)) {
-            throw new Error(`Le ID "${id}" n'est pas un ID valide (format non-valide)`);
+            throw new HttpException(`Le ID "${id}" n'est pas un ID valide (format non-valide)`, HttpStatus.BAD_REQUEST);
         }
     }
 

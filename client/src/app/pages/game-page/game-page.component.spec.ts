@@ -11,26 +11,31 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
-import { PlayImageLimitedTimeComponent } from '@app/components/play-image-limited-time/play-image-limited-time.component';
+import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { CommunicationService } from '@app/services/communication/communication.service';
-import { HistoryService } from '@app/services/history.service';
+import { GameService } from '@app/services/game/game.service';
+import { HistoryService } from '@app/services/history/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Clue } from '@common/clue';
+import { Coordinate } from '@common/coordinate';
+import { GameConstants } from '@common/game-constants';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
 import { GamePageComponent } from './game-page.component';
 
 @Component({
-    selector: 'app-play-image',
+    selector: 'app-play-image-classic',
     template: '<img>',
 })
 export class StubPlayImageComponent {
     @Input() imageMainId!: string;
     @Input() imageAltId!: string;
     @Input() sessionID!: number;
+    @Input() isSolo!: boolean;
     playerName: string;
+    handleClue = (nbCluesLeft: number, coordinates: Coordinate[]) => {};
 }
 
 @Component({
@@ -55,9 +60,10 @@ describe('GamePageComponent', () => {
     let inGameServiceSpy: jasmine.SpyObj<InGameService>;
     let socketClientServiceSpy: jasmine.SpyObj<SocketClientService>;
     let historyServiceSpy: jasmine.SpyObj<HistoryService>;
+    let gameService: jasmine.SpyObj<GameService>;
 
     beforeEach(async () => {
-        communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['gameInfoGet', 'customGet']);
+        communicationServiceSpy = jasmine.createSpyObj('CommunicationServiceMock', ['gameInfoGet', 'customGet', 'getGameConstants']);
         communicationServiceSpy.gameInfoGet.and.returnValue(
             of({
                 id: '1',
@@ -81,6 +87,7 @@ describe('GamePageComponent', () => {
             'playerExited',
             'disconnect',
             'socketService',
+            'retrieveClue',
         ]);
         inGameServiceSpy.retrieveSocketId.and.callFake(async () => {
             return Promise.resolve('socketId');
@@ -91,11 +98,16 @@ describe('GamePageComponent', () => {
                 nbCluesLeft: 0,
             } as Clue);
         });
-
         socketClientServiceSpy = jasmine.createSpyObj('SocketClientMock', ['send']);
         historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'setPlayerWon', 'setPlayerQuit']);
-
-        playImageComponentSpy = jasmine.createSpyObj('PlayImageComponentMock', ['playAudio']);
+        gameService = jasmine.createSpyObj('gameServiceSpy', ['getGameConstants']);
+        gameService.getGameConstants.and.returnValue(
+            Promise.resolve({
+                time: 100,
+                penalty: 5,
+                reward: 5,
+            } as GameConstants),
+        );
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
         TestBed.configureTestingModule({
@@ -103,11 +115,12 @@ describe('GamePageComponent', () => {
             imports: [MatIconModule, MatToolbarModule],
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },
-                { provide: PlayImageLimitedTimeComponent, useValue: playImageComponentSpy },
+                { provide: PlayImageClassicComponent, useValue: playImageComponentSpy },
                 { provide: CommunicationService, useValue: communicationServiceSpy },
                 { provide: InGameService, useValue: inGameServiceSpy },
                 { provide: SocketClientService, useValue: socketClientServiceSpy },
                 { provide: HistoryService, useValue: historyServiceSpy },
+                { provide: GameService, useValue: gameService },
             ],
         }).compileComponents();
     });
@@ -125,12 +138,6 @@ describe('GamePageComponent', () => {
 
     it('constructor should call not define opponentName if isSolo is true', () => {
         expect(component.opponentName).toBeUndefined();
-    });
-
-    it('constructor should define opponentName if isSolo is false', () => {
-        window.history.pushState({ isSolo: false, gameID: '12', playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-        const newComponent = TestBed.createComponent(GamePageComponent);
-        expect(newComponent.componentInstance.opponentName).toBeDefined();
     });
 
     describe('onInit', () => {
@@ -230,7 +237,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`],
+                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`, { gameId: '1', playerName: 'test' }],
             });
         });
         it('multi: when this client is the winner should give the winner s message', () => {
@@ -244,7 +251,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`],
+                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`, { gameId: '1', playerName: 'test' }],
             });
         });
         it('multi: when this client is the loser should give the loser s message', () => {
@@ -258,7 +265,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`],
+                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`, { gameId: '1', playerName: 'test' }],
             });
         });
 
@@ -288,6 +295,13 @@ describe('GamePageComponent', () => {
             differenceCount: 2,
         });
     });
+    it('constructor should define opponentName if isSolo is false', () => {
+        window.history.pushState({ isSolo: false, gameID: '12', playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
+        const newComponent = TestBed.createComponent(GamePageComponent);
+        newComponent.componentInstance['gameInfos'] = { differenceCount: 0 } as any;
+        expect(newComponent.componentInstance.opponentName).toBeDefined();
+        newComponent.destroy();
+    });
 
     it('quit button should open quit dialog', () => {
         const quitButton = fixture.debugElement.query(By.css('#quit-button'));
@@ -310,12 +324,15 @@ describe('GamePageComponent', () => {
     describe('handleClueRequest', () => {
         beforeEach(() => {
             component.nbCluesLeft = 3;
+            inGameServiceSpy.retrieveClue.and.returnValue(new Promise((resolve) => resolve({ coordinates: [{ x: 2, y: 2 }], nbCluesLeft: 3 })));
         });
 
         it('should call retrieveClue', async () => {
-            await component.handleClueRequest();
+            component.playImageComponent = new StubPlayImageComponent() as any;
+            spyOn(component.playImageComponent, 'handleClue').and.returnValue(new Promise((resolve) => resolve()));
+            component.handleClueRequest();
             expect(inGameServiceSpy.retrieveClue).toHaveBeenCalled();
-            expect(component.nbCluesLeft).toEqual(0);
+            expect(component.nbCluesLeft).toEqual(3);
         });
 
         it('should not call retrieveClue when nbCluesLeft <= 0', () => {

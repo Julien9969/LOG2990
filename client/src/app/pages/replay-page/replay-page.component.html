@@ -1,0 +1,46 @@
+<main *ngIf="isLoaded" ngClass="game-theme">
+    <div id="page-container">
+        <div id="top-bar">
+            <mat-toolbar color="primary">
+                <span id="player-counter" class="diff-counter" color="player"
+                    >{{ playerName }} : <mat-icon>search</mat-icon> {{ nDiffFoundMainPlayer }}/{{ gameInfos.differenceCount }}
+                </span>
+                <span id="timer">{{ this.time }}</span>
+                <span *ngIf="!isSolo" id="opponent-counter" class="diff-counter" color="opponent"
+                    >{{ opponentName }} : <mat-icon>search</mat-icon> {{ nDiffFoundOpponent }}/{{ gameInfos.differenceCount }}
+                </span>
+            </mat-toolbar>
+        </div>
+        <div id="game-container">
+            <app-play-image-classic
+                (diffFoundUpdate)="handleDiffFoundUpdate($event)"
+                [sessionID]="sessionId"
+                [imageMainId]="gameInfos.imageMain"
+                [imageAltId]="gameInfos.imageAlt"
+            >
+            </app-play-image-classic>
+            <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="true"></app-sidebar>
+        </div>
+        
+        <div id="bottom-bar">
+            <mat-toolbar color="primary">
+                <button mat-button (click)="openDialog('quit')" id="quit-button" aria-label="Quitter">
+                    <mat-icon>home</mat-icon>
+                    Quitter
+                </button>
+                <div>
+                    <button mat-button (click)="resetAndReplay()">Rejouer</button>
+                    <button mat-button (click)="pause()">PAUSE</button>
+                    <button mat-button (click)="setReplaySpeed(1)">X1</button>
+                    <button mat-button (click)="setReplaySpeed(2)">X2</button>
+                    <button mat-button (click)="setReplaySpeed(4)">X4</button>
+                </div>
+                <span id="game-title">{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span>
+                <button mat-button (click)="openDialog('clue')" id="clue-button" aria-label="Indice">
+                    <mat-icon>highlight</mat-icon>
+                    Indices : 10 (-5s)
+                </button>
+            </mat-toolbar>
+        </div>
+    </div>
+</main>

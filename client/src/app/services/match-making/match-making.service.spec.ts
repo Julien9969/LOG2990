@@ -5,22 +5,31 @@ import { SocketClientService } from '@app/services/socket-client/socket-client.s
 import { SocketTestHelper } from '@common/socket-test-helper';
 import { Socket } from 'socket.io-client';
 import { MatchMakingService } from './match-making.service';
-
-class SocketClientServiceMock extends SocketClientService {
-    override connect() {}
-}
+import { SessionEvents } from '@common/session.gateway.events';
 
 describe('MatchMakingService', () => {
     let service: MatchMakingService;
-    let socketServiceMock: SocketClientServiceMock;
     let socketHelper: SocketTestHelper;
+    let socketClientServiceSpy: jasmine.SpyObj<SocketClientService>;
 
     beforeEach(async () => {
         socketHelper = new SocketTestHelper();
-        socketServiceMock = new SocketClientServiceMock();
-        socketServiceMock['socket'] = socketHelper as unknown as Socket;
+        socketClientServiceSpy = jasmine.createSpyObj('SocketClientService', [
+            'connect',
+            'disconnect',
+            'on',
+            'sendAndCallBack',
+            'send',
+            'isSocketAlive',
+        ]);
+        socketClientServiceSpy['socket'] = socketHelper as unknown as Socket;
+
+        socketClientServiceSpy.on.and.callFake((event: string, action: (data: any) => void): any => {
+            socketHelper.on(event, action as any);
+        });
+
         TestBed.configureTestingModule({
-            providers: [{ provide: SocketClientService, useValue: socketServiceMock }],
+            providers: [{ provide: SocketClientService, useValue: socketClientServiceSpy }],
         });
         service = TestBed.inject(MatchMakingService);
     });
@@ -30,50 +39,45 @@ describe('MatchMakingService', () => {
     });
 
     it('connect should call socketService.connect if socketService.isSocketAlive return false', () => {
-        const connectSpy = spyOn(service['socketService'], 'connect');
-        spyOn(service['socketService'], 'isSocketAlive').and.returnValue(false);
+        socketClientServiceSpy.isSocketAlive.and.returnValue(false);
         service.connect();
-        expect(connectSpy).toHaveBeenCalled();
+        expect(socketClientServiceSpy.connect).toHaveBeenCalled();
     });
 
     it('connect should not call socketService.connect if socketService.isSocketAlive return true', () => {
-        const connectSpy = spyOn(service['socketService'], 'connect');
-        spyOn(service['socketService'], 'isSocketAlive').and.returnValue(true);
+        socketClientServiceSpy.isSocketAlive.and.returnValue(true);
         service.connect();
-        expect(connectSpy).not.toHaveBeenCalled();
+        expect(socketClientServiceSpy.connect).not.toHaveBeenCalled();
     });
 
     it('startMatchmaking should call socketService.send with "startMatchmaking" and a gameId', () => {
-        const sendSpy = spyOn(service['socketService'], 'send');
         const gameId = '42';
         service.startMatchmaking(gameId);
-        expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('startMatchmaking', gameId);
+        expect(socketClientServiceSpy.send).toHaveBeenCalled();
+        expect(socketClientServiceSpy.send).toHaveBeenCalledWith('startMatchmaking', gameId);
     });
 
     it('someOneWaiting should call socketService.sendAndCallBack with "someOneWaiting" and a gameId then return a Promise', async () => {
         const expectedResponse = true;
-        const sendAndCallbackSpy = spyOn(service['socketService'], 'sendAndCallBack');
-        sendAndCallbackSpy.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
+        socketClientServiceSpy.sendAndCallBack.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
             callback(expectedResponse);
         });
         const gameId = '42';
         const response = await service.isSomeOneWaiting(gameId);
-        expect(sendAndCallbackSpy).toHaveBeenCalled();
-        expect(sendAndCallbackSpy).toHaveBeenCalledWith('someOneWaiting', gameId, jasmine.any(Function));
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalled();
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalledWith('someOneWaiting', gameId, jasmine.any(Function));
         expect(response).toEqual(expectedResponse);
     });
 
     it('roomCreatedForThisGame should call sendAndCallBack with "roomCreatedForThisGame" and gameId then return a Promise', async () => {
         const expectedResponse = true;
-        const sendAndCallbackSpy = spyOn(service['socketService'], 'sendAndCallBack');
-        sendAndCallbackSpy.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
+        socketClientServiceSpy.sendAndCallBack.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
             callback(expectedResponse);
         });
         const gameId = '42';
         const response = await service.isRoomCreated(gameId);
-        expect(sendAndCallbackSpy).toHaveBeenCalled();
-        expect(sendAndCallbackSpy).toHaveBeenCalledWith('roomCreatedForThisGame', gameId, jasmine.any(Function));
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalled();
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalledWith('roomCreatedForThisGame', gameId, jasmine.any(Function));
         expect(response).toEqual(expectedResponse);
     });
 
@@ -92,13 +96,25 @@ describe('MatchMakingService', () => {
         expect(callbackSpy).toHaveBeenCalled();
     });
 
+    it('startSoloLimitedTimeSession should call socketService.sendAndCallBack with "StartLimitedTimeSession" true and a callback', () => {
+        const callback = jasmine.createSpy('callback');
+        service.startSoloLimitedTimeSession(callback);
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalled();
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalledWith(SessionEvents.StartLimitedTimeSession, true, callback);
+    });
+
+    it('startMultiLimitedTimeSession should call socketService.send with "StartLimitedTimeSession" false and a callback', () => {
+        service.startMultiLimitedTimeSession();
+        expect(socketClientServiceSpy.send).toHaveBeenCalled();
+        expect(socketClientServiceSpy.send).toHaveBeenCalledWith(SessionEvents.StartLimitedTimeSession, false);
+    });
+
     it('joinRoom should call socketService.send with "joinRoom" and an objet with gameId and playerName', () => {
-        const sendSpy = spyOn(service['socketService'], 'send');
         const gameId = '42';
         const playerName = 'playerName';
         service.joinRoom(gameId, playerName);
-        expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('joinRoom', { gameId, playerName });
+        expect(socketClientServiceSpy.send).toHaveBeenCalled();
+        expect(socketClientServiceSpy.send).toHaveBeenCalledWith('joinRoom', { gameId, playerName });
     });
 
     it('iVeBeenAccepted should call socketService.on with "acceptOtherPlayer" and a callback', () => {
@@ -135,49 +151,44 @@ describe('MatchMakingService', () => {
     it('acceptOpponent should call sendAndCallBack with "acceptOpponent" and a playerName and return a Promise<boolean>', async () => {
         const playerName = 'playerName';
         const expectedResponse = true;
-        const sendAndCallbackSpy = spyOn(service['socketService'], 'sendAndCallBack');
-        sendAndCallbackSpy.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
+        socketClientServiceSpy.sendAndCallBack.and.callFake((_eventName, _playerName, callback: (response: any) => void) => {
             callback(expectedResponse);
         });
         const response = await service.acceptOpponent(playerName);
-        expect(sendAndCallbackSpy).toHaveBeenCalled();
-        expect(sendAndCallbackSpy).toHaveBeenCalledWith('acceptOpponent', playerName, jasmine.any(Function));
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalled();
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalledWith('acceptOpponent', playerName, jasmine.any(Function));
         expect(response).toEqual(expectedResponse);
     });
 
     it('rejectOpponent should call socketService.send with "rejectOpponent" and a playerName, gameId object', () => {
-        const sendSpy = spyOn(service['socketService'], 'send');
         const playerName = 'playerName';
         const gameId = '42';
         service.rejectOpponent(gameId, playerName);
-        expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('rejectOpponent', { gameId, playerName });
+        expect(socketClientServiceSpy.send).toHaveBeenCalled();
+        expect(socketClientServiceSpy.send).toHaveBeenCalledWith('rejectOpponent', { gameId, playerName });
     });
 
     it('leaveWaiting should call socketService.send with "leaveWaiting" and a gameId', () => {
-        const sendSpy = spyOn(service['socketService'], 'send');
         const gameId = '42';
         service.leaveWaiting(gameId);
-        expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('leaveWaitingRoom', gameId);
+        expect(socketClientServiceSpy.send).toHaveBeenCalled();
+        expect(socketClientServiceSpy.send).toHaveBeenCalledWith('leaveWaitingRoom', gameId);
     });
 
     it('startMultiSession should call socketService.send with "startMultiSession" and a data', () => {
-        const sendSpy = spyOn(service['socketService'], 'send');
         const gameId = '213';
         const data = { gameId, isSolo: false };
         service.startMultiSession(gameId);
-        expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('startClassicSession', data);
+        expect(socketClientServiceSpy.send).toHaveBeenCalled();
+        expect(socketClientServiceSpy.send).toHaveBeenCalledWith('startClassicSession', data);
     });
 
     it('startSoloSession should call socketService.send with "startSoloSession" and a data', () => {
-        const sendSpy = spyOn(service['socketService'], 'sendAndCallBack');
         const gameId = '213';
         const data = { gameId, isSolo: true };
         service.startSoloSession(gameId, () => {});
-        expect(sendSpy).toHaveBeenCalled();
-        expect(sendSpy).toHaveBeenCalledWith('startClassicSession', data, jasmine.any(Function));
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalled();
+        expect(socketClientServiceSpy.sendAndCallBack).toHaveBeenCalledWith('startClassicSession', data, jasmine.any(Function));
     });
 
     it('updateRoomView should call socketService.on with "updateRoomView" and a callback', () => {

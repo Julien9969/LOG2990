@@ -49,6 +49,8 @@ describe('MatchMakingDialogComponent', () => {
             'startMultiSession',
             'startSoloSession',
             'onGameDeleted',
+            'gameDeleted',
+            'startMultiLimitedTimeSession',
         ]);
 
         matchMakingSpy['socketService'] = jasmine.createSpyObj('SocketServiceMock', ['on']);
@@ -211,6 +213,18 @@ describe('MatchMakingDialogComponent', () => {
             await component.acceptOpponent();
             expect(component.matchMaking.acceptOpponent).toHaveBeenCalled();
         });
+
+        it('should call matchMaking.acceptOpponent and call matchMaking.startMultiLimitedTimeSession if gameId is limited-time', async () => {
+            matchMakingSpy.acceptOpponent.and.returnValue(
+                new Promise<boolean>((resolve) => {
+                    resolve(true);
+                }),
+            );
+            component.gameInfo.id = 'limited-time';
+            await component.acceptOpponent();
+            expect(component.matchMaking.acceptOpponent).toHaveBeenCalled();
+            expect(matchMakingSpy.startMultiLimitedTimeSession).toHaveBeenCalled();
+        });
     });
 
     it('rejectOpponent should call matchMaking.rejectOpponent and set template to waitingRoom', () => {
@@ -224,13 +238,6 @@ describe('MatchMakingDialogComponent', () => {
         expect(component.matchMaking.leaveWaiting).toHaveBeenCalledWith(gameId);
     });
 
-    it('navigateToMultiGame should call router.navigateByUrl', () => {
-        const sessionId = 0;
-        spyOn(routerSpy, 'navigateByUrl');
-        component.navigateToMultiGame(sessionId);
-        expect(routerSpy.navigateByUrl).toHaveBeenCalled();
-    });
-
     it('navigateToSoloGame should call router.navigateByUrl in call back after askForSoloSessionId return the session id', () => {
         spyOn(routerSpy, 'navigateByUrl');
         const sessionId = 0;
@@ -240,6 +247,12 @@ describe('MatchMakingDialogComponent', () => {
         expect(routerSpy.navigateByUrl).toHaveBeenCalled();
     });
 
+    it('startMultiSession should call matchMaking.startMultiSession with the gameId and the name', () => {
+        const name = 'test';
+        component.startMultiSession(name);
+        expect(component.matchMaking.startMultiSession).toHaveBeenCalledWith(name);
+    });
+
     describe('commonMatchMakingFeatures', () => {
         it('test', () => {
             const playerName = 'Player 1';
@@ -247,13 +260,13 @@ describe('MatchMakingDialogComponent', () => {
             expect(component.opponentName).toEqual(playerName);
         });
 
-        it('should call matchMaking.sessionIdReceived with a callback that call navigateToMultiGame', () => {
+        it('should call sessionIdReceived with a callback that call router.navigate', () => {
+            spyOn(routerSpy, 'navigateByUrl');
             const sessionId = 0;
-            spyOn(component, 'navigateToMultiGame');
             component.commonMatchMakingFeatures();
             expect(component.matchMaking.receiveSessionId).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.receiveSessionId.calls.mostRecent().args[0](sessionId);
-            expect(component.navigateToMultiGame).toHaveBeenCalledWith(sessionId);
+            expect(routerSpy.navigateByUrl).toHaveBeenCalled();
         });
 
         it('should call matchMaking.opponentJoined with a callback that set opponentName', () => {

@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { HttpClient } from '@angular/common/http';
+/* eslint-disable @typescript-eslint/no-explicit-any -- Any utilisé pour créer notre propre mock */
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Game } from '@common/game';
 import { GameConstants } from '@common/game-constants';
+import { DEFAULT_GAME_TIME, DEFAULT_PENALTY_TIME, DEFAULT_REWARD_TIME } from '@common/game-constants-values';
 import { GameService } from './game.service';
 
 describe('GameService', () => {
@@ -25,6 +27,7 @@ describe('GameService', () => {
             isHard: false,
             differenceCount: 0,
         };
+        spyOn<any>(service, 'reloadWindow').and.callFake(() => {});
     });
     it('should be created', () => {
         expect(service).toBeTruthy();
@@ -91,5 +94,51 @@ describe('GameService', () => {
         await service.updateGameConstants(stubGameConstants);
 
         expect(patchGameConstantsSpy).toHaveBeenCalled();
+    });
+
+    it('resetLeaderboard sends deleteRequest to leaderboards api path', async () => {
+        const stubId = 'test-id';
+        const deleteSpy = spyOn(service['communicationService'], 'deleteRequest').and.callFake(async () => {
+            return new HttpResponse<void>();
+        });
+
+        await service.resetLeaderboard(stubId);
+
+        expect(deleteSpy).toHaveBeenCalledWith('games/leaderboards/' + stubId);
+    });
+
+    it('resetAllLeaderboards sends deleteRequest to games api path', async () => {
+        const deleteSpy = spyOn(service['communicationService'], 'deleteRequest').and.callFake(async () => {
+            return new HttpResponse<void>();
+        });
+
+        await service.resetAllLeaderboards();
+
+        expect(deleteSpy).toHaveBeenCalledWith('games/leaderboards');
+    });
+
+    it('deleteAllGames sends deleteRequest to games api path', async () => {
+        const deleteSpy = spyOn(service['communicationService'], 'deleteRequest').and.callFake(async () => {
+            return new HttpResponse<void>();
+        });
+
+        await service.deleteAllGames();
+
+        expect(deleteSpy).toHaveBeenCalledWith('games');
+    });
+
+    it('resetTimeConstants patches game constants to default values', async () => {
+        const patchGameconstantsSpy = spyOn(service['communicationService'], 'patchGameConstants').and.callFake(async () => {
+            return new HttpResponse<void>();
+        });
+        const expectedDefaultGameConsts: GameConstants = {
+            time: DEFAULT_GAME_TIME,
+            reward: DEFAULT_REWARD_TIME,
+            penalty: DEFAULT_PENALTY_TIME,
+        };
+
+        await service.resetTimeConstants();
+
+        expect(patchGameconstantsSpy).toHaveBeenCalledWith(expectedDefaultGameConsts);
     });
 });
