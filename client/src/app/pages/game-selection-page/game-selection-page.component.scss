@@ -1,22 +1,10 @@
-mat-toolbar {
-    div {
-        font-size: 150%;
-    }
-    span:nth-of-type(2) {
-        margin-left: 42.5%;
-        margin-right: auto;
-    }
-}
+$top-bar-height: 6vh;
 
 #top-bar {
-    position: absolute;
-    height: 5%;
-    top: 0;
+    height: $top-bar-height;
     z-index: 1;
 }
 
 .squares {
-    display: flex;
-    flex-direction: column;
-    margin-top: 1%;
+    height: calc(100vh - $top-bar-height);
 }

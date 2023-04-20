@@ -6,10 +6,6 @@ img {
     -ms-user-select: none;
 }
 
-.h100 {
-    height: 100%;
-}
-
 .image-container {
     margin: 0 auto;
 }
@@ -17,11 +13,6 @@ img {
 .flex-row {
     display: flex;
     flex-direction: row;
-}
-
-.play-areas {
-    margin-right: 5%;
-    margin-left: 5%;
 }
 
 .error {
@@ -46,8 +37,6 @@ canvas {
 
 .flex {
     display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .text,

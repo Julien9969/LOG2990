@@ -1,5 +1,4 @@
 .container {
-    height: 90%;
     padding: 0 5px 0 5px;
     border: 3px solid black;
     background-color: #f5efef;
@@ -18,10 +17,10 @@
 
 .message {
     border-top: solid 1px #474444;
-    font-size: large;
+    font-size: medium;
     padding: 20px;
     margin-top: 10px;
-    width: 90%;
+    width: calc(100% - 40px);
     overflow-wrap: break-word;
 }
 
@@ -48,7 +47,9 @@
 .flex {
     display: flex;
     flex-direction: column-reverse;
-    height: 90vh;
+    height: calc(100vh - 150px);
+    max-width: 20vw;
+    overflow-x: scroll;
 }
 
 .flex-column {
@@ -62,7 +63,7 @@
 
 .send-message-form {
     input {
-        width: 98%;
+        width: 90%;
     }
 }
 

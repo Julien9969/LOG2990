@@ -1,68 +1,63 @@
-#header {
-    display: flex;
-    height: 8vh;
-    font-size: 1.5vh;
+$card-height: 30vh;
+$min-card-height: 100px;
+$card-width: 40vw;
+$min-card-width: 400px;
+
+mat-grid-tile {
+    margin: 0;
+    padding: 0;
 }
 
 .card {
+    position: relative;
+    display: block;
     background-color: rgb(38, 204, 255);
-    width: 130vh;
-    height: 34vh;
-    #right-elements {
+    border: 1px solid black;
+    width: $card-width;
+    min-width: $min-card-width;
+    height: $card-height;
+    min-height: $min-card-height;
+    padding: 10px;
+
+    #header {
+        height: 20px;
+        font-size: 1.5vh;
+        margin-bottom: calc($card-height*0.1);
+    }
+
+    .content {
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 27vh;
-        .content {
-            display: flex;
-            flex-flow: row-reverse;
-            margin: 2vh;
-            font-size: 1.2vh;
-            .best-times {
-                font-size: 1.5vh;
-                margin-right: 8vh;
-            }
-        }
-        .buttons {
-            display: flex;
-            width: auto;
-            height: auto;
-            margin-left: 30vh;
+        margin-top: 45px;
+    }
+
+    .buttons {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translate(0, 30%);
+        width: 40%;
+        button {
+            margin: 0 10px 0 10px;
         }
     }
 }
 
 img {
-    display: flex;
-    width: 30vh;
-    float: left;
-    padding-left: 10px;
+    width: 40%;
+    height: calc((480/640) * 40%);
+    margin: 10px;
+    margin-top: 40px;
 }
 
-#title {
-    width: 30vh;
-    height: 4vh;
-    font-size: 2vh;
+.leaderboard {
     display: flex;
-    flex: row;
-}
-
-.subtitle {
-    font-size: 1.5vh;
-    display: flex;
-    text-align: left bottom;
+    font-size: 14px;
+    >* {
+        margin: 10px;
+    }
 }
 
 .page-button {
     text-align: center;
-    margin: 1vh;
-}
-
-#square-list {
-    margin-top: 5vh;
-    background-color: rgb(246, 245, 244);
-}
-
-#step {
-    background-color: rgb(246, 245, 244);
+    margin: 1vw;
 }
