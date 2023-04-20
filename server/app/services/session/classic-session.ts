@@ -15,6 +15,7 @@ export class ClassicSession extends Session {
         this.differenceValidationService.loadDifferences(this.gameID.toString());
         this.nDifferences = this.differenceValidationService.differenceCoordLists.length;
         this.time = 0;
+        this.isTimeLimited = false;
         this.penalty = gameService.getGameConstants().penalty;
     }
 
@@ -26,7 +27,7 @@ export class ClassicSession extends Session {
      */
     tryGuess(guess: Coordinate, socketId: string): GuessResult {
         let diffNum: number;
-        let diffPixelList: Coordinate[] = [];
+        let diffPixelList: Coordinate[] = [guess];
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
         try {
             diffNum = this.differenceValidationService.checkDifference(guess.x, guess.y);

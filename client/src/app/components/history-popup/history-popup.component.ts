@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { HistoryService } from '@app/services/history.service';
+import { HistoryService } from '@app/services/history/history.service';
 import { GameHistory } from '@common/game-history';
 
 @Component({

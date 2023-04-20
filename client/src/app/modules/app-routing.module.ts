@@ -6,11 +6,12 @@ import { GamePageComponent } from '@app/pages/game-page/game-page.component';
 import { GameSelectionPageComponent } from '@app/pages/game-selection-page/game-selection-page.component';
 import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
-
+import { ReplayPageComponent } from '@app/pages/replay-page/replay-page.component';
 const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: 'home', component: MainPageComponent },
     { path: 'selection-view', component: GameSelectionPageComponent },
+    { path: 'replay', component: ReplayPageComponent },
     { path: 'solo-game', component: GamePageComponent },
     { path: 'limited-time-game', component: LimitedTimeGamePageComponent },
     { path: 'game-creation', component: GameCreationPageComponent },

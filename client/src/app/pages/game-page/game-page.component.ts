@@ -1,24 +1,25 @@
 import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
+import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
+import { SLICE_LAST_INDEX } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { GameService } from '@app/services/game/game.service';
-import { HistoryService } from '@app/services/history.service';
+import { HistoryService } from '@app/services/history/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
-
 @Component({
     selector: 'app-game-page',
     templateUrl: './game-page.component.html',
     styleUrls: ['./game-page.component.scss'],
 })
 export class GamePageComponent implements OnInit, OnDestroy {
-    @ViewChild('appPlayImage') playImageComponent: PlayImageClassicComponent;
-
+    @ViewChild(PlayImageClassicComponent) playImageComponent: PlayImageClassicComponent;
+    // @ViewChild('appPlayImage') playImageComponent: PlayImageClassicComponent;
     userSocketId: string;
 
     playerName: string;
@@ -41,13 +42,13 @@ export class GamePageComponent implements OnInit, OnDestroy {
     constructor(
         private readonly dialog: MatDialog,
         private readonly communicationService: CommunicationService,
-        private readonly inGameSocket: InGameService,
         private readonly socketClient: SocketClientService,
+        private loggingService: GameActionLoggingService,
+        private readonly inGameSocket: InGameService,
         private readonly historyService: HistoryService,
         private readonly gameService: GameService,
     ) {
         this.isLoaded = false;
-
         this.isSolo = window.history.state.isSolo;
         if (!this.isSolo) {
             this.opponentName = window.history.state.opponentName;
@@ -55,6 +56,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerName = window.history.state.playerName;
         this.sessionId = window.history.state.sessionId;
         this.gameID = window.history.state.gameID;
+        this.loggingService.isRecording = true;
     }
 
     @HostListener('window:beforeunload', ['$event'])
@@ -74,7 +76,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         if (this.sessionId === undefined || this.gameID === undefined) {
-            window.location.replace('/home');
+            // Redirection à la page principale
+            const pagePath = window.location.pathname.split('/').slice(0, SLICE_LAST_INDEX);
+            window.location.replace(pagePath.join('/'));
         }
         this.getGameInfos();
         this.inGameSocket.retrieveSocketId().then((userSocketId) => {
@@ -90,6 +94,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.inGameSocket.listenTimerUpdate((time: string) => {
             this.time = time;
         });
+        this.loggingService.timerUpdateFunction = (time: string) => {
+            this.time = time;
+        };
+
         this.inGameSocket.listenProvideName(this.playerName);
 
         this.initHistory();
@@ -130,7 +138,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             closeOnNavigation: true,
             disableClose: true,
             autoFocus: false,
-            data: ['endGame', message],
+            data: ['endGame', message, { gameId: this.gameID, playerName: this.playerName }],
         });
     }
 
@@ -145,7 +153,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: ['opponentLeft'] });
         }
     }
-
+    async replay() {
+        await this.playImageComponent.reset();
+        this.inGameSocket.socketService.loggingService.replayAllAction();
+    }
     ngOnDestroy(): void {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);

@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
+// import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
 import {
     BIT_PER_PIXEL,
     BLINK_COUNT,
@@ -11,6 +13,7 @@ import {
     RGB_RED,
 } from '@app/constants/utils-constants';
 import { RATIO_POINTER_IMAGE as POINTER_TO_CANVAS_RATIO, POINTER_X_OFFSET } from '@app/services/constantes.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 
@@ -24,6 +27,7 @@ export class ImageOperationService {
     oldestTimerId: number = 0;
 
     isChatFocused: boolean = false;
+    cheatInterval: number;
 
     private originalImgContext: CanvasRenderingContext2D;
     private modifiedImgContext: CanvasRenderingContext2D;
@@ -32,23 +36,43 @@ export class ImageOperationService {
     private originalImageSave: ImageData;
     private modifiedImageSave: ImageData;
 
-    private cheatInterval: number;
     private cheatImagesData: ImageData;
     private allDifferencesList: Coordinate[][];
 
     private clueOriginalImageData: ImageData;
     private clueModifiedImageData: ImageData;
 
-    constructor(private readonly inGameService: InGameService) {}
+    constructor(private readonly inGameService: InGameService, private replayService: GameActionLoggingService) {}
+    // constructor(private readonly inGameService: InGameService) {}
 
+    reset() {
+        this.intervalIds.forEach((interval) => {
+            clearInterval(interval);
+        });
+        this.intervalIds = [];
+        this.allDifferencesList = undefined as any;
+        clearInterval(this.cheatInterval);
+        this.cheatInterval = 0;
+        this.cheatImagesData = undefined as any;
+        this.newestTimerId = 0;
+        this.oldestTimerId = 0;
+    }
+
+    // Jamais utilise
     get contextOriginal(): CanvasRenderingContext2D {
         return this.originalImgContext;
     }
 
+    // Jamais utilise
     get contextModified(): CanvasRenderingContext2D {
         return this.modifiedImgContext;
     }
-
+    getSpeedMultiplier() {
+        if (this.replayService.isRecording) {
+            return 1;
+        }
+        return 1 / this.replayService.speedMultiplier;
+    }
     setCanvasContext(original: CanvasRenderingContext2D, modified: CanvasRenderingContext2D): void {
         this.originalImgContext = original;
         this.modifiedImgContext = modified;
@@ -101,7 +125,7 @@ export class ImageOperationService {
                     return done();
                 }
                 count++;
-            }, BLINK_PERIOD_MS);
+            }, BLINK_PERIOD_MS * this.getSpeedMultiplier());
         });
     }
 
@@ -150,6 +174,7 @@ export class ImageOperationService {
         }
         if (this.cheatInterval) {
             this.disableCheat();
+            this.replayService.logAction('CHEATLOGGER', { isStarting: false, pixelList: [], diffList: [] });
         } else {
             this.allDifferencesList = await this.inGameService.cheatGetAllDifferences(sessionId);
 
@@ -158,8 +183,22 @@ export class ImageOperationService {
                 differencesInOneList.push(...differences);
             });
 
+            this.replayService.logAction('CHEATLOGGER', {
+                isStarting: true,
+                pixelList: differencesInOneList,
+                diffList: [...this.allDifferencesList],
+            });
             await this.createImageDataCheat(differencesInOneList);
 
+            await this.cheatBlink();
+        }
+    }
+    async handleCheatReplay(isStarting: boolean, pixelList: Coordinate[], diffList: Coordinate[][]): Promise<void> {
+        if (!isStarting) {
+            this.disableCheat();
+        } else {
+            this.allDifferencesList = diffList;
+            await this.createImageDataCheat(pixelList);
             await this.cheatBlink();
         }
     }
@@ -184,10 +223,17 @@ export class ImageOperationService {
             setTimeout(() => {
                 this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
                 this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
-            }, CHEAT_PERIOD_MS);
-        }, CHEAT_PERIOD_MS * 2);
+            }, CHEAT_PERIOD_MS * this.getSpeedMultiplier());
+        }, CHEAT_PERIOD_MS * 2 * this.getSpeedMultiplier());
     }
-
+    clearAllIntervals() {
+        clearInterval(this.cheatInterval);
+        this.cheatInterval = 0;
+        this.intervalIds.forEach((interval) => {
+            clearInterval(interval);
+        });
+        this.intervalIds = [];
+    }
     disableCheat(): void {
         clearInterval(this.cheatInterval);
         this.cheatInterval = 0;
@@ -210,7 +256,7 @@ export class ImageOperationService {
      *
      * @param differences liste des pixels a mettre en vert
      */
-    private async createImageDataCheat(differences: Coordinate[]): Promise<void> {
+    async createImageDataCheat(differences: Coordinate[]): Promise<void> {
         const cheatImageData = structuredClone(this.originalImageSave);
 
         differences.forEach((difference) => {
@@ -316,7 +362,6 @@ export class ImageOperationService {
      */
     private async cheatRemoveDiff(diffToRemove: Coordinate[]): Promise<void> {
         const differencesInOneList: Coordinate[] = [];
-
         this.allDifferencesList.forEach((differenceList, index) => {
             if (this.isSameDifference(differenceList, diffToRemove)) {
                 this.allDifferencesList[index] = [];
@@ -328,7 +373,6 @@ export class ImageOperationService {
         this.updateBaseImagesSave(diffToRemove);
         this.createImageDataCheat(differencesInOneList);
     }
-
     /**
      * met les pixels de l'image de original dans l'image de modifier
      *
@@ -341,7 +385,6 @@ export class ImageOperationService {
             this.modifiedImageSave.data.set(originalPixel, pixelIndex);
         });
     }
-
     private isSameDifference(differenceList: Coordinate[], diffToRemove: Coordinate[]): boolean {
         return differenceList.length !== 0 && differenceList[0].x === diffToRemove[0].x && differenceList[0].y === diffToRemove[0].y;
     }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SystemCode } from '@app/services/constantes.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Message } from '@common/message';
@@ -13,8 +14,17 @@ export class ChatService {
     clientId: string;
     newMessage: boolean;
 
-    constructor(public socketService: SocketClientService) {
+    constructor(public socketService: SocketClientService, private loggingService: GameActionLoggingService) {
         this.start();
+        this.loggingService.systemErrorFunction = (data: { systemCode: string; playerName: string }) => {
+            this.receiveMessage(this.createSystemMessage(data.systemCode, data.playerName));
+        };
+        this.loggingService.messageFunction = (data) => {
+            this.receiveMessage(data);
+        };
+        this.loggingService.clearChatFunction = () => {
+            this.messageList = [];
+        };
     }
     start() {
         this.messageList = [];
@@ -61,6 +71,7 @@ export class ChatService {
     }
 
     receiveMessage(message: Message) {
+        // this.messageList.push(message);
         if (!this.newMessage) {
             this.messageList.push(message);
             this.newMessage = true;
