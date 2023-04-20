@@ -5,6 +5,22 @@ mat-icon {
     margin: 0 7px;
 }
 
+span.horizontal-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    mat-icon {
+        transform: translateY(-40%)
+    }
+}
+
+span.vertical-bar {
+    height: 10vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 mat-icon:hover {
     color: rgba(215, 13, 13, 0.858);
 }

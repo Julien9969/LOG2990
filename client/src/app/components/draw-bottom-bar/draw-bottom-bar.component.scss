@@ -18,6 +18,32 @@ span.horizontal-bar {
     }
 }
 
+span.vertical-bar {
+    height: 10vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+mat-icon {
+    font-size: 44px;
+    padding: 20px;
+    cursor: pointer;
+    // box-shadow: 0px 0px 10px 2px rgb(215 25 109 / 20%);
+}
+
+mat-icon:hover {
+    color: rgb(236, 0, 0);
+}
+
+mat-icon.active {
+    color:rgb(161, 0, 0);
+}
+
+input#colorSelect {
+    visibility: hidden;
+    margin: 0;
+}
+
 mat-icon {
     font-size: 44px;
     padding: 20px;

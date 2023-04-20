@@ -23,7 +23,7 @@
                 </button>
                 <button *ngIf="isSolo" mat-button (click)="handleClueRequest()" id="clue-button" aria-label="Indice">
                     <mat-icon>highlight</mat-icon>
-                    Indices: {{ nbCluesLeft }} (+{{ penalty }} sec)
+                    Indices: {{ nbCluesLeft }} (-{{ penalty }} sec)
                 </button>
             </mat-toolbar>
         </div>
