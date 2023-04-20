@@ -5,12 +5,12 @@ import { ClassicSession } from '@app/services/session/classic-session';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
 import { LimitedTimeSession } from '@app/services/session/time-limited-session';
+import { ChatEvents } from '@common/chat.gateway.events';
 import { Coordinate } from '@common/coordinate';
 import { FinishedGame } from '@common/finishedGame';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { SessionEvents } from '@common/session.gateway.events';
-import { Game } from '@common/game';
-import { ChatEvents } from '@common/chat.gateway.events';
 import { StartSessionData } from '@common/start-session-data';
 import { WinnerInfo } from '@common/winner-info';
 import { Logger } from '@nestjs/common';
@@ -276,6 +276,7 @@ export class SessionGateway {
     async sendNewGame(client: Socket, session: LimitedTimeSession) {
         const chosenGame = await session.decideNewGame();
         if (!chosenGame) {
+            session.stopTimer();
             this.limitedTimeGameEnded(client, false);
         }
         const data: [Game, number] = [chosenGame, session.nDifferencesFound];
@@ -428,11 +429,11 @@ export class SessionGateway {
     }
 
     limitedTimeGameEnded(client: Socket, timer: boolean) {
-        client.emit(SessionEvents.EndedGame, timer);
+        client.emit(SessionEvents.LimitedTimeGameEnded, timer);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 this.logger.log('EndedGame has been sent: ' + client.id);
-                this.server.to(roomId).emit(SessionEvents.EndedGame, timer);
+                this.server.to(roomId).emit(SessionEvents.LimitedTimeGameEnded, timer);
             }
         });
     }

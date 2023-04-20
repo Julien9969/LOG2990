@@ -1,4 +1,4 @@
-import { ONE_PLAYER } from '@app/services/constants/services.const';
+import { MAXIMUM_LIMITED_TIME_GAME_TIME, ONE_PLAYER } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { GameService } from '@app/services/game/game.service';
 import { Coordinate } from '@common/coordinate';
@@ -12,6 +12,7 @@ export class LimitedTimeSession extends Session {
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
     playedGames: string[] = [];
     nDifferencesFound: number = 0;
+    reward: number = 0;
 
     constructor(gameService: GameService, players: Player[]) {
         super();
@@ -20,6 +21,7 @@ export class LimitedTimeSession extends Session {
         this.players = players;
         this.time = gameConsts.time;
         this.penalty = gameConsts.penalty;
+        this.reward = gameConsts.reward;
         // if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
         // this.decideNewGame();
         this.isTimeLimited = true;
@@ -53,6 +55,8 @@ export class LimitedTimeSession extends Session {
         isCorrect = diffNum !== undefined;
         if (isCorrect) {
             this.nDifferencesFound += 1;
+            this.time += this.reward;
+            if (this.time > MAXIMUM_LIMITED_TIME_GAME_TIME) this.time = 120;
             diffPixelList = this.differenceValidationService.getDifferencePixelList(diffNum);
         }
         // Traitement des pénalités, le cas échéant
@@ -137,7 +141,8 @@ export class LimitedTimeSession extends Session {
     handleClueRequest(): boolean {
         const clueIsAllowed = ++this.nbCluesRequested <= 3;
         if (clueIsAllowed) {
-            this.time -= 5;
+            this.time -= this.penalty;
+            if (this.time < 0) this.time = 0;
         }
         return clueIsAllowed;
     }

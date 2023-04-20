@@ -63,6 +63,7 @@ export const DEFAULT_GAME_LEADERBOARD: [string, number][] = [
 export const SESSION_ID_CAP = 10000;
 export const MULTIPLAYER_SESSION = 2;
 export const ONE_PLAYER = 1;
+export const MAXIMUM_LIMITED_TIME_GAME_TIME = 120;
 
 /**
  * Constantes de ClueService
