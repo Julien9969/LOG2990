@@ -35,13 +35,14 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         @Inject(MAT_DIALOG_DATA) public data: GameSessionType,
         private dialogRef: MatDialogRef<MatchMakingDialogComponent>,
         private readonly router: Router,
-        public matchMaking: MatchMakingService,
+        private matchMaking: MatchMakingService,
     ) {
         this.dialogInfos = { template: 'nameForm', message: '' };
         this.gameInfo = data;
         this.routerLink = this.gameInfo.id === 'limited-time' ? 'limited-time-game' : 'solo-game';
     }
 
+    // Nécessaire pour utiliser window dans le html
     get window() {
         return window;
     }
@@ -106,9 +107,13 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     validateAndContinue() {
-        if (this.nameFormControl.valid) {
-            if (this.gameInfo.isSolo) this.navigateToSoloGame();
-            else this.joinGame();
+        if (this.dialogInfos.template === 'nameForm') {
+            if (this.nameFormControl.valid) {
+                if (this.gameInfo.isSolo) this.navigateToSoloGame();
+                else this.joinGame();
+            }
+        } else if (this.dialogInfos.template === 'acceptPairing') {
+            this.acceptOpponent();
         }
     }
 

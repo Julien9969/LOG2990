@@ -19,12 +19,10 @@ export class UploadImageSquareComponent implements AfterViewInit {
     @Output() invalidImageType: EventEmitter<void> = new EventEmitter<void>();
     @Output() clearForeground: EventEmitter<void> = new EventEmitter<void>();
     @Output() replaceForeground: EventEmitter<void> = new EventEmitter<void>();
-    component: HTMLInputElement;
 
-    foregroundCanvas: HTMLCanvasElement;
     emptyBackground: HTMLCanvasElement;
-
     backgroundImage: HTMLImageElement;
+    private foregroundCanvas: HTMLCanvasElement;
 
     constructor(readonly drawService: DrawService, readonly validateImageService: ValidateImageService) {
         this.initEmptyBackground();
@@ -123,14 +121,14 @@ export class UploadImageSquareComponent implements AfterViewInit {
         this.mouseMove.emit(this.eventToImageCoordinate(event));
     }
 
-    eventToImageCoordinate(event: MouseEvent): Coordinate {
+    private eventToImageCoordinate(event: MouseEvent): Coordinate {
         return {
             x: this.clamp(event.offsetX, 0, IMAGE_WIDTH - 1),
             y: this.clamp(event.offsetY, 0, IMAGE_HEIGHT - 1),
         };
     }
 
-    clamp(base: number, minimum: number, maximum: number) {
+    private clamp(base: number, minimum: number, maximum: number) {
         return Math.max(minimum, Math.min(base, maximum));
     }
 }

@@ -7,14 +7,7 @@ import { ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angular/core
 import { MatIconModule } from '@angular/material/icon';
 import { RouterTestingModule } from '@angular/router/testing';
 import { UploadImageSquareComponent } from '@app/components/upload-image-square/upload-image-square.component';
-import {
-    ALLOWED_RADIUS,
-    DEFAULT_RADIUS,
-    MESSAGE_DISPLAYED_TIME,
-    MAX_TITLE_LENGTH,
-    // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
-    // eslint-disable-next-line prettier/prettier
-} from '@app/constants/utils-constants';
+import { ALLOWED_RADIUS, DEFAULT_RADIUS, MESSAGE_DISPLAYED_TIME, MAX_TITLE_LENGTH } from '@app/constants/utils-constants';
 import { ActiveCanvas } from '@app/interfaces/active-canvas';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import ValidateImageService from '@app/services/validate-server/validate-image.service';

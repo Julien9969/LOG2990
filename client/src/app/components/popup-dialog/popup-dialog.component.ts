@@ -39,7 +39,5 @@ export class PopupDialogComponent implements OnInit {
     replay() {
         this.imageOperationService.clearAllIntervals();
         this.router.navigate(['/replay'], { state: this.data[2] });
-
-        // this.socket.socketService.loggingService.replayAllAction();
     }
 }

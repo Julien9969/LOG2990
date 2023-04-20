@@ -19,7 +19,6 @@ import { WinnerInfo } from '@common/winner-info';
 })
 export class GamePageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayImageClassicComponent) playImageComponent: PlayImageClassicComponent;
-    // @ViewChild('appPlayImage') playImageComponent: PlayImageClassicComponent;
 
     playerName: string;
     opponentName: string;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
@@ -117,7 +118,7 @@ describe('UploadImageSquareComponent', () => {
 
     describe('drawForeground', () => {
         it('draws background then foreground', async () => {
-            const toDataURLSpy = spyOn(component.foregroundCanvas, 'toDataURL').and.callFake(() =>
+            const toDataURLSpy = spyOn(component['foregroundCanvas'], 'toDataURL').and.callFake(() =>
                 URL.createObjectURL((validInput.files as FileList)[0]),
             );
             let canvasDrawImageSpy;
@@ -138,7 +139,7 @@ describe('UploadImageSquareComponent', () => {
         it('onMouseDown emits mouseDown event with image coordinates', () => {
             const stubCoords = { x: 1, y: 1 };
             const mouseDownEmitSpy = spyOn(component.mouseDown, 'emit').and.callFake(() => {});
-            const eventToImageCoordinateSpy = spyOn(component, 'eventToImageCoordinate').and.callFake(() => stubCoords);
+            const eventToImageCoordinateSpy = spyOn(component, 'eventToImageCoordinate' as any).and.callFake(() => stubCoords);
 
             component.onMouseDown(new MouseEvent('mousedown'));
 
@@ -149,7 +150,7 @@ describe('UploadImageSquareComponent', () => {
         it('onMouseMove emits mouseMove event with image coordinates', () => {
             const stubCoords = { x: 1, y: 1 };
             const mouseMoveEmitSpy = spyOn(component.mouseMove, 'emit').and.callFake(() => {});
-            const eventToImageCoordinateSpy = spyOn(component, 'eventToImageCoordinate').and.callFake(() => stubCoords);
+            const eventToImageCoordinateSpy = spyOn(component, 'eventToImageCoordinate' as any).and.callFake(() => stubCoords);
 
             component.onMouseMove(new MouseEvent('mousemove'));
 
@@ -160,8 +161,8 @@ describe('UploadImageSquareComponent', () => {
 
     describe('eventToImageCoordinate', () => {
         it('clamps x and y', () => {
-            const clampSpy = spyOn(component, 'clamp').and.callFake(() => 0);
-            const result = component.eventToImageCoordinate(new MouseEvent(''));
+            const clampSpy = spyOn(component, 'clamp' as any).and.callFake(() => 0);
+            const result = component['eventToImageCoordinate'](new MouseEvent(''));
 
             expect(clampSpy).toHaveBeenCalledTimes(2);
             expect(result).toEqual({ x: 0, y: 0 });
@@ -170,7 +171,7 @@ describe('UploadImageSquareComponent', () => {
 
     describe('canvas context getters', () => {
         it('fgContext gets 2d context of foregroundCanvas', () => {
-            const getContextSpy = spyOn(component.foregroundCanvas, 'getContext').and.callFake(() => null);
+            const getContextSpy = spyOn(component['foregroundCanvas'], 'getContext').and.callFake(() => null);
 
             const result = component.foregroundContext;
             expect(result).toBeFalsy();
@@ -183,21 +184,21 @@ describe('UploadImageSquareComponent', () => {
             const input = 5;
             const min = 0;
             const max = 10;
-            expect(component.clamp(input, min, max)).toEqual(input);
+            expect(component['clamp'](input, min, max)).toEqual(input);
         });
 
         it('returns min when value smaller', () => {
             const input = -8;
             const min = 0;
             const max = 10;
-            expect(component.clamp(input, min, max)).toEqual(min);
+            expect(component['clamp'](input, min, max)).toEqual(min);
         });
 
         it('returns max wgen value larger', () => {
             const input = 18;
             const min = 0;
             const max = 10;
-            expect(component.clamp(input, min, max)).toEqual(max);
+            expect(component['clamp'](input, min, max)).toEqual(max);
         });
     });
 });

@@ -9,7 +9,6 @@ import { GameHistory } from '@common/game-history';
     styleUrls: ['./history-popup.component.scss'],
 })
 export class HistoryPopupComponent implements OnInit {
-    gameId: string;
     gamesHistory: GameHistory[];
 
     constructor(public dialogRef: MatDialogRef<HistoryPopupComponent>, public historyService: HistoryService) {}

@@ -71,7 +71,6 @@ export class ChatService {
     }
 
     receiveMessage(message: Message) {
-        // this.messageList.push(message);
         if (!this.newMessage) {
             this.messageList.push(message);
             this.newMessage = true;

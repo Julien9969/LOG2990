@@ -174,21 +174,21 @@ describe('MatchMakingDialogComponent', () => {
 
     it('createGameAndWait should call matchMaking.startMatchmaking and set template to waitingRoom', () => {
         component.createGameAndWait();
-        expect(component.matchMaking.startMatchmaking).toHaveBeenCalled();
+        expect(component['matchMaking'].startMatchmaking).toHaveBeenCalled();
         expect(component.dialogInfos.template).toEqual('waitingRoom');
     });
 
     it('askToJoin should call matchMaking.joinRoom and set template to waitingRoom', () => {
         component.askToJoin();
-        expect(component.matchMaking.joinRoom).toHaveBeenCalled();
+        expect(component['matchMaking'].joinRoom).toHaveBeenCalled();
         expect(component.dialogInfos.template).toEqual('waitingRoom');
         expect(component.dialogInfos.message).toEqual("Attente d'acceptation par l'adversaire");
     });
 
     it('askToJoin should call iVeBeenAccepted and iVeBeenRejected with a callback', () => {
         component.askToJoin();
-        expect(component.matchMaking.iVeBeenAccepted).toHaveBeenCalledWith(jasmine.any(Function));
-        expect(component.matchMaking.iVeBeenRejected).toHaveBeenCalledWith(jasmine.any(Function));
+        expect(component['matchMaking'].iVeBeenAccepted).toHaveBeenCalledWith(jasmine.any(Function));
+        expect(component['matchMaking'].iVeBeenRejected).toHaveBeenCalledWith(jasmine.any(Function));
     });
 
     describe('acceptOpponent', () => {
@@ -199,7 +199,7 @@ describe('MatchMakingDialogComponent', () => {
                 }),
             );
             await component.acceptOpponent();
-            expect(component.matchMaking.acceptOpponent).toHaveBeenCalled();
+            expect(component['matchMaking'].acceptOpponent).toHaveBeenCalled();
             expect(component.dialogInfos.template).toEqual('waitingRoom');
             expect(component.dialogInfos.message).toEqual("l'adversaire précendent a quitté la recherche");
         });
@@ -211,7 +211,7 @@ describe('MatchMakingDialogComponent', () => {
                 }),
             );
             await component.acceptOpponent();
-            expect(component.matchMaking.acceptOpponent).toHaveBeenCalled();
+            expect(component['matchMaking'].acceptOpponent).toHaveBeenCalled();
         });
 
         it('should call matchMaking.acceptOpponent and call matchMaking.startMultiLimitedTimeSession if gameId is limited-time', async () => {
@@ -222,27 +222,27 @@ describe('MatchMakingDialogComponent', () => {
             );
             component.gameInfo.id = 'limited-time';
             await component.acceptOpponent();
-            expect(component.matchMaking.acceptOpponent).toHaveBeenCalled();
+            expect(component['matchMaking'].acceptOpponent).toHaveBeenCalled();
             expect(matchMakingSpy.startMultiLimitedTimeSession).toHaveBeenCalled();
         });
     });
 
     it('rejectOpponent should call matchMaking.rejectOpponent and set template to waitingRoom', () => {
         component.rejectOpponent();
-        expect(component.matchMaking.rejectOpponent).toHaveBeenCalled();
+        expect(component['matchMaking'].rejectOpponent).toHaveBeenCalled();
         expect(component.dialogInfos.template).toEqual('waitingRoom');
     });
 
     it('leaveWaiting should call matchMaking.leaveWaiting with the gameId', () => {
         component.leaveWaiting();
-        expect(component.matchMaking.leaveWaiting).toHaveBeenCalledWith(gameId);
+        expect(component['matchMaking'].leaveWaiting).toHaveBeenCalledWith(gameId);
     });
 
     it('navigateToSoloGame should call router.navigateByUrl in call back after askForSoloSessionId return the session id', () => {
         spyOn(routerSpy, 'navigateByUrl');
         const sessionId = 0;
         component.navigateToSoloGame();
-        expect(component.matchMaking.startSoloSession).toHaveBeenCalledWith('10', jasmine.any(Function));
+        expect(component['matchMaking'].startSoloSession).toHaveBeenCalledWith('10', jasmine.any(Function));
         matchMakingSpy.startSoloSession.calls.mostRecent().args[1](sessionId);
         expect(routerSpy.navigateByUrl).toHaveBeenCalled();
     });
@@ -250,7 +250,7 @@ describe('MatchMakingDialogComponent', () => {
     it('startMultiSession should call matchMaking.startMultiSession with the gameId and the name', () => {
         const name = 'test';
         component.startMultiSession(name);
-        expect(component.matchMaking.startMultiSession).toHaveBeenCalledWith(name);
+        expect(component['matchMaking'].startMultiSession).toHaveBeenCalledWith(name);
     });
 
     describe('commonMatchMakingFeatures', () => {
@@ -264,7 +264,7 @@ describe('MatchMakingDialogComponent', () => {
             spyOn(routerSpy, 'navigateByUrl');
             const sessionId = 0;
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.receiveSessionId).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].receiveSessionId).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.receiveSessionId.calls.mostRecent().args[0](sessionId);
             expect(routerSpy.navigateByUrl).toHaveBeenCalled();
         });
@@ -272,7 +272,7 @@ describe('MatchMakingDialogComponent', () => {
         it('should call matchMaking.opponentJoined with a callback that set opponentName', () => {
             const playerName = 'Player 1';
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.onOpponentJoined).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].onOpponentJoined).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.onOpponentJoined.calls.mostRecent().args[0](playerName);
             expect(component.opponentName).toEqual(playerName);
             expect(component.dialogInfos.template).toEqual('acceptPairing');
@@ -283,14 +283,14 @@ describe('MatchMakingDialogComponent', () => {
             spyOn(component, 'acceptOpponent');
             component.gameInfo.id = 'limited-time';
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.onOpponentJoined).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].onOpponentJoined).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.onOpponentJoined.calls.mostRecent().args[0](playerName);
             expect(component.acceptOpponent).toHaveBeenCalled();
         });
 
         it('should call matchMaking.opponentLeft with a callback that dialogInfo to waitingRoom', () => {
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.onOpponentLeft).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].onOpponentLeft).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.onOpponentLeft.calls.mostRecent().args[0]();
             expect(component.dialogInfos.template).toEqual('waitingRoom');
             expect(component.dialogInfos.message).toEqual("l'adversaire précendent a quitté la recherche");
@@ -300,7 +300,7 @@ describe('MatchMakingDialogComponent', () => {
             spyOn(component, 'joinGame');
             component.dialogInfos.template = 'waitingRoom';
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.onRoomReachable).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].onRoomReachable).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.onRoomReachable.calls.mostRecent().args[0]();
             expect(component.joinGame).toHaveBeenCalled();
         });
@@ -309,7 +309,7 @@ describe('MatchMakingDialogComponent', () => {
             spyOn(component, 'joinGame');
             component.dialogInfos.template = 'notWaitingRoom';
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.onRoomReachable).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].onRoomReachable).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.onRoomReachable.calls.mostRecent().args[0]();
             expect(component.joinGame).not.toHaveBeenCalled();
         });
@@ -317,7 +317,7 @@ describe('MatchMakingDialogComponent', () => {
         it('should call matchMaking.iVeBeenAccepted with a callback that set the opponentName', () => {
             const playerName = 'Player 1';
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.iVeBeenAccepted).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].iVeBeenAccepted).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.iVeBeenAccepted.calls.mostRecent().args[0](playerName);
             expect(component.opponentName).toEqual(playerName);
         });
@@ -325,7 +325,7 @@ describe('MatchMakingDialogComponent', () => {
         it('should call matchMaking.iVeBeenRejected with a callback that set the opponentName and template to rejected', () => {
             const playerName = 'Player 1';
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.iVeBeenRejected).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].iVeBeenRejected).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.iVeBeenRejected.calls.mostRecent().args[0](playerName);
             expect(component.opponentName).toEqual(playerName);
             expect(component.dialogInfos.template).toEqual('rejected');
@@ -334,7 +334,7 @@ describe('MatchMakingDialogComponent', () => {
 
         it('should call matchMaking.gameDeleted with a callback that set the template to gameDelete', () => {
             component.commonMatchMakingFeatures();
-            expect(component.matchMaking.onGameDeleted).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(component['matchMaking'].onGameDeleted).toHaveBeenCalledWith(jasmine.any(Function));
             matchMakingSpy.onGameDeleted.calls.mostRecent().args[0]();
             expect(component.dialogInfos.template).toEqual('gameDelete');
             expect(component.dialogInfos.message).toEqual('');

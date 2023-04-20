@@ -1,6 +1,5 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { communicationMessage } from '@common/communicationMessage';
 import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
 import { GameConstants } from '@common/game-constants';
@@ -19,15 +18,6 @@ export class CommunicationService {
     constructor(readonly http: HttpClient) {}
 
     /**
-     * Réquête GET pour récupérer un message du serveur
-     *
-     * @returns message du serveur
-     */
-    basicGet(): Observable<communicationMessage> {
-        return this.http.get<communicationMessage>(`${this.baseUrl}/example`).pipe(catchError(this.handleError<communicationMessage>('basicGet')));
-    }
-
-    /**
      * envoie une requête POST au serveur et récupère un nombre en réponse
      *
      * @param path chemin de la route du serveur
@@ -35,16 +25,6 @@ export class CommunicationService {
      */
     customPost(path: string): Observable<number> {
         return this.http.post<number>(`${this.baseUrl}/${path}`, {}).pipe(catchError(this.handleError<number>('customGet')));
-    }
-
-    /**
-     * envoie une requête POST au serveur.
-     *
-     * @param message envoie un message au serveur
-     * @returns HttpResponse<string> la réponse du serveur
-     */
-    basicPost(message: communicationMessage): Observable<HttpResponse<string>> {
-        return this.http.post(`${this.baseUrl}/example/send`, message, { observe: 'response', responseType: 'text' });
     }
 
     /**

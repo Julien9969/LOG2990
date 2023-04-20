@@ -14,8 +14,6 @@ import {
     DEFAULT_RADIUS,
     MAX_TITLE_LENGTH,
     MESSAGE_DISPLAYED_TIME,
-    // bug de prettier qui rentre en conflit avec eslint (pas de virgule pour le dernier élément d'un tableau)
-    // eslint-disable-next-line prettier/prettier
     TIME_BEFORE_REDIRECT,
 } from '@app/constants/utils-constants';
 import { ActiveCanvas } from '@app/interfaces/active-canvas';

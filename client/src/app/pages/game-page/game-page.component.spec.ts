@@ -313,11 +313,10 @@ describe('GamePageComponent', () => {
         });
     });
 
-    // Can't test by dispatching event because it will reload the page and make the test crash
+    // On ne peut pas lancer un event car celui-ci va recharger la page et faire planter les tests
     it('unloadHandler should set event.returnValue to true', () => {
-        const event = new Event('beforeunload');
+        const event: BeforeUnloadEvent = new Event('beforeunload');
         component.unloadHandler(event);
-        // eslint-disable-next-line deprecation/deprecation
         expect(event.returnValue).toEqual(true);
     });
 

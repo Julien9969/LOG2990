@@ -26,7 +26,6 @@ export class PlayImageClassicComponent extends PlayImage implements AfterViewIni
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
     errorMsgPosition: Coordinate;
-    errorCounter: number = 0;
     lastDifferenceFound: GuessResult = {
         isCorrect: false,
         differencesByPlayer: [],
@@ -85,9 +84,6 @@ export class PlayImageClassicComponent extends PlayImage implements AfterViewIni
             this.socket.submitCoordinatesSolo(this.sessionID, this.mouseService.mousePosition).then((response: GuessResult) => {
                 this.updateDiffFound(response);
             });
-            // .catch((e) => {
-            //     alert(e.message);
-            // });
         } else {
             this.socket.submitCoordinatesMulti(this.sessionID, this.mouseService.mousePosition);
         }

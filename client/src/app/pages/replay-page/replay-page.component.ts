@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
@@ -16,22 +16,23 @@ import { WinnerInfo } from '@common/winner-info';
 })
 export class ReplayPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayImageClassicComponent) playImageComponent: PlayImageClassicComponent;
-    userSocketId: string;
     playerName: string;
     opponentName: string;
     isLoaded: boolean;
     isSolo: boolean;
 
     sessionId: number;
-    gameId: string;
     gameInfos: Game;
-    speed: number = 1;
-    wasCheatBlinkingBeforePause: boolean;
 
     nDiffFoundMainPlayer: number = 0;
     nDiffFoundOpponent: number = 0;
 
     time: string = '0:00';
+
+    private gameId: string;
+    private speed: number = 1;
+    private userSocketId: string;
+    private wasCheatBlinkingBeforePause: boolean;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
@@ -49,12 +50,6 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
         this.playerName = window.history.state.playerName;
         this.gameId = window.history.state.gameId;
         this.replay();
-    }
-
-    @HostListener('window:beforeunload', ['$event'])
-    unloadNotification($event: Event) {
-        // eslint-disable-next-line deprecation/deprecation
-        $event.returnValue = true; // L'équivalent non déprécié ne produit pas le même résultat
     }
 
     async ngOnInit(): Promise<void> {

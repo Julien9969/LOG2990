@@ -128,13 +128,13 @@ describe('PlayImageComponent', () => {
     });
 
     it('ngOnInit should set error counter to 0 and listen to differences found', () => {
-        component.errorCounter = 3;
+        component['errorCounter'] = 3;
         inGameServiceSpy.listenDifferenceFound.and.callFake((callback: (guess: GuessResult) => void) => {
             callback({ isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' });
         });
         const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
         component.ngOnInit();
-        expect(component.errorCounter).toEqual(0);
+        expect(component['errorCounter']).toEqual(0);
         expect(inGameServiceSpy.listenDifferenceFound).toHaveBeenCalled();
         expect(updateDiffFoundSpy).toHaveBeenCalledWith({
             isCorrect: false,
@@ -189,7 +189,7 @@ describe('PlayImageComponent', () => {
             const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
             component.updateDiffFound(guessResult);
             expect(diffFoundUpdateEmitSpy).toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
-            expect(component.errorCounter).toEqual(0);
+            expect(component['errorCounter']).toEqual(0);
             expect(imageOperationServiceSpy.pixelBlink).toHaveBeenCalledWith(guessResult.differencePixelList);
         });
         it('should handle a false guess', () => {
@@ -248,28 +248,28 @@ describe('PlayImageComponent', () => {
     describe('handleErrorGuess', () => {
         it('handleErrorGuess should set errorMsgPosition, call errorTimer and increment errorCounter and set errorGuess to false after 1s', () => {
             jasmine.clock().install();
-            component.errorCounter = 0;
+            component['errorCounter'] = 0;
             component.handleErrorGuess({ x: 0, y: 1 });
             expect(component.errorGuess).toEqual(true);
             jasmine.clock().tick(1000);
             expect(component.errorMsgPosition).toEqual({ x: 0, y: 1 });
-            expect(component.errorCounter).toEqual(1);
+            expect(component['errorCounter']).toEqual(1);
             expect(component.errorGuess).toEqual(false);
             jasmine.clock().uninstall();
         });
 
         it('handleErrorGuess should call playAudio with "error" when errorCounter is less than 3', () => {
-            component.errorCounter = 1; // will be incremented to 2 in handleErrorGuess
+            component['errorCounter'] = 1; // will be incremented to 2 in handleErrorGuess
             component.handleErrorGuess({ x: 0, y: 1 });
             expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('error');
-            expect(component.errorCounter).toEqual(2);
+            expect(component['errorCounter']).toEqual(2);
         });
 
         it('handleErrorGuess should call playAudio with "manyErrors" when errorCounter is equal to 3 and reset the count', () => {
-            component.errorCounter = 2;
+            component['errorCounter'] = 2;
             component.handleErrorGuess({ x: 0, y: 1 });
             expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('manyErrors');
-            expect(component.errorCounter).toEqual(0);
+            expect(component['errorCounter']).toEqual(0);
         });
     });
 

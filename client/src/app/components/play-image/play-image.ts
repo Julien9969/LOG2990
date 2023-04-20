@@ -16,8 +16,8 @@ export class PlayImage {
     imageCanvas1!: ElementRef<HTMLCanvasElement>;
     imageCanvas2!: ElementRef<HTMLCanvasElement>;
     errorMsgPosition: Coordinate;
-    errorCounter: number = 0;
     errorGuess: boolean = false;
+    protected errorCounter: number = 0;
 
     // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
     constructor(
