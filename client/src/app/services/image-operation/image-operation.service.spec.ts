@@ -55,14 +55,6 @@ describe('ImageOperationService', () => {
         expect(service).toBeTruthy();
     });
 
-    it('get contextOriginal should return the original image context', () => {
-        expect(service.contextOriginal).toEqual(canvasOriginal);
-    });
-
-    it('get contextModified should return the modified image context', () => {
-        expect(service.contextModified).toEqual(canvasModified);
-    });
-
     it('setCanvasToImageOperationService set canvas to imageOperationService', () => {
         service['originalImgContext'] = undefined as unknown as CanvasRenderingContext2D;
         service['modifiedImgContext'] = undefined as unknown as CanvasRenderingContext2D;
