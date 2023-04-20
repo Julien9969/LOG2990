@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { GameService } from '@app/services/game/game.service';
+import { Game } from '@common/game';
+import { Player } from '@common/player';
 import mongoose from 'mongoose';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { LimitedTimeSession } from './time-limited-session';
-import { Game } from '@common/game';
-import { Player } from '@common/player';
 
 jest.mock('mongoose');
 
@@ -97,7 +97,7 @@ describe('Session tests', () => {
         });
 
         differenceValidationService.getDifferencePixelList.returns([{ x: 0, y: 0 }]);
-        const guessResult = await soloSession.tryGuess({ x: 0, y: 0 }, 'firstSocketId');
+        const guessResult = await soloSession.tryGuess({ x: 0, y: 0 });
         expect(guessResult).toBeTruthy();
         expect(guessResult).toEqual({
             isCorrect: true,
@@ -114,12 +114,12 @@ describe('Session tests', () => {
         });
 
         differenceValidationService.getDifferencePixelList.returns([{ x: 0, y: 0 }]);
-        const guessResult = await soloSession.tryGuess({ x: 0, y: 0 }, 'firstSocketId');
+        const guessResult = await soloSession.tryGuess({ x: 0, y: 0 });
         expect(guessResult).toBeTruthy();
         expect(guessResult).toEqual({
             isCorrect: false,
             differencesByPlayer: [],
-            differencePixelList: [],
+            differencePixelList: [{ x: 0, y: 0 }],
             winnerName: '',
         });
     });
@@ -131,7 +131,7 @@ describe('Session tests', () => {
         });
 
         differenceValidationService.getDifferencePixelList.returns([{ x: 0, y: 0 }]);
-        await expect(soloSession.tryGuess({ x: 0, y: 0 }, 'firstSocketId')).rejects.toThrow();
+        await expect(soloSession.tryGuess({ x: 0, y: 0 })).rejects.toThrow();
     });
 
     it('build guess result should return a GuessResult with isCorrect true if the guess is correct', () => {

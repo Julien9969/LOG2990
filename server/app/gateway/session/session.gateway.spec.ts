@@ -429,10 +429,10 @@ describe('SessionGateway', () => {
         });
 
         it('sends system message to gameRoom, disconnects client and writes logs', () => {
-            gateway.playerLeft(stubSocket, 0);
-            jest.spyOn(SessionService.prototype, 'findBySessionId').mockImplementation(() => {
+            findBySessionIdSpy.mockImplementation(() => {
                 return { isTimeLimited: false } as any;
             });
+            gateway.playerLeft(stubSocket, 0);
             expect(sendSystemMessageSpy).toBeCalled();
             expect(disconnectSpy).toBeCalled();
             expect(logSpy).toBeCalled();

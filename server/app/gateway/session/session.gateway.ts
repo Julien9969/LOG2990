@@ -209,7 +209,7 @@ export class SessionGateway {
 
         try {
             session = this.getSession(sessionId) as LimitedTimeSession;
-            result = await session.tryGuess(coordinates, client.id);
+            result = await session.tryGuess(coordinates);
             if (result.isCorrect) {
                 this.notifyPlayersOfDiffFound(client, result);
                 this.sendSystemMessage(client, 'guess_good');
@@ -258,19 +258,17 @@ export class SessionGateway {
         if (session && !session.isTimeLimited) {
             try {
                 this.sessionService.delete(sessionId, client.id);
+                client.rooms.forEach((roomId) => {
+                    if (roomId.startsWith('gameRoom')) {
+                        this.sendSystemMessage(client, 'userDisconnected');
+                        this.logger.log(`Client ${client.id} emited that he left the game to ${roomId}`);
+                        this.server.to(roomId).except(client.id).emit(SessionEvents.OpponentLeftGame);
+                        this.server.socketsLeave(roomId);
+                    }
+                });
             } catch (error) {
                 this.logger.error(error);
             }
-        }
-        if (!session.isTimeLimited) {
-            client.rooms.forEach((roomId) => {
-                if (roomId.startsWith('gameRoom')) {
-                    this.sendSystemMessage(client, 'userDisconnected');
-                    this.logger.log(`Client ${client.id} emited that he left the game to ${roomId}`);
-                    this.server.to(roomId).except(client.id).emit(SessionEvents.OpponentLeftGame);
-                    this.server.socketsLeave(roomId);
-                }
-            });
         }
         client.disconnect();
     }

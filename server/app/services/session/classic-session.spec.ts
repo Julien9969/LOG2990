@@ -81,15 +81,8 @@ describe('Session tests', () => {
     });
 
     describe('tryGuess', () => {
-        const gameId = 'gameId';
         const firstSocketId = 'firstSocketId';
         const secondSocketId = 'secondSocketId';
-
-        // const sessionSolo = new ClassicSession(gameServiceStub as any, gameId, [{ name: 'name', socketId: firstSocketId, differencesFound: [23] }]);
-        // const sessionMulti = new ClassicSession(gameServiceStub as any, gameId, [
-        //     { name: 'name', socketId: firstSocketId, differencesFound: [] },
-        //     { name: 'name', socketId: secondSocketId, differencesFound: [] },
-        // ]);
 
         it('SoloPlayer Game: tryguess should throw error if validateGuess returns false', () => {
             jest.spyOn(soloClassicSession.differenceValidationService, 'validateGuess').mockImplementation(() => {
@@ -151,10 +144,15 @@ describe('Session tests', () => {
             soloClassicSession.players[0].differencesFound = [5];
 
             const result = soloClassicSession.tryGuess({ x: 11, y: 10 }, firstSocketId);
-            expect(result).toEqual({ isCorrect: false, differencesByPlayer: [[firstSocketId, 1]], differencePixelList: [], winnerName: '' });
+            expect(result).toEqual({
+                isCorrect: false,
+                differencesByPlayer: [[firstSocketId, 1]],
+                differencePixelList: [{ x: 11, y: 10 }],
+                winnerName: '',
+            });
         });
 
-        it('SoloPlayer Game: tryguess returns incorrect result when no difference', () => {
+        it('SoloPlayer Game: tryguess returns incorrect result when no difference, and returns pressed coordinate', () => {
             jest.spyOn(soloClassicSession.differenceValidationService, 'validateGuess').mockImplementation(() => {
                 return true;
             });
@@ -172,7 +170,12 @@ describe('Session tests', () => {
             soloClassicSession.players[0].differencesFound = [5];
 
             const result = soloClassicSession.tryGuess({ x: 11, y: 10 }, firstSocketId);
-            expect(result).toEqual({ isCorrect: false, differencesByPlayer: [[firstSocketId, 1]], differencePixelList: [], winnerName: '' });
+            expect(result).toEqual({
+                isCorrect: false,
+                differencesByPlayer: [[firstSocketId, 1]],
+                differencePixelList: [{ x: 11, y: 10 }],
+                winnerName: '',
+            });
         });
 
         it('SoloPlayer Game: tryguess should throw error if validateGuess returns false', () => {
