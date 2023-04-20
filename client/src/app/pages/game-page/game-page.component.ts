@@ -172,6 +172,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     private initHistory() {
         this.historyService.initHistory('Classique', this.isSolo);
         this.historyService.setPlayers(this.playerName, this.opponentName);
-        this.historyService.gameId = this.gameID;
+        this.historyService.gameId = this.sessionId.toString();
     }
 }

@@ -23,13 +23,9 @@ export class HistoryController {
             throw new HttpException('Données manquantes.', HttpStatus.BAD_REQUEST);
         }
         try {
-            return await this.history.findOneAndUpdate(
-                { gameId: newHistoryEntry.gameId, startDateTime: newHistoryEntry.startDateTime, gameMode: newHistoryEntry.gameMode },
-                newHistoryEntry,
-                {
-                    upsert: true,
-                },
-            );
+            return await this.history.findOneAndUpdate({ gameId: newHistoryEntry.gameId, gameMode: newHistoryEntry.gameMode }, newHistoryEntry, {
+                upsert: true,
+            });
         } catch (error) {
             throw new HttpException("Erreur lors de l'ajout de l'historique.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
