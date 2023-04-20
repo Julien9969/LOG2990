@@ -1,19 +1,19 @@
 <main *ngIf="isLoaded" ngClass="game-theme">
     <div id="page-container">
+        <div id="top-bar">
+            <mat-toolbar color="primary">
+                <span id="timer">{{ this.time }}</span>
+            </mat-toolbar>
+        </div>
         <div id="game-container">
-            <app-play-image-classic
-                (diffFoundUpdate)="handleDiffFoundUpdate($event)"
-                [sessionID]="sessionId"
-                [imageMainId]="gameInfos.imageMain"
-                [imageAltId]="gameInfos.imageAlt"
-            >
+            <app-play-image-classic [sessionID]="sessionId" [imageMainId]="gameInfos.imageMain" [imageAltId]="gameInfos.imageAlt">
             </app-play-image-classic>
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="true"></app-sidebar>
         </div>
         <div id="replay-controller">
             <mat-toolbar color="primary" id="replay-toolbar">
-                <button mat-button (click)="resetAndReplay()">REJOUONS</button>
-                <button mat-button (click)="pause()" [ngClass]="{ highlight: loggingService.speedMultiplier === 0 }">PAUSE</button>
+                <button mat-button (click)="resetAndReplay()">Rejouer</button>
+                <button mat-button (click)="pause()" [ngClass]="{ highlight: loggingService.speedMultiplier === 0 }">pause</button>
                 <button mat-button (click)="setReplaySpeed(1)" [ngClass]="{ highlight: speed === 1 }">1x</button>
                 <button mat-button (click)="setReplaySpeed(2)" [ngClass]="{ highlight: speed === 2 }">2x</button>
                 <button mat-button (click)="setReplaySpeed(4)" [ngClass]="{ highlight: speed === 4 }">4x</button>
@@ -27,10 +27,6 @@
                 </button>
 
                 <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span>
-                <button mat-button (click)="openDialog('clue')" id="clue-button" aria-label="Indice">
-                    <mat-icon>highlight</mat-icon>
-                    Indices : 10 (-5s)
-                </button>
             </mat-toolbar>
         </div>
     </div>

@@ -8,7 +8,7 @@ import { InGameService } from '@app/services/in-game/in-game.service';
 import { MouseService } from '@app/services/mouse/mouse.service';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
-
+import { LoggingCodes } from '@common/loggingCodes.event';
 @Component({
     selector: 'app-play-image-classic',
     templateUrl: './play-image-classic.component.html',
@@ -59,7 +59,7 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
     }
 
     async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
-        this.loggingService.logAction('HINTLOGGER', { nClueLeft: nbCLuesLeft, diffList: differencesInOneList });
+        this.loggingService.logAction(LoggingCodes.clueLog, { nClueLeft: nbCLuesLeft, diffList: differencesInOneList });
         await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);
     }
 

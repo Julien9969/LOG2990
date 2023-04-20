@@ -16,6 +16,7 @@ import { RATIO_POINTER_IMAGE as POINTER_TO_CANVAS_RATIO, POINTER_X_OFFSET } from
 import { GameActionLoggingService } from '@app/services/gameActionLogging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
+import { LoggingCodes } from '@common/loggingCodes.event';
 
 @Injectable({
     providedIn: 'root',
@@ -174,7 +175,7 @@ export class ImageOperationService {
         }
         if (this.cheatInterval) {
             this.disableCheat();
-            this.replayService.logAction('CHEATLOGGER', { isStarting: false, pixelList: [], diffList: [] });
+            this.replayService.logAction(LoggingCodes.cheatLog, { isStarting: false, pixelList: [], diffList: [] });
         } else {
             this.allDifferencesList = await this.inGameService.cheatGetAllDifferences(sessionId);
 
@@ -183,7 +184,7 @@ export class ImageOperationService {
                 differencesInOneList.push(...differences);
             });
 
-            this.replayService.logAction('CHEATLOGGER', {
+            this.replayService.logAction(LoggingCodes.cheatLog, {
                 isStarting: true,
                 pixelList: differencesInOneList,
                 diffList: [...this.allDifferencesList],
