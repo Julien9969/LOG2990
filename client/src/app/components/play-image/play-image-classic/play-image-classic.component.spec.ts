@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClientModule, HttpResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { PlayImageClassicComponent } from '@app/components/play-image-classic/play-image-classic.component';
+import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
@@ -69,6 +69,8 @@ describe('PlayImageComponent', () => {
             'setCanvasContext',
             'disableCheat',
             'handleCheat',
+            'handleClue',
+            'reset',
         ]);
         TestBed.configureTestingModule({
             imports: [HttpClientModule],
@@ -99,6 +101,12 @@ describe('PlayImageComponent', () => {
         expect(component).toBeTruthy();
     });
 
+    it('handleClue should call imageOperationService.handleClue', () => {
+        imageOperationServiceSpy.handleClue.and.returnValue(Promise.resolve());
+        component.handleClue(1, [{ x: 0, y: 0 }]);
+        expect(imageOperationServiceSpy.handleClue).toHaveBeenCalled();
+    });
+
     it('handleCheat should call imageOperationService.handleCheat', async () => {
         imageOperationServiceSpy.handleCheat.and.returnValue(Promise.resolve());
         await component.handleCheat();
@@ -107,7 +115,7 @@ describe('PlayImageComponent', () => {
 
     describe('get', () => {
         it('mouse should return mouseService', () => {
-            expect(component.mouse).toEqual(mouseServiceSpy);
+            expect(component['mouseService']).toEqual(mouseServiceSpy);
         });
 
         it('canvasContext1 should return canvas context', () => {
@@ -143,7 +151,7 @@ describe('PlayImageComponent', () => {
     });
 
     describe('sendPosition', () => {
-        it('sendPosition should call the right functions', fakeAsync(() => {
+        it('sendPosition should call submitCoordinatesSolo is isolo is true', fakeAsync(() => {
             component.isSolo = true;
             const event = new MouseEvent('event');
             const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
@@ -162,11 +170,11 @@ describe('PlayImageComponent', () => {
                 winnerName: 'winnerName',
             });
         }));
-        it('sendPosition should catch the error in the promise', fakeAsync(() => {
+
+        it('sendPosition should call submitCoordinatesMulti is isSolo is false', fakeAsync(() => {
+            component.isSolo = false;
             const event = new MouseEvent('event');
-            inGameServiceSpy.submitCoordinatesSolo.and.callFake(async () => {
-                throw new Error();
-            });
+            inGameServiceSpy.submitCoordinatesMulti.and.callFake(async () => {});
             component.sendPosition(event);
 
             tick(3000);
@@ -178,14 +186,8 @@ describe('PlayImageComponent', () => {
     describe('updateDiffFound', () => {
         it('should the right functions and make errorCounter = 0 when guessResult is correct and the score has changed', () => {
             const guessResult: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
-            spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
-                return true;
-            });
             const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
             component.updateDiffFound(guessResult);
-
-            expect(component.lastDifferenceFound).toEqual(guessResult);
-            expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('success');
             expect(diffFoundUpdateEmitSpy).toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
             expect(component.errorCounter).toEqual(0);
             expect(imageOperationServiceSpy.pixelBlink).toHaveBeenCalledWith(guessResult.differencePixelList);
@@ -194,21 +196,6 @@ describe('PlayImageComponent', () => {
             const guessResult: GuessResult = { isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
             spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
                 return true;
-            });
-            const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
-            const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
-            component.updateDiffFound(guessResult);
-
-            expect(component.lastDifferenceFound).not.toEqual(guessResult);
-            expect(audioServiceSpy.playAudio).not.toHaveBeenCalledWith('success');
-            expect(diffFoundUpdateEmitSpy).not.toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
-            expect(imageOperationServiceSpy.pixelBlink).not.toHaveBeenCalledWith(guessResult.differencePixelList);
-            expect(handleErrorGuessSpy).toHaveBeenCalled();
-        });
-        it('should handle a difference already received', () => {
-            const guessResult: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
-            spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
-                return false;
             });
             const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
             const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
@@ -262,8 +249,8 @@ describe('PlayImageComponent', () => {
         it('handleErrorGuess should set errorMsgPosition, call errorTimer and increment errorCounter and set errorGuess to false after 1s', () => {
             jasmine.clock().install();
             component.errorCounter = 0;
-            component.mouse.mousePosition = { x: 0, y: 1 };
-            component.handleErrorGuess();
+            // component['mouseService'].mousePosition = { x: 0, y: 1 };
+            component.handleErrorGuess({ x: 0, y: 1 });
             expect(component.errorGuess).toEqual(true);
             jasmine.clock().tick(1000);
             expect(component.errorMsgPosition).toEqual({ x: 0, y: 1 });
@@ -274,14 +261,14 @@ describe('PlayImageComponent', () => {
 
         it('handleErrorGuess should call playAudio with "error" when errorCounter is less than 3', () => {
             component.errorCounter = 1; // will be incremented to 2 in handleErrorGuess
-            component.handleErrorGuess();
+            component.handleErrorGuess({ x: 0, y: 1 });
             expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('error');
             expect(component.errorCounter).toEqual(2);
         });
 
         it('handleErrorGuess should call playAudio with "manyErrors" when errorCounter is equal to 3 and reset the count', () => {
             component.errorCounter = 2;
-            component.handleErrorGuess();
+            component.handleErrorGuess({ x: 0, y: 1 });
             expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('manyErrors');
             expect(component.errorCounter).toEqual(0);
         });

@@ -21,6 +21,7 @@ export class PopupDialogComponent implements OnInit {
     deleteMessage = '';
     buttonCallback: () => Promise<void>;
 
+    // eslint-disable-next-line max-params -- les parametres sont necessaires
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: [string, string, { gameId: string; playerName: string }],
         private imageOperationService: ImageOperationService,
@@ -42,9 +43,5 @@ export class PopupDialogComponent implements OnInit {
         this.router.navigate(['/replay'], { state: this.data[2] });
 
         // this.socket.socketService.loggingService.replayAllAction();
-    }
-    getClueNumber(): number {
-        const noMagicNumber = 10;
-        return noMagicNumber;
     }
 }

@@ -79,6 +79,7 @@ export class MatchMakingService {
     startSoloLimitedTimeSession(callback: (sessionId: number) => void) {
         this.socketService.sendAndCallBack(SessionEvents.StartLimitedTimeSession, true, callback);
     }
+
     startMultiLimitedTimeSession() {
         this.socketService.send(SessionEvents.StartLimitedTimeSession, false);
     }
