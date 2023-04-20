@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
-
+import { SessionEvents } from '@common/session.gateway.events';
 @Injectable({
     providedIn: 'root',
 })
@@ -48,17 +48,17 @@ export class GameActionLoggingService {
     // TODO:use enums for messages
     async replayAction(loggedAction: [number, string, any]) {
         switch (loggedAction[1]) {
-            case 'timerUpdate':
+            case SessionEvents.TimerUpdate:
                 this.timerUpdateFunction(loggedAction[2]);
                 break;
-            case 'submitCoordinates':
-            case 'differenceFound':
+            case SessionEvents.SubmitCoordinatesSoloGame:
+            case SessionEvents.DifferenceFound:
                 this.diffFoundFunction(loggedAction[2]);
                 break;
             case 'CHEATLOGGER':
                 await this.cheatFunction(loggedAction[2]);
                 break;
-            case 'systemMessageFromServer':
+            case ChatEvents.SystemMessageFromServer:
                 await this.systemErrorFunction(loggedAction[2]);
                 break;
             case ChatEvents.MessageFromServer:
