@@ -1,14 +1,14 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Coordinate } from '@common/coordinate';
-import { ImageComparisonResult } from '@common/image-comparison-result';
 import { communicationMessage } from '@common/communicationMessage';
+import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
 import { GameConstants } from '@common/game-constants';
-import { firstValueFrom, Observable, of } from 'rxjs';
+import { GameHistory } from '@common/game-history';
+import { ImageComparisonResult } from '@common/image-comparison-result';
+import { Observable, firstValueFrom, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { GameHistory } from '@common/game-history';
 
 @Injectable({
     providedIn: 'root',
@@ -119,7 +119,6 @@ export class CommunicationService {
      * @returns l'url de l'image
      */
     getImageURL(id: number) {
-        // console.log('id of the image:', id);
         return `${this.baseUrl}/images/${id}`;
     }
 

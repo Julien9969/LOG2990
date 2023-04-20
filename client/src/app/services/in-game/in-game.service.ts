@@ -116,7 +116,6 @@ export class InGameService {
     listenOpponentLeaves(callback: () => void) {
         this.socketService.on(SessionEvents.OpponentLeftGame, () => {
             callback();
-            this.socketService.disconnect();
         });
     }
 

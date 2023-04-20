@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { GameActionLoggingService } from '@app/services/gameActionLogging.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
 @Injectable({

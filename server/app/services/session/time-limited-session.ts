@@ -1,3 +1,4 @@
+import { ONE_PLAYER } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { GameService } from '@app/services/game/game.service';
 import { Coordinate } from '@common/coordinate';
@@ -9,7 +10,7 @@ import { Session } from './session';
 export class LimitedTimeSession extends Session {
     gameService: GameService;
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
-    playedGames: Game[] = [];
+    playedGames: string[] = [];
     nDifferencesFound: number = 0;
 
     constructor(gameService: GameService, players: Player[]) {
@@ -20,7 +21,8 @@ export class LimitedTimeSession extends Session {
         this.time = gameConsts.time;
         this.penalty = gameConsts.penalty;
         // if (!mongoose.isValidObjectId(gameID)) throw new Error('Invalid gameID for session create');
-        this.decideNewGame();
+        // this.decideNewGame();
+        this.isTimeLimited = true;
     }
 
     /**
@@ -42,12 +44,11 @@ export class LimitedTimeSession extends Session {
      * @param guess La coordonnée de l'essai
      * @returns Le résultat de l'essai
      */
-    // TO DO:
-    // eslint-disable-next-line no-unused-vars
-    async tryGuess(guess: Coordinate, _socketId: string): Promise<GuessResult> {
+    // TODO:
+    async tryGuess(guess: Coordinate): Promise<GuessResult> {
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
         let isCorrect = false;
-        let diffPixelList: Coordinate[] = [];
+        let diffPixelList: Coordinate[] = [guess];
         const diffNum: number = this.differenceValidationService.checkDifference(guess.x, guess.y);
         isCorrect = diffNum !== undefined;
         if (isCorrect) {
@@ -88,12 +89,12 @@ export class LimitedTimeSession extends Session {
         while (this.hasGameBeenPlayed(newGame)) {
             newGame = await this.gameService.getRandomGame();
         }
-        this.playedGames.push(newGame);
+        this.playedGames.push(newGame.id);
         this.gameID = newGame.id;
         try {
             this.differenceValidationService.loadDifferences(this.gameID.toString());
         } catch (e: unknown) {
-            return this.decideNewGame();
+            return await this.decideNewGame();
         }
         return newGame;
     }
@@ -101,17 +102,29 @@ export class LimitedTimeSession extends Session {
     hasGameBeenPlayed(game: Game): boolean {
         return (
             this.playedGames.find((value) => {
-                return game.id === value.id;
+                return game.id === value;
             }) !== undefined
         );
     }
 
     async noMoreGames(): Promise<boolean> {
-        return this.playedGames.length === (await this.gameService.getNumberOfGames());
+        const allGames: Game[] = await this.gameService.findAll();
+        const unPlayedGames: Game[] = allGames.filter((game: Game) => {
+            return !this.playedGames.includes(game.id);
+        });
+        if (unPlayedGames.length === 0) return true;
+        return false;
     }
 
     timerFinished(): boolean {
         return this.time <= 0;
+    }
+
+    deletePlayer(socketId: string) {
+        let playerToRemove = -1;
+        if (socketId === this.players[0].socketId) playerToRemove = 0;
+        else playerToRemove = 1;
+        this.players.splice(playerToRemove, ONE_PLAYER);
     }
 
     /**
@@ -122,8 +135,7 @@ export class LimitedTimeSession extends Session {
      * @returns boolean qui indique si la demande d'indice est approuvée
      */
     handleClueRequest(): boolean {
-        this.nbCluesRequested++;
-        const clueIsAllowed = this.nbCluesRequested <= 3;
+        const clueIsAllowed = ++this.nbCluesRequested <= 3;
         if (clueIsAllowed) {
             this.time -= 5;
         }
