@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HistoryPopupComponent } from '@app/components/history-popup/history-popup.component';
-import { HistoryService } from '@app/services/history.service';
+import { HistoryService } from '@app/services/history/history.service';
 
 @Component({
     selector: 'app-configuration-game-page',

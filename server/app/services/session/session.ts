@@ -2,25 +2,6 @@ import { TIME_CONST } from '@app/services/constants/services.const';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { Player } from '@common/player';
 
-// export interface SessionInterface {
-//     gameID: string;
-//     id: number;
-//     nGuesses: number;
-//     nPenalties: number;
-//     time: number;
-//     timerId: NodeJS.Timeout;
-//     differenceValidationService: DifferenceValidationService;
-//     players: Player[];
-
-//     nbCluesRequested: number = 0;
-
-//     stopTimer();
-//     // tryGuess(guess: Coordinate, socketId: string): GuessResult;
-//     buildGuessResult(isCorrect: boolean, differencePixelList: Coordinate[]): GuessResult;
-//     get formatedTime(): string;
-//     get isSolo(): boolean;
-// }
-
 export class Session {
     gameID: string;
     id: number;
@@ -31,6 +12,7 @@ export class Session {
     differenceValidationService: DifferenceValidationService = new DifferenceValidationService();
     players: Player[];
     nbCluesRequested: number = 0;
+    isTimeLimited: boolean;
     penalty: number;
 
     /**

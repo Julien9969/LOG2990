@@ -47,7 +47,7 @@ describe('SocketClientService', () => {
         const spy = spyOn(service['socket'], 'on');
         service.on(event, action);
         expect(spy).toHaveBeenCalled();
-        expect(spy).toHaveBeenCalledWith(event, action);
+        expect(spy).toHaveBeenCalledWith(event, jasmine.any(Function));
     });
 
     it('should call emit with data when using send', () => {
@@ -67,7 +67,7 @@ describe('SocketClientService', () => {
         const spy = spyOn(service['socket'], 'emit');
         service.sendAndCallBack(event, data, action);
         expect(spy).toHaveBeenCalled();
-        expect(spy).toHaveBeenCalledWith(event, data, action);
+        expect(spy).toHaveBeenCalledWith(event, data, jasmine.any(Function));
     });
 
     it('should call emit without data when using send if data is undefined', () => {

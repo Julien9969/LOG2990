@@ -22,7 +22,7 @@
             mat-button
             matDialogClose
             [disabled]="!this.nameFormControl.valid"
-            (click)="navigateToGame()"
+            (click)="validateAndContinue()"
             aria-label="Jouer"
         >
             Jouer
