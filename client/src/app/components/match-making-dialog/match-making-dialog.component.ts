@@ -1,9 +1,9 @@
-import { AfterViewInit, Component, HostListener, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { INPUT_VALIDATION } from '@app/constants/utils-constants';
-import { MatchMakingService } from '@app/services/match-making.service';
+import { DELAY_FOCUS, INPUT_VALIDATION } from '@app/constants/utils-constants';
+import { MatchMakingService } from '@app/services/match-making/match-making.service';
 import { GameSessionType } from '@common/game-session-type';
 
 /**
@@ -15,6 +15,7 @@ import { GameSessionType } from '@common/game-session-type';
     styleUrls: ['./match-making-dialog.component.scss'],
 })
 export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
+    @ViewChild('box') box: ElementRef<HTMLInputElement>;
     playerName: string;
     opponentName: string;
     gameInfo: GameSessionType;
@@ -26,7 +27,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         Validators.minLength(INPUT_VALIDATION.min),
         Validators.pattern('[a-zA-Z0-9]*'),
     ]);
-    private readonly routerLink = 'solo-game';
+    private routerLink: string;
 
     // eslint-disable-next-line max-params -- paramêtres sont nécessaires
     constructor(
@@ -37,6 +38,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     ) {
         this.dialogInfos = { template: 'nameForm', message: '' };
         this.gameInfo = data;
+        this.routerLink = this.gameInfo.id === 'limited-time' ? 'limited-time-game' : 'solo-game';
     }
 
     get window() {
@@ -46,13 +48,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     @HostListener('window:keydown.enter', ['$event'])
     handleKeyDown(event: KeyboardEvent) {
         event.preventDefault();
-        if (this.nameFormControl.valid) {
-            if (this.gameInfo.isSolo) {
-                this.navigateToSoloGame();
-            } else {
-                this.joinGame();
-            }
-        }
+        this.navigateToGame();
     }
 
     ngOnInit(): void {
@@ -63,6 +59,9 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     ngAfterViewInit(): void {
         this.commonMatchMakingFeatures();
+        setTimeout(() => {
+            this.box.nativeElement.focus();
+        }, DELAY_FOCUS);
     }
 
     async joinGame(): Promise<void> {
@@ -87,7 +86,8 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
 
     async acceptOpponent(): Promise<void> {
         if (await this.matchMaking.acceptOpponent(this.playerName)) {
-            this.matchMaking.startMultiSession(this.gameInfo.id);
+            if (this.gameInfo.id === 'limited-time') this.matchMaking.startMultiLimitedTimeSession();
+            else this.matchMaking.startMultiSession(this.gameInfo.id);
         } else {
             this.dialogInfos.template = 'waitingRoom';
             this.dialogInfos.message = "l'adversaire précendent a quitté la recherche";
@@ -104,6 +104,14 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         this.matchMaking.leaveWaiting(this.gameInfo.id);
     }
 
+    navigateToGame() {
+        if (this.nameFormControl.valid) {
+            if (this.gameInfo.id === 'limited-time') this.navigateToSoloLimitedTimeGame();
+            else if (this.gameInfo.isSolo) this.navigateToSoloGame();
+            else this.joinGame();
+        }
+    }
+
     navigateToMultiGame(sessionID: number): void {
         this.router.navigateByUrl(this.routerLink, {
             state: { isSolo: false, gameID: this.gameInfo.id, playerName: this.playerName, opponentName: this.opponentName, sessionId: sessionID },
@@ -118,12 +126,26 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         });
     }
 
+    navigateToSoloLimitedTimeGame(): void {
+        this.matchMaking.startSoloLimitedTimeSession((newSessionId: number) => {
+            this.router.navigateByUrl(this.routerLink, {
+                state: { isSolo: true, gameID: this.gameInfo.id, playerName: this.playerName, sessionId: newSessionId },
+            });
+        });
+    }
+    startMultiSession(gameId: string) {
+        this.matchMaking.startMultiSession(gameId);
+    }
+
     commonMatchMakingFeatures(): void {
         this.matchMaking.sessionIdReceived((sessionId: number) => {
             this.navigateToMultiGame(sessionId);
         });
 
         this.matchMaking.opponentJoined((opponentName: string) => {
+            if (this.gameInfo.id === 'limited-time') {
+                this.acceptOpponent();
+            }
             this.opponentName = opponentName;
             this.dialogInfos.template = 'acceptPairing';
         });

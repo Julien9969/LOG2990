@@ -19,6 +19,8 @@ export const TIME_CONST = {
     minute: 60,
 };
 
+export const ALLOWED_NB_CLUES = 3;
+
 /**
  * Constantes du système de détéction de différences
  */
@@ -48,12 +50,9 @@ export const IMAGE_FORMAT = 'bmp';
 /**
  * Constantes de gestion de jeu
  */
-export const GAME_DATA_FILE_PATH = 'assets/gamesData/gamesData.json';
 export const GAME_ID_CAP = 10000;
 
-export const DEFAULT_GAME_TIME = 30;
-export const DEFAULT_REWARD_TIME = 5;
-export const DEFAULT_PENALTY_TIME = 5;
+export const GAME_CONSTS_PATH = 'assets/game-data/game-consts.json';
 
 export const DEFAULT_GAME_LEADERBOARD: [string, number][] = [
     ['Bowser', 150],
@@ -65,3 +64,12 @@ export const DEFAULT_GAME_LEADERBOARD: [string, number][] = [
  * Constante de gestion de Session;
  */
 export const SESSION_ID_CAP = 10000;
+
+/**
+ * Constantes de ClueService
+ */
+
+export const DIVIDER_FIRST_CLUE = 2;
+export const DIVIDER_SECOND_CLUE = 4;
+
+export const CLUE_BORDER_WIDTH = 5;

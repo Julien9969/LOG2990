@@ -1,0 +1,21 @@
+<div *ngIf='templateName === "gameSelection"'>
+    <div class="flex-column">
+        <h1 id="title" mat-dialog-title>Mode temps limité</h1>
+        <h2>Choisissez votre mode de jeu</h2>
+    </div>
+            <div class="button-row">
+                <button mat-button (click)="openMatchMaking(true)" aria-label="Solo">Solo</button>
+                <button mat-button (click)="openMatchMaking(false)" aria-label="Multi">Multijoueur</button>
+            </div>
+    <div class="flex-column">
+        <button mat-button matDialogClose aria-label="Retour">Retour au menu</button>
+    </div>
+</div>
+
+<div *ngIf='templateName === "noGame"'>
+    <div class="flex-column">
+        <h1 id="title" mat-dialog-title>Aucun jeu n'a été trouvé dans la base de données</h1>
+        <h2 id="message" mat-dialog-title>Vous ne pouvez pas jouer</h2>
+        <button class="button-row" mat-button matDialogClose aria-label="Retour">Retour au menu</button>
+    </div>
+</div>

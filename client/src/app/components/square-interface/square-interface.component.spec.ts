@@ -10,8 +10,8 @@ import { ErrorDuringLoadingComponent } from '@app/components/error-during-loadin
 import { MatchMakingDialogComponent } from '@app/components/match-making-dialog/match-making-dialog.component';
 import { SquareInterfaceComponent } from '@app/components/square-interface/square-interface.component';
 import { DELAY_BEFORE_BUTTONS_UPDATE, GAMES_PER_PAGE } from '@app/constants/utils-constants';
-import { CommunicationService } from '@app/services/communication.service';
-import { GameService } from '@app/services/game.service';
+import { CommunicationService } from '@app/services/communication/communication.service';
+import { GameService } from '@app/services/game/game.service';
 import { Game } from '@common/game';
 
 describe('SquareInterfaceComponent', () => {
@@ -45,9 +45,6 @@ describe('SquareInterfaceComponent', () => {
             isValid: false,
             isHard: false,
             differenceCount: 0,
-            time: 0,
-            penalty: 0,
-            reward: 0,
         };
 
         fixture = TestBed.createComponent(SquareInterfaceComponent);
@@ -103,7 +100,6 @@ describe('SquareInterfaceComponent', () => {
     });
 
     it('openFormDialog() should call the right function with the right parameters', () => {
-        spyOn(component, 'openFormDialog').and.callThrough();
 
         component.openFormDialog(testGame, true);
         expect(component['dialog'].closeAll).toHaveBeenCalled();
@@ -138,7 +134,7 @@ describe('SquareInterfaceComponent', () => {
     it('deleteGame calls game service delete and reloads page', async () => {
         const deleteSpy = spyOn(component['gameService'], 'deleteGame').and.callFake(async () => {});
         // eslint-disable-next-line -- Le any sert à mock une fonction privée
-        const reloadSpy = spyOn(component, 'reloadWindow' as any).and.callFake(() => {});
+        const reloadSpy = spyOn(component['gameService'], 'reloadWindow' as any).and.callFake(() => {});
         await component.deleteGame('');
 
         expect(deleteSpy).toHaveBeenCalled();

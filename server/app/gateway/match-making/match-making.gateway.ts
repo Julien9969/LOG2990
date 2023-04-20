@@ -1,9 +1,13 @@
-import { MatchMakingEvents } from '@common/match-making.gateway.events';
+import { GameDocument } from '@app/Schemas/game/game.schema';
 import { Rooms } from '@app/gateway/match-making/rooms';
+import { ChatEvents } from '@common/chat.gateway.events';
+import { MatchMakingEvents } from '@common/match-making.gateway.events';
 import { SessionEvents } from '@common/session.gateway.events';
 import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common/decorators';
+import { InjectModel } from '@nestjs/mongoose';
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Model } from 'mongoose';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({ cors: true })
@@ -15,7 +19,7 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
     // Salle dans lesquelles on attend que les clients s'accepetent
     private acceptingRooms: Rooms = new Rooms();
 
-    constructor(private readonly logger: Logger) {}
+    constructor(private readonly logger: Logger, @InjectModel('Game') private gameModel: Model<GameDocument>) {}
 
     get serverRooms(): Map<string, Set<string>> {
         return this.server.sockets.adapter.rooms;
@@ -110,7 +114,6 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
 
             this.acceptingRooms.push(gameRooms[0]);
             this.waitingRooms.removeThisRoom(roomId);
-
             this.logger.log(`Client ${client.id} joined room : ${roomId}`);
             this.server.emit(MatchMakingEvents.UpdateRoomView);
         }
@@ -159,6 +162,23 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
         this.mergeRoomsIfPossible(playerInfo.gameId);
     }
 
+    /**
+     * Vérifie si il existe au moins un jeu qui est jouable
+     *
+     * @param _ le client qui ouvre à cliqué sur temps limité
+     * @returns si il existe au moins un jeu qui est jouable
+     */
+    @SubscribeMessage(MatchMakingEvents.AnyGamePlayable)
+    async anyGamePlayable(client: Socket) {
+        this.logger.log(`Client ${client.id} ask if AnyGamePlayable`);
+        try {
+            const game = await this.gameModel.find({}).limit(1);
+            return game.length !== 0;
+        } catch (err) {
+            return false;
+        }
+    }
+
     mergeRoomsIfPossible(gameId: string) {
         const gameRooms = this.waitingRooms.filterRoomsByGameId(gameId);
         if (gameRooms.length > 1) {
@@ -197,6 +217,8 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
         this.serverRooms.forEach((socketIds, roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 if (socketIds.size < 2 && !this.waitingRooms.find(roomId) && !this.acceptingRooms.find(roomId)) {
+                    const message = { playerName: "l'adversaire ", systemCode: 'userDisconnected' };
+                    this.server.to(roomId).emit(ChatEvents.SystemMessageFromServer, message);
                     this.server.to(roomId).emit(SessionEvents.OpponentLeftGame);
                     this.logger.log(`Client ${client.id} left room : ${roomId}`);
                 }
