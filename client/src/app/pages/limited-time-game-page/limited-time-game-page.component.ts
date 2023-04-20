@@ -2,7 +2,7 @@ import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/
 import { MatDialog } from '@angular/material/dialog';
 import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { TIME_CONST } from '@app/constants/utils-constants';
+import { SLICE_LAST_INDEX, TIME_CONST } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Game } from '@common/game';
@@ -62,7 +62,9 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         if (this.sessionId === undefined) {
-            window.location.replace('/home');
+            // Redirection à la page principale
+            const pagePath = window.location.pathname.split('/').slice(0, SLICE_LAST_INDEX);
+            window.location.replace(pagePath.join('/'));
         }
         const gameConsts = await this.gameService.getGameConstants();
         const startTime = gameConsts.time as number;

@@ -72,7 +72,7 @@ export class PlayImageLimitedTimeComponent extends PlayImage implements AfterVie
             this.diffFoundUpdate.emit(guessResult.differencesByPlayer);
             this.errorCounter = 0;
         } else {
-            this.handleErrorGuess();
+            this.handleErrorGuess(guessResult.differencePixelList[0]);
         }
     }
 
@@ -90,8 +90,8 @@ export class PlayImageLimitedTimeComponent extends PlayImage implements AfterVie
         }
     }
 
-    ngAfterViewInit(): void {
-        this.afterViewInit();
+    async ngAfterViewInit(): Promise<void> {
+        await this.afterViewInit();
     }
 
     ngOnDestroy(): void {

@@ -2,51 +2,44 @@ import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/
 import { MatDialog } from '@angular/material/dialog';
 import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { SLICE_LAST_INDEX } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
-import { GameService } from '@app/services/game/game.service';
 import { GameActionLoggingService } from '@app/services/gameActionLogging.service';
-import { HistoryService } from '@app/services/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
 @Component({
-    selector: 'app-game-page',
-    templateUrl: './game-page.component.html',
-    styleUrls: ['./game-page.component.scss'],
+    selector: 'app-replay-page',
+    templateUrl: './replay-page.component.html',
+    styleUrls: ['./replay-page.component.scss'],
 })
-export class GamePageComponent implements OnInit, OnDestroy {
+export class ReplayPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayImageClassicComponent) playImageComponent: PlayImageClassicComponent;
-    // @ViewChild('appPlayImage') playImageComponent: PlayImageClassicComponent;
     userSocketId: string;
-
     playerName: string;
     opponentName: string;
     isLoaded: boolean;
     isSolo: boolean;
 
     sessionId: number;
-    gameID: string;
+    gameId: string;
     gameInfos: Game;
+    speed: number = 1;
+    wasCheatBlinkingBeforePause: boolean;
 
     nDiffFoundMainPlayer: number = 0;
     nDiffFoundOpponent: number = 0;
 
     time: string = '0:00';
-    nbCluesLeft = 3;
-    penalty: number = 0;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
         private readonly dialog: MatDialog,
         private readonly communicationService: CommunicationService,
+        readonly socket: InGameService,
         private readonly socketClient: SocketClientService,
         private loggingService: GameActionLoggingService,
-        private readonly inGameSocket: InGameService,
-        private readonly historyService: HistoryService,
-        private readonly gameService: GameService,
     ) {
         this.isLoaded = false;
         this.isSolo = window.history.state.isSolo;
@@ -54,58 +47,41 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.opponentName = window.history.state.opponentName;
         }
         this.playerName = window.history.state.playerName;
-        this.sessionId = window.history.state.sessionId;
-        this.gameID = window.history.state.gameID;
-        this.loggingService.isRecording = true;
+        this.gameId = window.history.state.gameId;
+        this.replay();
     }
 
     @HostListener('window:beforeunload', ['$event'])
-    unloadHandler(event: BeforeUnloadEvent) {
-        event.preventDefault();
-        this.historyService.playerQuit(this.time, this.isSolo);
-        event.returnValue = false;
-    }
-
-    @HostListener('window:keydown.i')
-    async handleClueRequest() {
-        if (!this.nbCluesLeft || !this.isSolo) return;
-        const clue = await this.inGameSocket.retrieveClue();
-        this.playImageComponent.handleClue(clue.nbCluesLeft, clue.coordinates);
-        this.nbCluesLeft = clue.nbCluesLeft;
+    unloadNotification($event: Event) {
+        // eslint-disable-next-line deprecation/deprecation
+        $event.returnValue = true; // L'équivalent non déprécié ne produit pas le même résultat
     }
 
     async ngOnInit(): Promise<void> {
-        if (this.sessionId === undefined || this.gameID === undefined) {
-            // Redirection à la page principale
-            const pagePath = window.location.pathname.split('/').slice(0, SLICE_LAST_INDEX);
-            window.location.replace(pagePath.join('/'));
+        if (this.gameId === undefined) {
+            window.location.replace('/home');
         }
         this.getGameInfos();
-        this.inGameSocket.retrieveSocketId().then((userSocketId) => {
+        this.socket.retrieveSocketId().then((userSocketId) => {
             this.userSocketId = userSocketId;
         });
-        this.inGameSocket.listenOpponentLeaves(() => {
-            this.historyService.playerQuit(this.time);
+        this.socket.listenOpponentLeaves(() => {
             this.openDialog(SessionEvents.OpponentLeftGame);
         });
-        this.inGameSocket.listenPlayerWon((winnerInfo: WinnerInfo) => {
+        this.socket.listenPlayerWon((winnerInfo: WinnerInfo) => {
             this.endGameDialog(winnerInfo);
         });
-        this.inGameSocket.listenTimerUpdate((time: string) => {
+        this.socket.listenTimerUpdate((time: string) => {
             this.time = time;
         });
         this.loggingService.timerUpdateFunction = (time: string) => {
             this.time = time;
         };
-        
-        this.inGameSocket.listenProvideName(this.playerName);
-
-        this.initHistory();
-        this.penalty = (await this.gameService.getGameConstants()).penalty ?? 0;
+        this.socket.listenProvideName(this.playerName);
     }
 
     getGameInfos(): void {
-        this.communicationService.gameInfoGet(this.gameID).subscribe({
+        this.communicationService.gameInfoGet(this.gameId).subscribe({
             next: (response) => {
                 this.gameInfos = response as Game;
                 this.isLoaded = true;
@@ -124,21 +100,20 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     playerExited() {
-        this.inGameSocket.playerExited(this.sessionId);
+        this.socket.playerExited(this.sessionId);
     }
 
     endGameDialog(winnerInfo: WinnerInfo) {
         let message = '';
         if (winnerInfo.socketId === this.userSocketId) {
             message = this.isSolo ? `Bravo! Vous avez gagné avec un temps de ${this.time}` : `Vous avez gagné, ${winnerInfo.name} est le vainqueur`;
-            this.historyService.playerWon(this.time);
         } else message = `Vous avez perdu, ${winnerInfo.name} remporte la victoire`;
         this.dialog.closeAll();
         this.dialog.open(PopupDialogComponent, {
             closeOnNavigation: true,
             disableClose: true,
             autoFocus: false,
-            data: ['endGame', message, { gameId: this.gameID, playerName: this.playerName }],
+            data: ['endGame', message],
         });
     }
 
@@ -146,6 +121,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.dialog.closeAll();
 
         switch (dialogTypes) {
+            case 'clue':
+                this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
+                break;
             case 'quit':
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
                 break;
@@ -153,20 +131,44 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: ['opponentLeft'] });
         }
     }
-    async replay() {
+    replay() {
+        this.loggingService.clearReplayAll();
+        this.loggingService.replayAllAction();
+    }
+    async resetAndReplay() {
+        this.setReplaySpeed(this.speed);
         await this.playImageComponent.reset();
-        this.inGameSocket.socketService.loggingService.replayAllAction();
+        this.playImageComponent.imageOperationService.clearAllIntervals();
+        this.replay();
+    }
+    setReplaySpeed(newSpeed: number) {
+        if (newSpeed !== 0) {
+            this.speed = newSpeed;
+        }
+        this.loggingService.speedMultiplier = newSpeed;
+        this.handleUnpause();
+    }
+    handleUnpause() {
+        if (this.wasCheatBlinkingBeforePause && this.loggingService.speedMultiplier !== 0) {
+            this.playImageComponent.imageOperationService.cheatBlink();
+            this.wasCheatBlinkingBeforePause = false;
+        }
+    }
+    pause() {
+        if (this.loggingService.speedMultiplier === 0) {
+            this.setReplaySpeed(this.speed);
+            return;
+        }
+        if (this.playImageComponent.imageOperationService.cheatInterval) {
+            this.wasCheatBlinkingBeforePause = true;
+        }
+        this.playImageComponent.imageOperationService.clearAllIntervals();
+        this.speed = this.loggingService.speedMultiplier;
+        this.setReplaySpeed(0);
     }
     ngOnDestroy(): void {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
-        this.inGameSocket.disconnect();
-    }
-
-    private initHistory() {
-        this.historyService.initHistory();
-        this.historyService.setPlayers(this.playerName, this.opponentName);
-        this.historyService.gameId = this.gameID;
-        this.historyService.setGameMode('TODO', this.isSolo);
+        this.socket.disconnect();
     }
 }

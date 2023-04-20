@@ -300,7 +300,7 @@ export class GameService {
 
     private verifyGameId(id: string): void {
         if (!mongoose.isValidObjectId(id)) {
-            throw new Error(`Le ID "${id}" n'est pas un ID valide (format non-valide)`);
+            throw new HttpException(`Le ID "${id}" n'est pas un ID valide (format non-valide)`, HttpStatus.BAD_REQUEST);
         }
     }
 

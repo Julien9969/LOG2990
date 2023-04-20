@@ -36,8 +36,8 @@ export class PlayImage {
         return this.imageCanvas2.nativeElement.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
     }
 
-    handleErrorGuess(): void {
-        this.errorMsgPosition = { x: this.mouseService.mousePosition.x, y: this.mouseService.mousePosition.y };
+    handleErrorGuess(coordinate: Coordinate): void {
+        this.errorMsgPosition = coordinate;
         this.errorGuess = true;
         window.setTimeout(() => {
             this.errorGuess = false;
