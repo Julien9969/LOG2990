@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
+import { INIT_BASE_TIME_INCREMENT, LAST_INDEX } from '@app/services/constantes.service';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
@@ -18,7 +19,7 @@ export class GameActionLoggingService {
     intervalPlayAll: any;
     isRecording: boolean = true; // moreLike Is not replaying
     startTime: number;
-    baseTimeIncrement = 47;
+    baseTimeIncrement = INIT_BASE_TIME_INCREMENT;
     speedMultiplier = 1;
     lastTimeReplayed: number = 0;
     actionLog: [number, string, any][] = [];
@@ -76,14 +77,13 @@ export class GameActionLoggingService {
         let time = 0;
         this.lastTimeReplayed = time;
         this.clearChatFunction();
-        console.log(this.actionLog);
         if (this.actionLog.length === 0) {
             return;
         }
         this.intervalPlayAll = setInterval(() => {
             time += this.baseTimeIncrement * this.speedMultiplier;
             this.replayActionsToTime(time);
-            if (this.lastTimeReplayed > this.actionLog.slice(-1)[0][0]) {
+            if (this.lastTimeReplayed > this.actionLog.slice(LAST_INDEX)[0][0]) {
                 this.isRecording = false;
                 clearInterval(this.intervalPlayAll);
             }

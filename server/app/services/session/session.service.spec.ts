@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function, max-lines, no-restricted-imports, max-len */
+import { Clue } from '@common/clue';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { ClueService } from '../clue/clue.service';
@@ -12,9 +13,11 @@ jest.mock('./classic-session');
 // jest.mock('./limited-time-session');
 
 describe('Session Service tests', () => {
-    let sessionService: SessionService;
     let session: SinonStubbedInstance<Session>;
+    let sessionService: SessionService;
     let differenceValidationService: SinonStubbedInstance<DifferenceValidationService>;
+    let stubClassicSession: SinonStubbedInstance<ClassicSession>;
+    let clueService: SinonStubbedInstance<ClueService>;
 
     // TODO : Analyser si ces commentaires sont nécessaires pour les tests
     // const exampleId = 'asd123123';
@@ -24,8 +27,10 @@ describe('Session Service tests', () => {
     // const exampleDictionnary = { asd123123: 'michel', dqqwee12313: 'victor', dasd123: 'Seb', jksoj78: 'Maxime' };
 
     beforeAll(async () => {
-        session = createStubInstance<Session>(Session);
         differenceValidationService = createStubInstance<DifferenceValidationService>(DifferenceValidationService);
+        clueService = createStubInstance<ClueService>(ClueService);
+        stubClassicSession = createStubInstance<ClassicSession>(ClassicSession);
+        session = createStubInstance<Session>(Session);
         differenceValidationService.differenceCoordLists = [[{ x: 0, y: 0 }]];
 
         const moduleRef: TestingModule = await Test.createTestingModule({
@@ -45,11 +50,7 @@ describe('Session Service tests', () => {
                 },
                 {
                     provide: ClueService,
-                    useValue: {},
-                },
-                {
-                    provide: Session,
-                    useValue: session,
+                    useValue: clueService,
                 },
                 {
                     provide: DifferenceValidationService,
@@ -70,6 +71,36 @@ describe('Session Service tests', () => {
         expect(sessionService).toBeDefined();
     });
 
+    describe('generateClue', () => {
+        const stubClientId = 'fakeId123';
+        let findByClientIdSpy: jest.SpyInstance;
+        let clueServiceGenerateClueSpy: jest.SpyInstance;
+        let stubClue: Clue;
+        beforeEach(() => {
+            stubClassicSession.nbCluesRequested = 0;
+            findByClientIdSpy = jest.spyOn(sessionService, 'findByClientId').mockReturnValue(stubClassicSession);
+            clueServiceGenerateClueSpy = jest.spyOn(clueService, 'generateClue').mockReturnValue({} as Clue);
+            stubClue = {} as Clue;
+        });
+
+        it('should return a clue', async () => {
+            const clue = sessionService.generateClue(stubClientId);
+            expect(clue).toEqual(stubClue);
+        });
+        it('should call findByClientId and clueService.generateClue', async () => {
+            sessionService.generateClue(stubClientId);
+            expect(findByClientIdSpy).toBeCalledTimes(1);
+            expect(clueServiceGenerateClueSpy).toBeCalledTimes(1);
+        });
+    });
+
+    //     it('addName should add a new name to the nameDictionnary if it doesnt exists', async () => {
+    //         const spy = jest.spyOn(sessionService, 'addName');
+    //         sessionService.socketIdToName = {};
+    //         sessionService.addName(exampleId, exampleName);
+    //         expect(spy).toHaveBeenCalled();
+    //         expect(sessionService.socketIdToName[exampleId]).toEqual(exampleName);
+    //     });
     describe('addName', () => {
         const exampleId = 'socketId';
         const exampleName = 'name';

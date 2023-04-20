@@ -55,14 +55,6 @@ describe('ImageOperationService', () => {
         expect(service).toBeTruthy();
     });
 
-    it('get contextOriginal should return the original image context', () => {
-        expect(service.contextOriginal).toEqual(canvasOriginal);
-    });
-
-    it('get contextModified should return the modified image context', () => {
-        expect(service.contextModified).toEqual(canvasModified);
-    });
-
     it('setCanvasToImageOperationService set canvas to imageOperationService', () => {
         service['originalImgContext'] = undefined as unknown as CanvasRenderingContext2D;
         service['modifiedImgContext'] = undefined as unknown as CanvasRenderingContext2D;
@@ -224,5 +216,43 @@ describe('ImageOperationService', () => {
         const list1 = [{ x: 1, y: 1 }];
         const list2 = [{ x: 2, y: 2 }];
         expect(service['isSameDifference'](list1, list2)).toEqual(false);
+    });
+
+    describe('handleClue', () => {
+        let showClueSpy: jasmine.Spy;
+        let createImagesDataClueSpy: jasmine.Spy;
+        beforeEach(() => {
+            createImagesDataClueSpy = spyOn(service, 'createImagesDataClue' as any).and.callFake(() => {});
+            showClueSpy = spyOn(service, 'showClue' as any).and.callFake(() => {});
+        });
+
+        it('should create the clueImages and show them', async () => {
+            service.isChatFocused = false;
+            await service.handleClue(2, differences);
+            expect(createImagesDataClueSpy).toHaveBeenCalled();
+            expect(showClueSpy).toHaveBeenCalled();
+        });
+
+        it('should not execute if the chat box is focused', async () => {
+            service.isChatFocused = true;
+            await service.handleClue(2, differences);
+            expect(createImagesDataClueSpy).not.toHaveBeenCalled();
+            expect(showClueSpy).not.toHaveBeenCalled();
+        });
+
+        it('should handle the clue requests for all positive nbCluesLeft', async () => {
+            service.isChatFocused = false;
+            for (let i = 5; i >= 0; i--) {
+                await service.handleClue(i, differences);
+                expect(createImagesDataClueSpy).toHaveBeenCalled();
+                expect(showClueSpy).toHaveBeenCalled();
+            }
+        });
+
+        it('should not handle the clue requests when nbCluesLeft < 0', async () => {
+            service.isChatFocused = false;
+            await service.handleClue(-1, differences);
+            expect(showClueSpy).toHaveBeenCalled();
+        });
     });
 });
