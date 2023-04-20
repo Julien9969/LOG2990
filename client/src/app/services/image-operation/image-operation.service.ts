@@ -1,7 +1,6 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
-// import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
 import {
     BIT_PER_PIXEL,
     BLINK_COUNT,
@@ -45,7 +44,6 @@ export class ImageOperationService {
     private clueModifiedImageData: ImageData;
 
     constructor(private readonly inGameService: InGameService, private replayService: GameActionLoggingService) {}
-    // constructor(private readonly inGameService: InGameService) {}
 
     reset() {
         this.intervalIds.forEach((interval) => {
