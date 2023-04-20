@@ -4,7 +4,7 @@ import { PlayImageClassicComponent } from '@app/components/play-image/play-image
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { SLICE_LAST_INDEX } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
-import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/gameActionLogging.service';
 import { GameService } from '@app/services/game/game.service';
 import { HistoryService } from '@app/services/history/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
