@@ -236,6 +236,13 @@ describe('Game Service tests', () => {
         });
     });
 
+    it('getRandomGame returns a game', async () => {
+        jest.spyOn(gameService['gameModel'], 'find').mockReturnValue(Promise.resolve([stubGame]) as any);
+        const game = await gameService.getRandomGame();
+        expect(game).toEqual(stubGame);
+        expect(gameModel.find).toHaveBeenCalled();
+    });
+
     describe('compareImages method', () => {
         beforeEach(() => {
             jest.spyOn(gameService, 'verifyGameId' as any).mockImplementation(async () => {});
