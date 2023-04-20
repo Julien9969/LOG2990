@@ -13,10 +13,10 @@ import { ImageOperationService } from '@app/services/image-operation/image-opera
     styleUrls: ['./popup-dialog.component.scss'],
 })
 export class PopupDialogComponent implements OnInit {
-    templateName: string = this.data[0];
-    message = '';
+    templateName: string;
+    message: string;
 
-    deleteMessage = '';
+    deleteMessage: string;
     buttonCallback: () => Promise<void>;
 
     // eslint-disable-next-line max-params -- les parametres sont necessaires
