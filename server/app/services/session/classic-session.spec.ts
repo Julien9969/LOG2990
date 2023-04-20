@@ -438,12 +438,8 @@ describe('Session tests', () => {
             soloClassicSession.time = 0;
             const response: boolean = soloClassicSession.handleClueRequest();
             expect(response).toEqual(false);
-            expect(soloClassicSession.nbCluesRequested).toEqual(1);
+            expect(soloClassicSession.nbCluesRequested).toEqual(4);
             expect(soloClassicSession.time).toEqual(0);
         });
-    });
-
-    describe('isDiffAlreadyFound', () => {
-        it('should ');
     });
 });

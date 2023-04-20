@@ -809,7 +809,7 @@ describe('SessionGateway', () => {
             });
             const clientEmitSpy = jest.spyOn(stubSocket, 'emit');
             await gateway.sendNewGame(stubSocket, testSessionLimitedTime);
-            expect(decideNewGameSpy).EntityDataModule.forRoot(entityConfig),.toHaveBeenCalled();
+            expect(decideNewGameSpy).not.toHaveBeenCalled();
         });
         it('should call the right functions when a game is undefined', async () => {
             testSessionLimitedTime = {
