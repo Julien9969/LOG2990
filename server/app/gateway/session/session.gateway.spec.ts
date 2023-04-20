@@ -7,6 +7,7 @@ import { ClassicSession } from '@app/services/session/classic-session';
 import { Session } from '@app/services/session/session';
 import { SessionService } from '@app/services/session/session.service';
 import { LimitedTimeSession } from '@app/services/session/time-limited-session';
+import { Clue } from '@common/clue';
 import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
@@ -110,6 +111,25 @@ describe('SessionGateway', () => {
 
     it('should be defined', () => {
         expect(gateway).toBeDefined();
+    });
+
+    describe('handleClueRequest', () => {
+        let stubClue: Clue;
+        let generateClueSpy: jest.SpyInstance;
+
+        beforeEach(() => {
+            stubClue = {} as Clue;
+            generateClueSpy = jest.spyOn(sessionService, 'generateClue').mockReturnValue(stubClue);
+            jest.spyOn(gateway, 'sendSystemMessage').mockImplementation();
+        });
+
+        it('should call sessionService to generate a clue', () => {
+            const result = gateway.handleClueRequest({
+                id: 'fakeClientId123',
+            } as Socket);
+            expect(generateClueSpy).toBeCalled();
+            expect(result).toEqual(stubClue);
+        });
     });
 
     describe('getClientId', () => {

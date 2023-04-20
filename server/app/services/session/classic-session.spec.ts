@@ -46,7 +46,6 @@ describe('Session tests', () => {
         jest.spyOn(mongoose, 'isValidObjectId').mockReturnValue(true);
 
         jest.spyOn(DifferenceValidationService.prototype, 'loadDifferences').mockImplementation(() => {
-            // eslint-disable-next-line no-invalid-this
             DifferenceValidationService.prototype.differenceCoordLists = [[]];
         });
         const gameID = 'gameId';
@@ -443,6 +442,14 @@ describe('Session tests', () => {
             expect(response).toEqual(false);
             expect(soloClassicSession.nbCluesRequested).toEqual(4);
             expect(soloClassicSession.time).toEqual(0);
+        });
+
+        it('should add the penalty time to the total time', () => {
+            soloClassicSession.nbCluesRequested = 0;
+            soloClassicSession.time = 0;
+            const response: boolean = soloClassicSession.handleClueRequest();
+            expect(response).toEqual(true);
+            expect(soloClassicSession.time).toEqual(soloClassicSession.penalty);
         });
     });
 });
