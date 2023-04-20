@@ -31,6 +31,7 @@ import { ConfigurationGameComponent } from './pages/configuration-game-page/conf
 import { GameCreationPageComponent } from './pages/game-creation-page/game-creation-page.component';
 import { GamePageComponent } from './pages/game-page/game-page.component';
 import { GameSelectionPageComponent } from './pages/game-selection-page/game-selection-page.component';
+import { ReplayPageComponent } from './pages/replay-page/replay-page.component';
 /**
  * Main module that is used in main.ts.
  * All automatically generated components will appear in this module.
@@ -39,6 +40,7 @@ import { GameSelectionPageComponent } from './pages/game-selection-page/game-sel
  */
 @NgModule({
     declarations: [
+        ReplayPageComponent,
         AppComponent,
         MainPageComponent,
         GameSelectionPageComponent,

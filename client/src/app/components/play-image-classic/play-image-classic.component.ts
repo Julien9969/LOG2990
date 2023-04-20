@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input
 import { TIME_CONST } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
+import { GameActionLoggingService } from '@app/services/gameActionLogging.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { MouseService } from '@app/services/mouse/mouse.service';
@@ -26,12 +27,6 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
 
     errorMsgPosition: Coordinate;
     errorCounter: number = 0;
-    lastDifferenceFound: GuessResult = {
-        isCorrect: false,
-        differencesByPlayer: [],
-        differencePixelList: [{ x: 0, y: 0 }],
-        winnerName: undefined,
-    };
     errorGuess: boolean = false;
 
     // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
@@ -39,9 +34,12 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
         private readonly mouseService: MouseService,
         private readonly communicationService: CommunicationService,
         private readonly audioService: AudioService,
-        private readonly imageOperationService: ImageOperationService,
+        public imageOperationService: ImageOperationService,
         private readonly socket: InGameService,
-    ) {}
+        private loggingService: GameActionLoggingService,
+    ) {
+        this.imageOperationService.reset();
+    }
 
     get mouse(): MouseService {
         return this.mouseService;
@@ -61,20 +59,26 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
     }
 
     async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
+        this.loggingService.logAction('HINTLOGGER', { nClueLeft: nbCLuesLeft, diffList: differencesInOneList });
         await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);
     }
 
     ngOnInit(): void {
         this.errorCounter = 0;
-        this.lastDifferenceFound = {
-            isCorrect: false,
-            differencesByPlayer: [],
-            differencePixelList: [{ x: 0, y: 0 }],
-            winnerName: undefined,
-        };
         this.socket.listenDifferenceFound((differenceFound: GuessResult) => {
             this.updateDiffFound(differenceFound);
         });
+        this.loggingService.diffFoundFunction = (guessResult: GuessResult) => {
+            this.updateDiffFound(guessResult);
+        };
+
+        this.loggingService.cheatFunction = async (data: { isStarting: boolean; pixelList: Coordinate[]; diffList: Coordinate[][] }) => {
+            await this.imageOperationService.handleCheatReplay(data.isStarting, data.pixelList, data.diffList);
+        };
+        this.loggingService.getClueFunction = (data: { nClueLeft: number; diffList: Coordinate[] }) => {
+            console.log('got there');
+            this.handleClue(data.nClueLeft, data.diffList);
+        };
     }
 
     async ngAfterViewInit(): Promise<void> {
@@ -82,7 +86,11 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
         await this.loadImage(this.canvasContext2, this.imageAltId);
         this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
     }
-
+    async reset() {
+        this.imageOperationService.reset();
+        this.ngOnInit();
+        await this.ngAfterViewInit();
+    }
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
         if (this.isSolo) {
@@ -105,19 +113,18 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
      * @param guessResult résultat du serveur après avoir demander de valider les coordonnés de la différence trouvé
      */
     updateDiffFound(guessResult: GuessResult): void {
-        if (guessResult.isCorrect && this.hasNbDifferencesChanged(guessResult.differencesByPlayer)) {
-            this.lastDifferenceFound = guessResult;
+        if (guessResult.isCorrect) {
             this.audioService.playAudio('success');
-            this.diffFoundUpdate.emit(this.lastDifferenceFound.differencesByPlayer);
+            this.diffFoundUpdate.emit(guessResult.differencesByPlayer);
             this.errorCounter = 0;
             this.imageOperationService.pixelBlink(guessResult.differencePixelList);
         } else {
-            this.handleErrorGuess();
+            this.handleErrorGuess(guessResult.differencePixelList[0]);
         }
     }
 
-    handleErrorGuess(): void {
-        this.errorMsgPosition = { x: this.mouseService.mousePosition.x, y: this.mouseService.mousePosition.y };
+    handleErrorGuess(coordinate: Coordinate): void {
+        this.errorMsgPosition = coordinate;
         this.errorGuess = true;
         window.setTimeout(() => {
             this.errorGuess = false;
@@ -146,20 +153,6 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
 
     drawImageOnCanvas(canvasContext: CanvasRenderingContext2D, img: HTMLImageElement): void {
         canvasContext.drawImage(img, 0, 0);
-    }
-
-    hasNbDifferencesChanged(differencesByPlayer: [userSocketId: string, nDifferences: number][]): boolean {
-        if (this.lastDifferenceFound.differencesByPlayer.length < differencesByPlayer.length) {
-            return true;
-        }
-        if (this.lastDifferenceFound.differencesByPlayer.length === differencesByPlayer.length) {
-            for (let i = 0; i < differencesByPlayer.length; i++) {
-                if (this.lastDifferenceFound.differencesByPlayer[i][1] !== differencesByPlayer[i][1]) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     ngOnDestroy(): void {
