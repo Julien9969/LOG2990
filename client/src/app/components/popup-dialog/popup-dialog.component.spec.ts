@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { AudioService } from '@app/services/audio/audio.service';
+import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
 import { PopupDialogComponent } from './popup-dialog.component';
 
 describe('PopupDialogComponent', () => {
@@ -8,9 +10,13 @@ describe('PopupDialogComponent', () => {
     let fixture: ComponentFixture<PopupDialogComponent>;
     const audioServiceSpy = jasmine.createSpyObj('AudioService', ['playAudio']);
     let dialogRefSpy: jasmine.SpyObj<MatDialogRef<PopupDialogComponent>>;
+    let imageOperationServiceSpy: jasmine.SpyObj<ImageOperationService>;
+    let routerSpy: jasmine.SpyObj<Router>;
 
     beforeEach(async () => {
         dialogRefSpy = jasmine.createSpyObj('DialogRef', ['close']);
+        imageOperationServiceSpy = jasmine.createSpyObj('ImageOperationServiceMock', ['clearAllIntervals']);
+        routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
         await TestBed.configureTestingModule({
             declarations: [PopupDialogComponent],
@@ -19,6 +25,8 @@ describe('PopupDialogComponent', () => {
                 { provide: MAT_DIALOG_DATA, useValue: {} },
                 { provide: AudioService, useValue: audioServiceSpy },
                 { provide: MatDialogRef, useValue: dialogRefSpy },
+                { provide: ImageOperationService, useValue: imageOperationServiceSpy },
+                { provide: Router, useValue: routerSpy },
             ],
         }).compileComponents();
     });
