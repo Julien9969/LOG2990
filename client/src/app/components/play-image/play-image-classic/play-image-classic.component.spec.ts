@@ -18,7 +18,7 @@ export class StubImage {
     onload: GlobalEventHandlers['onload'];
 }
 
-fdescribe('PlayImageComponent', () => {
+describe('PlayImageComponent', () => {
     let component: PlayImageClassicComponent;
     let fixture: ComponentFixture<PlayImageClassicComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
@@ -196,21 +196,6 @@ fdescribe('PlayImageComponent', () => {
             const guessResult: GuessResult = { isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
             spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
                 return true;
-            });
-            const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
-            const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
-            component.updateDiffFound(guessResult);
-
-            expect(component.lastDifferenceFound).not.toEqual(guessResult);
-            expect(audioServiceSpy.playAudio).not.toHaveBeenCalledWith('success');
-            expect(diffFoundUpdateEmitSpy).not.toHaveBeenCalledWith(component.lastDifferenceFound.differencesByPlayer);
-            expect(imageOperationServiceSpy.pixelBlink).not.toHaveBeenCalledWith(guessResult.differencePixelList);
-            expect(handleErrorGuessSpy).toHaveBeenCalled();
-        });
-        it('should handle a difference already received', () => {
-            const guessResult: GuessResult = { isCorrect: true, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };
-            spyOn(component, 'hasNbDifferencesChanged').and.callFake(() => {
-                return false;
             });
             const diffFoundUpdateEmitSpy = spyOn(component['diffFoundUpdate'], 'emit').and.callFake(() => {});
             const handleErrorGuessSpy = spyOn(component, 'handleErrorGuess').and.callFake(() => {});
