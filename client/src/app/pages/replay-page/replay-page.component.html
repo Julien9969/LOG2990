@@ -11,7 +11,7 @@
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="true"></app-sidebar>
         </div>
         <div id="replay-controller">
-            <mat-toolbar color="primary">
+            <mat-toolbar color="primary" id="replay-toolbar">
                 <button mat-button (click)="resetAndReplay()">REJOUONS</button>
                 <button mat-button (click)="pause()" [ngClass]="{ highlight: loggingService.speedMultiplier === 0 }">PAUSE</button>
                 <button mat-button (click)="setReplaySpeed(1)" [ngClass]="{ highlight: speed === 1 }">1x</button>
