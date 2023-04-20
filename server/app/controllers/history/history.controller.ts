@@ -1,8 +1,8 @@
 import { HistoryDocument } from '@app/Schemas/history/history.schema';
+import { GameHistory } from '@common/game-history';
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Post } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { GameHistory } from '@common/game-history';
 
 /**
  * Controlleur d'historique'. Permet de gérer les requêtes HTTP pour l'historique des parties.
@@ -60,6 +60,12 @@ export class HistoryController {
         }
     }
 
+    /**
+     * Vérifie la validité d'une entrée
+     *
+     * @param newHistoryEntry la nouvelle entrée à persisté
+     * @returns un boolean vrai si l'entrée est valide, faux si l'entrée est invalide
+     */
     private isInvalideHistoryEntry(newHistoryEntry: GameHistory): boolean {
         return !newHistoryEntry || !newHistoryEntry.gameId || !newHistoryEntry.playerOne || !newHistoryEntry.gameMode;
     }
