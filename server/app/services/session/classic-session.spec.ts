@@ -1,8 +1,6 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { GameConstants } from '@common/game-constants';
-// import { Test, TestingModule } from '@nestjs/testing';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { GameService } from '@app/services/game/game.service';
 import { Coordinate } from '@common/coordinate';
@@ -10,19 +8,7 @@ import { GuessResult } from '@common/guess-result';
 import mongoose from 'mongoose';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { ClassicSession } from './classic-session';
-// import { Session } from './session';
 
-// export class GameServiceStub {
-//     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-//     yay = 123;
-//     getGameConstants(): GameConstants {
-//         return {
-//             time: 100,
-//             penalty: 5,
-//             reward: 10,
-//         };
-//     }
-// }
 jest.mock('mongoose');
 
 describe('Session tests', () => {

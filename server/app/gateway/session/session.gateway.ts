@@ -335,9 +335,6 @@ export class SessionGateway {
                 session.stopTimer();
                 this.limitedTimeGameEnded(client, true);
             }
-            // for (const player of session.players) {
-            //     this.server.to(player.socketId).emit(SessionEvents.TimerUpdate, session.formatedTime);
-            // }
             client.emit(SessionEvents.TimerUpdate, session.formatedTime);
             client.rooms.forEach((roomId) => {
                 if (roomId.startsWith('gameRoom')) {

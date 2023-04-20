@@ -144,30 +144,6 @@ describe('SessionGateway', () => {
         });
     });
 
-    // describe('handleClueRequest', () => {
-    //     let findSessionByClientIdSpy: jest.SpyInstance;
-    //     let getClueSpy: jest.SpyInstance;
-    //     beforeEach(() => {
-    //         findSessionByClientIdSpy = jest.spyOn(sessionService, 'findByClientId').mockImplementation(() => stubSession);
-    //         getClueSpy = jest.spyOn(stubSession, 'getClue').mockImplementation(() => {
-    //             return {
-    //                 coordinates: [{ x: 0, y: 0 }],
-    //                 nbCluesLeft: 2,
-    //             } as Clue;
-    //         });
-    //     });
-
-    //     it('should call sessionService.findByClientId & gameService.findById', async () => {
-    //         await gateway.handleClueRequest(stubSocket);
-    //         expect(findSessionByClientIdSpy).toBeCalled();
-    //     });
-
-    //     it('should getClue from the correct session', async () => {
-    //         await gateway.handleClueRequest(stubSocket);
-    //         expect(getClueSpy).toBeCalledWith(gameService.getGameConstants().penalty);
-    //     });
-    // });
-
     describe('leaveRoom', () => {
         it('should make the client leave the room', () => {
             const gameId = '1';
@@ -551,6 +527,27 @@ describe('SessionGateway', () => {
                 expect(serverEmitSpy).toBeCalledTimes(5);
             });
         });
+    });
+
+    it('startLimitedTimeSessionTimer should create an ineterval that call timerFinished', () => {
+        jest.useFakeTimers();
+        const testSession = {
+            timerId: 0,
+            time: true,
+            isSolo: false,
+            stopTimer: () => {},
+            timerFinished: () => {
+                return false;
+            },
+        } as unknown as Session;
+        const timerFinishedSpy = jest.spyOn(testSession, 'timerFinished' as any);
+        const findBySessionIdSpy = jest.spyOn(sessionService, 'findBySessionId').mockImplementation(() => testSession);
+
+        gateway.startLimitedTimeSessionTimer(stubSocket, stubGameId);
+
+        jest.advanceTimersByTime(SECOND_IN_MILLISECONDS * 5);
+        expect(timerFinishedSpy).toBeCalledTimes(5);
+        expect(findBySessionIdSpy).toBeCalled();
     });
 
     describe('playerWon', () => {
