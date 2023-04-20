@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { GameService } from '@app/services/game/game.service';
+import { Game } from '@common/game';
+import { Player } from '@common/player';
 import mongoose from 'mongoose';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { LimitedTimeSession } from './time-limited-session';
-import { Game } from '@common/game';
-import { Player } from '@common/player';
 
 jest.mock('mongoose');
 
@@ -119,7 +119,7 @@ describe('Session tests', () => {
         expect(guessResult).toEqual({
             isCorrect: false,
             differencesByPlayer: [],
-            differencePixelList: [],
+            differencePixelList: [{ x: 0, y: 0 }],
             winnerName: '',
         });
     });
