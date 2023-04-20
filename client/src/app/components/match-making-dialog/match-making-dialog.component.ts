@@ -19,15 +19,10 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     @ViewChild('box') box: ElementRef<HTMLInputElement>;
     playerName: string;
     opponentName: string;
-    gameInfo: GameSessionType = this.data;
-    dialogInfos: DialogInfos = { template: 'nameForm', message: '' };
+    gameInfo: GameSessionType;
+    dialogInfos: DialogInfos;
 
-    nameFormControl = new FormControl('', [
-        Validators.required,
-        Validators.maxLength(INPUT_VALIDATION.max),
-        Validators.minLength(INPUT_VALIDATION.min),
-        Validators.pattern('[a-zA-Z0-9]*'),
-    ]);
+    nameFormControl: FormControl;
     private routerLink: string;
 
     // eslint-disable-next-line max-params -- paramêtres sont nécessaires
@@ -40,6 +35,14 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         this.dialogInfos = { template: 'nameForm', message: '' };
         this.gameInfo = data;
         this.routerLink = this.gameInfo.id === 'limited-time' ? 'limited-time-game' : 'solo-game';
+        this.gameInfo = this.data;
+        this.dialogInfos = { template: 'nameForm', message: '' };
+        this.nameFormControl = new FormControl('', [
+            Validators.required,
+            Validators.maxLength(INPUT_VALIDATION.max),
+            Validators.minLength(INPUT_VALIDATION.min),
+            Validators.pattern('[a-zA-Z0-9]*'),
+        ]);
     }
 
     // Nécessaire pour utiliser window dans le html
