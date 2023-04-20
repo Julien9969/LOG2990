@@ -8,6 +8,8 @@ import { GameHistory } from '@common/game-history';
 export class HistoryService {
     private currentGame: GameHistory;
     private date: Date;
+    private hasBeenSend: boolean;
+
     constructor(private readonly communicationService: CommunicationService) {}
 
     set gameId(gameId: string) {
@@ -24,6 +26,7 @@ export class HistoryService {
 
     initHistory(mode: string, isSolo: boolean): void {
         this.date = new Date();
+        this.hasBeenSend = false;
         this.currentGame = {
             startDateTime: '',
             gameId: '',
@@ -64,7 +67,10 @@ export class HistoryService {
     }
 
     private postHistory(): void {
-        this.communicationService.postNewHistoryEntry(this.currentGame);
+        if (!this.hasBeenSend) {
+            this.communicationService.postNewHistoryEntry(this.currentGame);
+        }
+        this.hasBeenSend = true;
     }
 
     private setStartDateTime(): void {

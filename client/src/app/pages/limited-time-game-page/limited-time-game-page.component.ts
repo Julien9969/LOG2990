@@ -63,7 +63,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     unloadNotification(event: BeforeUnloadEvent) {
         event.preventDefault();
         this.historyService.setLimitedTimeHistory(this.time);
-
         event.returnValue = false;
     }
 
@@ -81,6 +80,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
             this.userSocketId = userSocketId;
         });
         this.inGameSocket.listenOpponentLeaves(() => {
+            this.historyService.setPlayerQuit(this.time, this.isSolo);
             this.isSolo = true;
         });
         this.inGameSocket.listenGameEnded((timerFinished: boolean) => {
@@ -136,6 +136,7 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.playerExited();
+        this.historyService.setPlayerQuit(this.time, this.isSolo);
         this.inGameSocket.disconnect();
     }
 }
