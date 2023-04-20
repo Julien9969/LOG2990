@@ -47,7 +47,7 @@ export class LimitedTimeSession extends Session {
     async tryGuess(guess: Coordinate, _socketId: string): Promise<GuessResult> {
         if (!this.differenceValidationService.validateGuess(guess)) throw new Error('Mauvais format de guess.');
         let isCorrect = false;
-        let diffPixelList: Coordinate[] = [guess];
+        let diffPixelList: Coordinate[] = [];
         const diffNum: number = this.differenceValidationService.checkDifference(guess.x, guess.y);
         isCorrect = diffNum !== undefined;
         if (isCorrect) {
