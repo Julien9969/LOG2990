@@ -10,7 +10,6 @@ import { ClassicSession } from './classic-session';
 import { Session } from './session';
 import { SessionService } from './session.service';
 jest.mock('./classic-session');
-// jest.mock('./limited-time-session');
 
 describe('Session Service tests', () => {
     let session: SinonStubbedInstance<Session>;
