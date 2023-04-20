@@ -16,23 +16,14 @@ describe('InGameService', () => {
     let socketHelper: SocketTestHelper;
 
     beforeEach(async () => {
-
         socketHelper = new SocketTestHelper();
-        socketServiceSpy = jasmine.createSpyObj('SocketClientService', [
-            'connect',
-            'disconnect',
-            'on',
-            'sendAndCallBack',
-            'send',
-            'isSocketAlive',
-        ]);
+        socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['connect', 'disconnect', 'on', 'sendAndCallBack', 'send', 'isSocketAlive']);
         socketServiceSpy['socket'] = socketHelper as unknown as Socket;
 
         socketServiceSpy.on.and.callFake((event: string, action: (data: any) => void): any => {
             socketHelper.on(event, action as any);
         });
 
-        
         TestBed.configureTestingModule({
             providers: [{ provide: SocketClientService, useValue: socketServiceSpy }],
         });
@@ -57,7 +48,11 @@ describe('InGameService', () => {
         });
         const response = await service.submitCoordinatesSolo(sessionId, coordinate);
         expect(socketServiceSpy.sendAndCallBack).toHaveBeenCalled();
-        expect(socketServiceSpy.sendAndCallBack).toHaveBeenCalledWith(SessionEvents.SubmitCoordinatesSoloGame, [sessionId, coordinate], jasmine.any(Function));
+        expect(socketServiceSpy.sendAndCallBack).toHaveBeenCalledWith(
+            SessionEvents.SubmitCoordinatesSoloGame,
+            [sessionId, coordinate],
+            jasmine.any(Function),
+        );
         expect(response).toEqual(expectedResponse);
     });
 

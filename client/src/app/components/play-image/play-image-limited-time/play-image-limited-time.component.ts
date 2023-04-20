@@ -77,16 +77,12 @@ export class PlayImageLimitedTimeComponent extends PlayImage implements AfterVie
     }
 
     async receiveNewGame(newGame: Game) {
-        try {
-            if (!newGame) throw new Error('game is undefined');
+        if (newGame) {
             this.imageMainId = newGame.imageMain;
             this.imageAltId = newGame.imageAlt;
             await this.loadImage(this.canvasContext1, this.imageMainId);
             await this.loadImage(this.canvasContext2, this.imageAltId);
             this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            alert(error.message);
         }
     }
 
