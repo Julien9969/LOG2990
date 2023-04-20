@@ -81,15 +81,8 @@ describe('Session tests', () => {
     });
 
     describe('tryGuess', () => {
-        const gameId = 'gameId';
         const firstSocketId = 'firstSocketId';
         const secondSocketId = 'secondSocketId';
-
-        // const sessionSolo = new ClassicSession(gameServiceStub as any, gameId, [{ name: 'name', socketId: firstSocketId, differencesFound: [23] }]);
-        // const sessionMulti = new ClassicSession(gameServiceStub as any, gameId, [
-        //     { name: 'name', socketId: firstSocketId, differencesFound: [] },
-        //     { name: 'name', socketId: secondSocketId, differencesFound: [] },
-        // ]);
 
         it('SoloPlayer Game: tryguess should throw error if validateGuess returns false', () => {
             jest.spyOn(soloClassicSession.differenceValidationService, 'validateGuess').mockImplementation(() => {

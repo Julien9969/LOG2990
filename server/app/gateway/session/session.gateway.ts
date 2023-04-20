@@ -209,7 +209,7 @@ export class SessionGateway {
 
         try {
             session = this.getSession(sessionId) as LimitedTimeSession;
-            result = await session.tryGuess(coordinates, client.id);
+            result = await session.tryGuess(coordinates);
             if (result.isCorrect) {
                 this.notifyPlayersOfDiffFound(client, result);
                 this.sendSystemMessage(client, 'guess_good');

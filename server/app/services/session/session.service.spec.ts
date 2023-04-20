@@ -204,7 +204,6 @@ describe('Session Service tests', () => {
         const socketId2 = 'socketId2';
         const socketId3 = 'socketId3';
         const socketId4 = 'socketId4';
-        const socketId5 = 'socketId5';
         const socketId6 = 'socketId6';
         const socketId7 = 'socketId7';
         const socketId8 = 'socketId8';
@@ -281,22 +280,22 @@ describe('Session Service tests', () => {
         const classicGameStub = {
             isTimeLimited: false,
             players: [{ name: 'name1' }, { name: 'name2' }],
-            deletePlayer: (socketId: string) => {
-                return socketId;
+            deletePlayer: (idSocket: string) => {
+                return idSocket;
             },
         };
         const soloLimitedTimeGameStub = {
             isTimeLimited: true,
             players: [{ name: 'name1' }, { name: 'name2' }],
-            deletePlayer: (socketId: string) => {
-                return socketId;
+            deletePlayer: (idSocket: string) => {
+                return idSocket;
             },
         };
         const multiLimitedTimeGameStub = {
             isTimeLimited: true,
             players: [{ name: 'name1' }, { name: 'name2' }],
-            deletePlayer: (socketId: string) => {
-                return socketId;
+            deletePlayer: (idSocket: string) => {
+                return idSocket;
             },
         };
         const deletePlayerSpy = jest.spyOn(classicGameStub, 'deletePlayer');
