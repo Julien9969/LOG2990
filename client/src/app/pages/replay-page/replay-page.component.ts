@@ -35,11 +35,11 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
+        public loggingService: GameActionLoggingService,
         private readonly dialog: MatDialog,
         private readonly communicationService: CommunicationService,
         readonly socket: InGameService,
         private readonly socketClient: SocketClientService,
-        private loggingService: GameActionLoggingService,
     ) {
         this.isLoaded = false;
         this.isSolo = window.history.state.isSolo;

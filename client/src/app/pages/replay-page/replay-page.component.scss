@@ -74,7 +74,12 @@ app-sidebar {
     width: 100%;
     padding: 5px;
 }
+.highlight {
+    background-color: rgba(82, 69, 94, 0.656);
+}
+
 #replay-controller {
+    margin: auto;
     text-align: center;
 }
 #bottom-bar {
