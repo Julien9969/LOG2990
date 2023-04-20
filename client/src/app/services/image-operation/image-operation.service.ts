@@ -13,7 +13,7 @@ import {
     RGB_RED,
 } from '@app/constants/utils-constants';
 import { RATIO_POINTER_IMAGE as POINTER_TO_CANVAS_RATIO, POINTER_X_OFFSET } from '@app/services/constantes.service';
-import { GameActionLoggingService } from '@app/services/game-action-logging/gameActionLogging.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
 import { LoggingCodes } from '@common/loggingCodes';

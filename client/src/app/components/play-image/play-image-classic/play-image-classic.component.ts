@@ -3,7 +3,7 @@ import { PlayImage } from '@app/components/play-image/play-image';
 import { IMAGE_HEIGHT, IMAGE_WIDTH } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
-import { GameActionLoggingService } from '@app/services/game-action-logging/gameActionLogging.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { MouseService } from '@app/services/mouse/mouse.service';
@@ -131,6 +131,7 @@ export class PlayImageClassicComponent extends PlayImage implements OnInit, OnDe
     loadImageFromLogger() {
         this.canvasContext1.putImageData(this.imageOperationService.replayService.imageMain, 0, 0);
         this.canvasContext2.putImageData(this.imageOperationService.replayService.imageAlt, 0, 0);
+        this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
     }
     async ngAfterViewInit(): Promise<void> {
         if (this.isReplayed) {

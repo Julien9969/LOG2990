@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { REPLAY_BASE_TIME_INCREMENT } from '@app/services/constantes.service';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Coordinate } from '@common/coordinate';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
 import { LoggingCodes } from '@common/loggingCodes';
 import { SessionEvents } from '@common/session.gateway.events';
@@ -19,6 +20,7 @@ export class GameActionLoggingService {
     clearChatFunction: () => void;
     imageMain: ImageData;
     imageAlt: ImageData;
+    gameInfos: Game;
     intervalPlayAll: any;
     isRecording: boolean = true; // moreLike Is not replaying
     startTime: number;

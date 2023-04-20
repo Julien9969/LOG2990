@@ -2,8 +2,7 @@ import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/
 import { MatDialog } from '@angular/material/dialog';
 import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication/communication.service';
-import { GameActionLoggingService } from '@app/services/game-action-logging/gameActionLogging.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Game } from '@common/game';
 @Component({
@@ -30,12 +29,7 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     time: string = '0:00';
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
-    constructor(
-        public loggingService: GameActionLoggingService,
-        private readonly dialog: MatDialog,
-        private readonly communicationService: CommunicationService,
-        readonly socket: InGameService,
-    ) {
+    constructor(public loggingService: GameActionLoggingService, private readonly dialog: MatDialog, readonly socket: InGameService) {
         this.isLoaded = false;
         this.playerName = window.history.state.playerName;
         this.gameId = window.history.state.gameId;
@@ -53,18 +47,15 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
             window.location.replace('/home');
         }
         this.getGameInfos();
+
         this.loggingService.timerUpdateFunction = (time: string) => {
             this.time = time;
         };
     }
 
     getGameInfos(): void {
-        this.communicationService.gameInfoGet(this.gameId).subscribe({
-            next: (response) => {
-                this.gameInfos = response as Game;
-                this.isLoaded = true;
-            },
-        });
+        this.gameInfos = this.loggingService.gameInfos;
+        this.isLoaded = true;
     }
 
     openDialog(dialogTypes: string): void {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
-import { GameActionLoggingService } from '../game-action-logging/gameActionLogging.service';
+import { GameActionLoggingService } from '../game-action-logging/game-action-logging.service';
 @Injectable({
     providedIn: 'root',
 })

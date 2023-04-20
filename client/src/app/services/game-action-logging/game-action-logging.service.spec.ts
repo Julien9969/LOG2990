@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
-import { GameActionLoggingService } from '@app/services/game-action-logging/gameActionLogging.service';
+import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { LoggingCodes } from '@common/loggingCodes';
 import { SessionEvents } from '@common/session.gateway.events';

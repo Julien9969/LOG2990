@@ -6,8 +6,7 @@
             </mat-toolbar>
         </div>
         <div id="game-container">
-            <app-play-image-classic [sessionID]="sessionId" [imageMainId]="gameInfos.imageMain" [imageAltId]="gameInfos.imageAlt">
-            </app-play-image-classic>
+            <app-play-image-classic [sessionID]="sessionId" [isReplayed]="true"> </app-play-image-classic>
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="true"></app-sidebar>
         </div>
         <div id="replay-controller">
