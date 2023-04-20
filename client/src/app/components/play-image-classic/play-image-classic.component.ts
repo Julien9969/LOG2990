@@ -59,6 +59,7 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
     }
 
     async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
+        this.loggingService.logAction('HINTLOGGER', { nClueLeft: nbCLuesLeft, diffList: differencesInOneList });
         await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);
     }
 
@@ -73,6 +74,10 @@ export class PlayImageClassicComponent implements AfterViewInit, OnInit, OnDestr
 
         this.loggingService.cheatFunction = async (data: { isStarting: boolean; pixelList: Coordinate[]; diffList: Coordinate[][] }) => {
             await this.imageOperationService.handleCheatReplay(data.isStarting, data.pixelList, data.diffList);
+        };
+        this.loggingService.getClueFunction = (data: { nClueLeft: number; diffList: Coordinate[] }) => {
+            console.log('got there');
+            this.handleClue(data.nClueLeft, data.diffList);
         };
     }
 

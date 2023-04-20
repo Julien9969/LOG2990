@@ -17,7 +17,6 @@ import { WinnerInfo } from '@common/winner-info';
 export class ReplayPageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayImageClassicComponent) playImageComponent: PlayImageClassicComponent;
     userSocketId: string;
-
     playerName: string;
     opponentName: string;
     isLoaded: boolean;
@@ -26,6 +25,8 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     sessionId: number;
     gameId: string;
     gameInfos: Game;
+    speed: number = 1;
+    wasCheatBlinkingBeforePause: boolean;
 
     nDiffFoundMainPlayer: number = 0;
     nDiffFoundOpponent: number = 0;
@@ -135,12 +136,35 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
         this.loggingService.replayAllAction();
     }
     async resetAndReplay() {
+        this.setReplaySpeed(this.speed);
         await this.playImageComponent.reset();
         this.playImageComponent.imageOperationService.clearAllIntervals();
         this.replay();
     }
     setReplaySpeed(newSpeed: number) {
+        if (newSpeed !== 0) {
+            this.speed = newSpeed;
+        }
         this.loggingService.speedMultiplier = newSpeed;
+        this.handleUnpause();
+    }
+    handleUnpause() {
+        if (this.wasCheatBlinkingBeforePause && this.loggingService.speedMultiplier !== 0) {
+            this.playImageComponent.imageOperationService.cheatBlink();
+            this.wasCheatBlinkingBeforePause = false;
+        }
+    }
+    pause() {
+        if (this.loggingService.speedMultiplier === 0) {
+            this.setReplaySpeed(this.speed);
+            return;
+        }
+        if (this.playImageComponent.imageOperationService.cheatInterval) {
+            this.wasCheatBlinkingBeforePause = true;
+        }
+        this.playImageComponent.imageOperationService.clearAllIntervals();
+        this.speed = this.loggingService.speedMultiplier;
+        this.setReplaySpeed(0);
     }
     ngOnDestroy(): void {
         this.playerExited();

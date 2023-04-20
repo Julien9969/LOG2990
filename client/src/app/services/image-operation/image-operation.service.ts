@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 // import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
 import {
@@ -26,6 +27,7 @@ export class ImageOperationService {
     oldestTimerId: number = 0;
 
     isChatFocused: boolean = false;
+    cheatInterval: number;
 
     private originalImgContext: CanvasRenderingContext2D;
     private modifiedImgContext: CanvasRenderingContext2D;
@@ -34,13 +36,12 @@ export class ImageOperationService {
     private originalImageSave: ImageData;
     private modifiedImageSave: ImageData;
 
-    private cheatInterval: number;
     private cheatImagesData: ImageData;
     private allDifferencesList: Coordinate[][];
 
     private clueOriginalImageData: ImageData;
     private clueModifiedImageData: ImageData;
-    
+
     constructor(private readonly inGameService: InGameService, private replayService: GameActionLoggingService) {}
     // constructor(private readonly inGameService: InGameService) {}
 
@@ -53,8 +54,8 @@ export class ImageOperationService {
         clearInterval(this.cheatInterval);
         this.cheatInterval = 0;
         this.cheatImagesData = undefined as any;
-        this.newestTimerId = 0
-        this.oldestTimerId = 0
+        this.newestTimerId = 0;
+        this.oldestTimerId = 0;
     }
 
     // Jamais utilise
@@ -239,6 +240,7 @@ export class ImageOperationService {
     }
     clearAllIntervals() {
         clearInterval(this.cheatInterval);
+        this.cheatInterval = 0;
         this.intervalIds.forEach((interval) => {
             clearInterval(interval);
         });

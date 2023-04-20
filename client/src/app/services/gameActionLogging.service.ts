@@ -12,6 +12,7 @@ export class GameActionLoggingService {
     diffFoundFunction: (data: GuessResult) => void;
     cheatFunction: (data: { isStarting: boolean; pixelList: Coordinate[]; diffList: Coordinate[][] }) => void;
     systemErrorFunction: (data: { systemCode: string; playerName: string }) => void;
+    getClueFunction: (data: { nClueLeft: number; diffList: Coordinate[] }) => void;
     messageFunction: (data: any) => void;
     clearChatFunction: () => void;
     intervalPlayAll: any;
@@ -63,6 +64,10 @@ export class GameActionLoggingService {
                 break;
             case ChatEvents.MessageFromServer:
                 this.messageFunction(loggedAction[2]);
+                break;
+            case 'HINTLOGGER':
+                this.getClueFunction(loggedAction[2]);
+                break;
         }
     }
 
