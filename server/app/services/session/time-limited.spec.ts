@@ -97,7 +97,7 @@ describe('Session tests', () => {
         });
 
         differenceValidationService.getDifferencePixelList.returns([{ x: 0, y: 0 }]);
-        const guessResult = await soloSession.tryGuess({ x: 0, y: 0 }, 'firstSocketId');
+        const guessResult = await soloSession.tryGuess({ x: 0, y: 0 });
         expect(guessResult).toBeTruthy();
         expect(guessResult).toEqual({
             isCorrect: true,
@@ -114,7 +114,7 @@ describe('Session tests', () => {
         });
 
         differenceValidationService.getDifferencePixelList.returns([{ x: 0, y: 0 }]);
-        const guessResult = await soloSession.tryGuess({ x: 0, y: 0 }, 'firstSocketId');
+        const guessResult = await soloSession.tryGuess({ x: 0, y: 0 });
         expect(guessResult).toBeTruthy();
         expect(guessResult).toEqual({
             isCorrect: false,
@@ -131,7 +131,7 @@ describe('Session tests', () => {
         });
 
         differenceValidationService.getDifferencePixelList.returns([{ x: 0, y: 0 }]);
-        await expect(soloSession.tryGuess({ x: 0, y: 0 }, 'firstSocketId')).rejects.toThrow();
+        await expect(soloSession.tryGuess({ x: 0, y: 0 })).rejects.toThrow();
     });
 
     it('build guess result should return a GuessResult with isCorrect true if the guess is correct', () => {

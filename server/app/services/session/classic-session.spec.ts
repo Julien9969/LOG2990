@@ -144,7 +144,12 @@ describe('Session tests', () => {
             soloClassicSession.players[0].differencesFound = [5];
 
             const result = soloClassicSession.tryGuess({ x: 11, y: 10 }, firstSocketId);
-            expect(result).toEqual({ isCorrect: false, differencesByPlayer: [[firstSocketId, 1]], differencePixelList: [{ x: 11, y: 10 }], winnerName: '' });
+            expect(result).toEqual({
+                isCorrect: false,
+                differencesByPlayer: [[firstSocketId, 1]],
+                differencePixelList: [{ x: 11, y: 10 }],
+                winnerName: '',
+            });
         });
 
         it('SoloPlayer Game: tryguess returns incorrect result when no difference, and returns pressed coordinate', () => {
@@ -165,7 +170,12 @@ describe('Session tests', () => {
             soloClassicSession.players[0].differencesFound = [5];
 
             const result = soloClassicSession.tryGuess({ x: 11, y: 10 }, firstSocketId);
-            expect(result).toEqual({ isCorrect: false, differencesByPlayer: [[firstSocketId, 1]], differencePixelList: [{ x: 11, y: 10 }], winnerName: '' });
+            expect(result).toEqual({
+                isCorrect: false,
+                differencesByPlayer: [[firstSocketId, 1]],
+                differencePixelList: [{ x: 11, y: 10 }],
+                winnerName: '',
+            });
         });
 
         it('SoloPlayer Game: tryguess should throw error if validateGuess returns false', () => {
