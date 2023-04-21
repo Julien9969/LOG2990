@@ -6,9 +6,9 @@ import { GameHistory } from '@common/game-history';
     providedIn: 'root',
 })
 export class HistoryService {
+    hasBeenSend: boolean;
     private currentGame: GameHistory;
     private date: Date;
-    private hasBeenSend: boolean;
 
     constructor(private readonly communicationService: CommunicationService) {}
 

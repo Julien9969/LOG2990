@@ -137,6 +137,7 @@ export class ClassicGamePageComponent implements OnInit, OnDestroy {
             message = this.isSolo ? `Bravo! Vous avez gagné avec un temps de ${this.time}` : `Vous avez gagné, ${winnerInfo.name} est le vainqueur`;
             this.historyService.setPlayerWon(this.time);
         } else message = `Vous avez perdu, ${winnerInfo.name} remporte la victoire`;
+        this.historyService.hasBeenSend = true;
         this.dialog.closeAll();
         this.dialog.open(PopupDialogComponent, {
             closeOnNavigation: true,
