@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */ // Les modifications ajoutées sont nécessaires
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 // import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
@@ -59,15 +60,6 @@ export class ImageOperationService {
         this.oldestTimerId = 0;
     }
 
-    // Jamais utilise
-    get contextOriginal(): CanvasRenderingContext2D {
-        return this.originalImgContext;
-    }
-
-    // Jamais utilise
-    get contextModified(): CanvasRenderingContext2D {
-        return this.modifiedImgContext;
-    }
     getSpeedMultiplier() {
         if (this.replayService.isRecording) {
             return 1;
@@ -213,18 +205,6 @@ export class ImageOperationService {
         this.showClue();
     }
 
-    async showClue() {
-        this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
-        this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
-    }
-
-    async removeClue() {
-        this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
-        this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
-        this.clueOriginalImageData = this.originalImageSave;
-        this.clueModifiedImageData = this.modifiedImageSave;
-    }
-
     /**
      * Créer l'interval de clignotement pour la triche
      */
@@ -272,6 +252,18 @@ export class ImageOperationService {
         });
 
         this.cheatImagesData = cheatImageData;
+    }
+
+    private showClue() {
+        this.originalImgContext.putImageData(this.clueOriginalImageData, 0, 0);
+        this.modifiedImgContext.putImageData(this.clueModifiedImageData, 0, 0);
+    }
+
+    private removeClue() {
+        this.originalImgContext.putImageData(this.originalImageSave, 0, 0);
+        this.modifiedImgContext.putImageData(this.modifiedImageSave, 0, 0);
+        this.clueOriginalImageData = this.originalImageSave;
+        this.clueModifiedImageData = this.modifiedImageSave;
     }
 
     /**
@@ -325,6 +317,7 @@ export class ImageOperationService {
                 resolve();
             };
         });
+
         const pointerHeight = Math.floor(IMAGE_HEIGHT * POINTER_TO_CANVAS_RATIO);
         const pointerWidth = Math.floor(IMAGE_WIDTH * POINTER_TO_CANVAS_RATIO);
 
