@@ -34,6 +34,7 @@ export class StubPlayImageComponent {
     @Input() imageAltId!: string;
     @Input() sessionID!: number;
     @Input() isSolo!: boolean;
+    @Input() isReplayed: boolean;
     playerName: string;
     handleClue = (nbCluesLeft: number, coordinates: Coordinate[]) => {};
 }
@@ -49,6 +50,7 @@ export class StubAppSidebarComponent {
     sessionID: number;
     @Input()
     isSolo: boolean;
+    @Input() isReplayed: boolean;
 }
 
 describe('GamePageComponent', () => {
