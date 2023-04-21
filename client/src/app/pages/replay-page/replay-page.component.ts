@@ -1,7 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
-import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
 import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Game } from '@common/game';
@@ -29,7 +27,7 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     private wasCheatBlinkingBeforePause: boolean;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
-    constructor(public loggingService: GameActionLoggingService, private readonly dialog: MatDialog, readonly socket: InGameService) {
+    constructor(public loggingService: GameActionLoggingService, readonly socket: InGameService) {
         this.isLoaded = false;
         this.playerName = window.history.state.playerName;
         this.gameId = window.history.state.gameId;
@@ -50,14 +48,6 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     getGameInfos(): void {
         this.gameInfos = this.loggingService.gameInfos;
         this.isLoaded = true;
-    }
-
-    openDialog(dialogTypes: string): void {
-        this.dialog.closeAll();
-
-        if (dialogTypes === 'quit') {
-            this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
-        }
     }
 
     replay() {
@@ -97,5 +87,14 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     }
     ngOnDestroy(): void {
         this.socket.disconnect();
+    }
+
+    /**
+     * Cette fonction est un wrapper autour de window.location.reload(), pour pouvoir la mock.
+     * Elle est nécessaire pour mettre à jour après un changement de configuration de jeux,
+     * n'est mais pas couverte par les tests puisqu'elle reload le chrome de tests.
+     */
+    reloadWindow() {
+        window.location.reload();
     }
 }
