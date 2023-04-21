@@ -12,12 +12,14 @@
             </mat-toolbar>
         </div>
         <div id="game-container">
-            <app-play-image-classic #appPlayImage
+            <app-play-image-classic
+                #appPlayImage
                 (diffFoundUpdate)="handleDiffFoundUpdate($event)"
                 [sessionID]="sessionId"
                 [imageMainId]="gameInfos.imageMain"
                 [imageAltId]="gameInfos.imageAlt"
                 [isSolo]="isSolo"
+                [isReplayed]="false"
             >
             </app-play-image-classic>
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="isSolo"></app-sidebar>

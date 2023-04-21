@@ -94,9 +94,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.inGameSocket.listenTimerUpdate((time: string) => {
             this.time = time;
         });
-        this.loggingService.timerUpdateFunction = (time: string) => {
-            this.time = time;
-        };
 
         this.inGameSocket.listenProvideName(this.playerName);
 
@@ -109,6 +106,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             next: (response) => {
                 this.gameInfos = response as Game;
                 this.isLoaded = true;
+                this.loggingService.gameInfos = this.gameInfos;
             },
         });
     }

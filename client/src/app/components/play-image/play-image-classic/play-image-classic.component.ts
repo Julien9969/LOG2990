@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { PlayImage } from '@app/components/play-image/play-image';
+import { IMAGE_HEIGHT, IMAGE_WIDTH } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
@@ -8,13 +9,13 @@ import { InGameService } from '@app/services/in-game/in-game.service';
 import { MouseService } from '@app/services/mouse/mouse.service';
 import { Coordinate } from '@common/coordinate';
 import { GuessResult } from '@common/guess-result';
-
+import { LoggingCodes } from '@common/loggingCodes';
 @Component({
     selector: 'app-play-image-classic',
     templateUrl: '../play-image.component.html',
     styleUrls: ['../play-image.component.scss'],
 })
-export class PlayImageClassicComponent extends PlayImage implements AfterViewInit, OnInit, OnDestroy {
+export class PlayImageClassicComponent extends PlayImage implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild('canvas1', { static: false }) imageCanvas1!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas2', { static: false }) imageCanvas2!: ElementRef<HTMLCanvasElement>;
 
@@ -22,6 +23,7 @@ export class PlayImageClassicComponent extends PlayImage implements AfterViewIni
     @Input() imageMainId!: number;
     @Input() imageAltId!: number;
     @Input() isSolo: boolean;
+    @Input() isReplayed: boolean;
 
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
@@ -53,7 +55,7 @@ export class PlayImageClassicComponent extends PlayImage implements AfterViewIni
     }
 
     async handleClue(nbCLuesLeft: number, differencesInOneList: Coordinate[]) {
-        this.loggingService.logAction('HINTLOGGER', { nClueLeft: nbCLuesLeft, diffList: differencesInOneList });
+        this.loggingService.logAction(LoggingCodes.clueLog, { nClueLeft: nbCLuesLeft, diffList: differencesInOneList });
         await this.imageOperationService.handleClue(nbCLuesLeft, differencesInOneList);
     }
 
@@ -77,7 +79,7 @@ export class PlayImageClassicComponent extends PlayImage implements AfterViewIni
     async reset() {
         this.imageOperationService.reset();
         this.ngOnInit();
-        await this.ngAfterViewInit();
+        this.loadImageFromLogger();
     }
     sendPosition(event: MouseEvent): void {
         this.mouseService.clickProcessing(event);
@@ -122,9 +124,22 @@ export class PlayImageClassicComponent extends PlayImage implements AfterViewIni
         }
         return false;
     }
-
+    saveImageToLogger() {
+        this.imageOperationService.replayService.imageMain = this.canvasContext1.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        this.imageOperationService.replayService.imageAlt = this.canvasContext2.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+    }
+    loadImageFromLogger() {
+        this.canvasContext1.putImageData(this.imageOperationService.replayService.imageMain, 0, 0);
+        this.canvasContext2.putImageData(this.imageOperationService.replayService.imageAlt, 0, 0);
+        this.imageOperationService.setCanvasContext(this.canvasContext1, this.canvasContext2);
+    }
     async ngAfterViewInit(): Promise<void> {
+        if (this.isReplayed) {
+            this.loadImageFromLogger();
+            return;
+        }
         await this.afterViewInit();
+        this.saveImageToLogger();
     }
 
     ngOnDestroy(): void {
