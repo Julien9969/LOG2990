@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DELAY_FOCUS, INPUT_VALIDATION } from '@app/constants/utils-constants';
 import { MatchMakingService } from '@app/services/match-making/match-making.service';
+import { DialogInfos } from '@common/dialog-infos';
 import { GameSessionType } from '@common/game-session-type';
 
 /**
@@ -19,14 +20,9 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     playerName: string;
     opponentName: string;
     gameInfo: GameSessionType;
-    dialogInfos: { template: string; message: string };
+    dialogInfos: DialogInfos;
 
-    nameFormControl = new FormControl('', [
-        Validators.required,
-        Validators.maxLength(INPUT_VALIDATION.max),
-        Validators.minLength(INPUT_VALIDATION.min),
-        Validators.pattern('[a-zA-Z0-9]*'),
-    ]);
+    nameFormControl: FormControl;
     private routerLink: string;
 
     // eslint-disable-next-line max-params -- paramêtres sont nécessaires
@@ -34,13 +30,22 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
         @Inject(MAT_DIALOG_DATA) public data: GameSessionType,
         private dialogRef: MatDialogRef<MatchMakingDialogComponent>,
         private readonly router: Router,
-        public matchMaking: MatchMakingService,
+        private matchMaking: MatchMakingService,
     ) {
         this.dialogInfos = { template: 'nameForm', message: '' };
         this.gameInfo = data;
         this.routerLink = this.gameInfo.id === 'limited-time' ? 'limited-time-game' : 'solo-game';
+        this.gameInfo = this.data;
+        this.dialogInfos = { template: 'nameForm', message: '' };
+        this.nameFormControl = new FormControl('', [
+            Validators.required,
+            Validators.maxLength(INPUT_VALIDATION.max),
+            Validators.minLength(INPUT_VALIDATION.min),
+            Validators.pattern('[a-zA-Z0-9]*'),
+        ]);
     }
 
+    // Nécessaire pour utiliser window dans le html
     get window() {
         return window;
     }
@@ -65,7 +70,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     async joinGame(): Promise<void> {
-        if (!(await this.matchMaking.someOneWaiting(this.gameInfo.id))) {
+        if (!(await this.matchMaking.isSomeOneWaiting(this.gameInfo.id))) {
             this.createGameAndWait();
         } else {
             this.askToJoin();
@@ -105,9 +110,13 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     validateAndContinue() {
-        if (this.nameFormControl.valid) {
-            if (this.gameInfo.isSolo) this.navigateToSoloGame();
-            else this.joinGame();
+        if (this.dialogInfos.template === 'nameForm') {
+            if (this.nameFormControl.valid) {
+                if (this.gameInfo.isSolo) this.navigateToSoloGame();
+                else this.joinGame();
+            }
+        } else if (this.dialogInfos.template === 'acceptPairing') {
+            this.acceptOpponent();
         }
     }
 
@@ -126,13 +135,13 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
     }
 
     commonMatchMakingFeatures(): void {
-        this.matchMaking.sessionIdReceived((id: number) => {
+        this.matchMaking.receiveSessionId((id: number) => {
             this.router.navigateByUrl(this.routerLink, {
                 state: { isSolo: false, gameID: this.gameInfo.id, playerName: this.playerName, opponentName: this.opponentName, sessionId: id },
             });
         });
 
-        this.matchMaking.opponentJoined((opponentName: string) => {
+        this.matchMaking.onOpponentJoined((opponentName: string) => {
             if (this.gameInfo.id === 'limited-time') {
                 this.acceptOpponent();
             }
@@ -140,12 +149,12 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
             this.dialogInfos.template = 'acceptPairing';
         });
 
-        this.matchMaking.opponentLeft(() => {
+        this.matchMaking.onOpponentLeft(() => {
             this.dialogInfos.template = 'waitingRoom';
             this.dialogInfos.message = "l'adversaire précendent a quitté la recherche";
         });
 
-        this.matchMaking.roomReachable(() => {
+        this.matchMaking.onRoomReachable(() => {
             if (this.dialogInfos.template === 'waitingRoom') {
                 this.joinGame();
             }
@@ -161,7 +170,7 @@ export class MatchMakingDialogComponent implements AfterViewInit, OnInit {
             this.dialogInfos.message = '';
         });
 
-        this.matchMaking.gameDeleted(() => {
+        this.matchMaking.onGameDeleted(() => {
             this.dialogInfos.template = 'gameDelete';
             this.dialogInfos.message = '';
         });

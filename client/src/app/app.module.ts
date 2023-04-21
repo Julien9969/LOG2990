@@ -27,9 +27,9 @@ import { PopupDialogComponent } from './components/popup-dialog/popup-dialog.com
 import { TimeConstantsPopupComponent } from './components/time-constants-popup/time-constants-popup.component';
 import { TimeConstantsComponent } from './components/time-constants/time-constants.component';
 import { UploadImageSquareComponent } from './components/upload-image-square/upload-image-square.component';
+import { ClassicGamePageComponent } from './pages/classic-game-page/classic-game-page.component';
 import { ConfigurationGameComponent } from './pages/configuration-game-page/configuration-game-page.component';
 import { GameCreationPageComponent } from './pages/game-creation-page/game-creation-page.component';
-import { GamePageComponent } from './pages/game-page/game-page.component';
 import { GameSelectionPageComponent } from './pages/game-selection-page/game-selection-page.component';
 import { ReplayPageComponent } from './pages/replay-page/replay-page.component';
 /**
@@ -48,7 +48,7 @@ import { ReplayPageComponent } from './pages/replay-page/replay-page.component';
         UploadImageSquareComponent,
         GameCreationFormComponent,
         SquareInterfaceComponent,
-        GamePageComponent,
+        ClassicGamePageComponent,
         PopupDialogComponent,
         ErrorDuringLoadingComponent,
         MatchMakingDialogComponent,

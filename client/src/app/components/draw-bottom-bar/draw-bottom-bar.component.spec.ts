@@ -64,34 +64,34 @@ describe('DrawSidebarComponent', () => {
     });
 
     describe('active mode tracking', () => {
-        it('drawModeActive returns true when draw service mode is pencil', () => {
+        it('isdrawModeActive returns true when draw service mode is pencil', () => {
             component.drawService.mode = DrawMode.PENCIL;
-            expect(component.drawModeActive()).toBeTrue();
+            expect(component.isDrawModeActive()).toBeTrue();
         });
 
-        it('drawModeActive returns false when draw service mode is not pencil', () => {
+        it('isdrawModeActive returns false when draw service mode is not pencil', () => {
             component.drawService.mode = DrawMode.RECTANGLE;
-            expect(component.drawModeActive()).toBeFalse();
+            expect(component.isDrawModeActive()).toBeFalse();
         });
 
-        it('rectangleModeActive returns true when draw service mode is rectangle', () => {
+        it('isrectangleModeActive returns true when draw service mode is rectangle', () => {
             component.drawService.mode = DrawMode.RECTANGLE;
-            expect(component.rectangleModeActive()).toBeTrue();
+            expect(component.isRectangleModeActive()).toBeTrue();
         });
 
-        it('rectangleModeActive returns false when draw service mode is not rectangle', () => {
+        it('isrectangleModeActive returns false when draw service mode is not rectangle', () => {
             component.drawService.mode = DrawMode.ERASER;
-            expect(component.rectangleModeActive()).toBeFalse();
+            expect(component.isRectangleModeActive()).toBeFalse();
         });
 
-        it('eraseModeActive returns true when draw service mode is eraser', () => {
+        it('iseraseModeActive returns true when draw service mode is eraser', () => {
             component.drawService.mode = DrawMode.ERASER;
-            expect(component.eraseModeActive()).toBeTrue();
+            expect(component.isEraseModeActive()).toBeTrue();
         });
 
-        it('eraseModeActive returns false when draw service mode is not eraser', () => {
+        it('iseraseModeActive returns false when draw service mode is not eraser', () => {
             component.drawService.mode = DrawMode.PENCIL;
-            expect(component.eraseModeActive()).toBeFalse();
+            expect(component.isEraseModeActive()).toBeFalse();
         });
     });
 

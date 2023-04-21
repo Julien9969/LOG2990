@@ -41,7 +41,11 @@ export class LimitedTimeSelectionComponent implements OnInit {
     }
 
     openMatchMaking(isSolo: boolean): void {
-        const gameInfo = { isSolo, id: 'limited-time' };
-        this.dialog.open(MatchMakingDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: gameInfo });
+        this.dialog.open(MatchMakingDialogComponent, {
+            closeOnNavigation: true,
+            disableClose: true,
+            autoFocus: false,
+            data: { isSolo, id: 'limited-time' },
+        });
     }
 }

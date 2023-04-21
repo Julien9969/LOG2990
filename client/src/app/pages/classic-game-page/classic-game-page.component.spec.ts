@@ -23,7 +23,7 @@ import { Coordinate } from '@common/coordinate';
 import { GameConstants } from '@common/game-constants';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
-import { GamePageComponent } from './game-page.component';
+import { ClassicGamePageComponent } from './classic-game-page.component';
 
 @Component({
     selector: 'app-play-image-classic',
@@ -34,6 +34,7 @@ export class StubPlayImageComponent {
     @Input() imageAltId!: string;
     @Input() sessionID!: number;
     @Input() isSolo!: boolean;
+    @Input() isReplayed: boolean;
     playerName: string;
     handleClue = (nbCluesLeft: number, coordinates: Coordinate[]) => {};
 }
@@ -49,11 +50,12 @@ export class StubAppSidebarComponent {
     sessionID: number;
     @Input()
     isSolo: boolean;
+    @Input() isReplayed: boolean;
 }
 
 describe('GamePageComponent', () => {
-    let component: GamePageComponent;
-    let fixture: ComponentFixture<GamePageComponent>;
+    let component: ClassicGamePageComponent;
+    let fixture: ComponentFixture<ClassicGamePageComponent>;
     let dialogSpy: jasmine.SpyObj<MatDialog>;
     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
@@ -99,7 +101,7 @@ describe('GamePageComponent', () => {
             } as Clue);
         });
         socketClientServiceSpy = jasmine.createSpyObj('SocketClientMock', ['send']);
-        historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'playerWon', 'playerQuit']);
+        historyServiceSpy = jasmine.createSpyObj('historyServiceSpy', ['initHistory', 'setGameMode', 'setPlayers', 'setPlayerWon', 'setPlayerQuit']);
         gameService = jasmine.createSpyObj('gameServiceSpy', ['getGameConstants']);
         gameService.getGameConstants.and.returnValue(
             Promise.resolve({
@@ -111,7 +113,7 @@ describe('GamePageComponent', () => {
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
         TestBed.configureTestingModule({
-            declarations: [GamePageComponent, StubPlayImageComponent, StubAppSidebarComponent],
+            declarations: [ClassicGamePageComponent, StubPlayImageComponent, StubAppSidebarComponent],
             imports: [MatIconModule, MatToolbarModule],
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },
@@ -126,8 +128,8 @@ describe('GamePageComponent', () => {
     });
 
     beforeEach(() => {
-        window.history.pushState({ isSolo: true, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-        fixture = TestBed.createComponent(GamePageComponent);
+        window.history.pushState({ isSolo: true, gameID: '1', playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
+        fixture = TestBed.createComponent(ClassicGamePageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -140,16 +142,10 @@ describe('GamePageComponent', () => {
         expect(component.opponentName).toBeUndefined();
     });
 
-    it('constructor should define opponentName if isSolo is false', () => {
-        window.history.pushState({ isSolo: false, gameID: 0, playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-        const newComponent = TestBed.createComponent(GamePageComponent);
-        expect(newComponent.componentInstance.opponentName).toBeDefined();
-    });
-
     describe('onInit', () => {
         it('should call  getGameInfos, ', () => {
             component.sessionId = 123;
-            component.gameID = '123';
+            component['gameID'] = '123';
             spyOn(component, 'getGameInfos');
             component.ngOnInit();
             expect(component.getGameInfos).toHaveBeenCalled();
@@ -167,7 +163,7 @@ describe('GamePageComponent', () => {
             component.ngOnInit();
             tick(3000);
             expect(inGameServiceSpy.retrieveSocketId).toHaveBeenCalled();
-            expect(component.userSocketId).toEqual(socketId);
+            expect(component['userSocketId']).toEqual(socketId);
             flush();
         }));
 
@@ -222,7 +218,7 @@ describe('GamePageComponent', () => {
                 ['socketId', 2],
                 ['socketId2', 3],
             ];
-            component.userSocketId = 'socketId2';
+            component['userSocketId'] = 'socketId2';
             component.isSolo = false;
             component.nDiffFoundMainPlayer = 0;
             component.handleDiffFoundUpdate(diffFound);
@@ -234,7 +230,7 @@ describe('GamePageComponent', () => {
     describe('endGameDialog', () => {
         it('solo: when this client is the winner should give the winner s message', () => {
             const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
-            component.userSocketId = 'socketId';
+            component['userSocketId'] = 'socketId';
             component.time = '9:14';
             component.isSolo = true;
 
@@ -243,12 +239,12 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`, { gameId: 0, playerName: 'test' }],
+                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`, { gameId: '1', playerName: 'test', hasReplay: true }],
             });
         });
         it('multi: when this client is the winner should give the winner s message', () => {
             const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
-            component.userSocketId = 'socketId';
+            component['userSocketId'] = 'socketId';
             component.time = '9:14';
             component.isSolo = false;
 
@@ -257,12 +253,12 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`, { gameId: 0, playerName: 'test' }],
+                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`, { gameId: '1', playerName: 'test', hasReplay: true }],
             });
         });
         it('multi: when this client is the loser should give the loser s message', () => {
             const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId2' };
-            component.userSocketId = 'socketId';
+            component['userSocketId'] = 'socketId';
             component.time = '9:14';
             component.isSolo = false;
 
@@ -271,18 +267,18 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`, { gameId: 0, playerName: 'test' }],
+                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`, { gameId: '1', playerName: 'test', hasReplay: true }],
             });
         });
 
         it('should call history.playerWon if client is winner', () => {
             const winnerInfo: WinnerInfo = { name: 'name', socketId: 'socketId' };
-            component.userSocketId = 'socketId';
+            component['userSocketId'] = 'socketId';
             component.time = '9:14';
             component.isSolo = true;
 
             component.endGameDialog(winnerInfo);
-            expect(historyServiceSpy.playerWon).toHaveBeenCalledWith('9:14');
+            expect(historyServiceSpy.setPlayerWon).toHaveBeenCalledWith('9:14');
         });
     });
 
@@ -301,6 +297,13 @@ describe('GamePageComponent', () => {
             differenceCount: 2,
         });
     });
+    it('constructor should define opponentName if isSolo is false', () => {
+        window.history.pushState({ isSolo: false, gameID: '12', playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
+        const newComponent = TestBed.createComponent(ClassicGamePageComponent);
+        newComponent.componentInstance['gameInfos'] = { differenceCount: 0 } as any;
+        expect(newComponent.componentInstance.opponentName).toBeDefined();
+        newComponent.destroy();
+    });
 
     it('quit button should open quit dialog', () => {
         const quitButton = fixture.debugElement.query(By.css('#quit-button'));
@@ -312,11 +315,10 @@ describe('GamePageComponent', () => {
         });
     });
 
-    // Can't test by dispatching event because it will reload the page and make the test crash
+    // On ne peut pas lancer un event car celui-ci va recharger la page et faire planter les tests
     it('unloadHandler should set event.returnValue to true', () => {
-        const event = new Event('beforeunload');
+        const event: BeforeUnloadEvent = new Event('beforeunload');
         component.unloadHandler(event);
-        // eslint-disable-next-line deprecation/deprecation
         expect(event.returnValue).toEqual(true);
     });
 
@@ -345,7 +347,7 @@ describe('GamePageComponent', () => {
         const event = new Event('beforeunload');
         component.isSolo = true;
         component.unloadHandler(event);
-        expect(historyServiceSpy.playerQuit).toHaveBeenCalled();
+        expect(historyServiceSpy.setPlayerQuit).toHaveBeenCalled();
     });
 
     describe('openDialog', () => {
@@ -364,11 +366,10 @@ describe('GamePageComponent', () => {
         });
     });
 
-    it('initHistory should call historyService.initHistory , setPlayer and set gameMode', () => {
+    it('initHistory should call historyService.initHistory , setPlayer', () => {
         component['initHistory']();
         expect(historyServiceSpy.initHistory).toHaveBeenCalled();
         expect(historyServiceSpy.setPlayers).toHaveBeenCalled();
-        expect(historyServiceSpy.setGameMode).toHaveBeenCalled();
     });
 
     it('ngOnDestroy should call socketClientService with leaveRoom', () => {

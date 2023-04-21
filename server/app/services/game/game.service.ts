@@ -1,5 +1,4 @@
 import { GameDocument } from '@app/Schemas/game/game.schema';
-import { HistoryDocument } from '@app/Schemas/history/history.schema';
 import { MatchmakingGateway } from '@app/gateway/match-making/match-making.gateway';
 import { GameConstantsInput } from '@app/interfaces/game-constants-input';
 import {
@@ -43,7 +42,6 @@ export class GameService {
     // eslint-disable-next-line max-params -- Nécessaire pour le fonctionnement
     constructor(
         @InjectModel('Game') private gameModel: Model<GameDocument>,
-        @InjectModel('GameHistory') private history: Model<HistoryDocument>,
         private readonly imageService: ImageService,
         private readonly matchMakingGateway: MatchmakingGateway,
         private readonly logger: Logger,
@@ -103,7 +101,6 @@ export class GameService {
         }
         try {
             await this.gameModel.deleteOne({ _id: id });
-            await this.history.deleteMany({ gameId: id });
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }

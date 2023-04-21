@@ -2,8 +2,9 @@ import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/
 import { MatDialog } from '@angular/material/dialog';
 import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { SLICE_LAST_INDEX, TIME_CONST } from '@app/constants/utils-constants';
+import { CONVERT_TO_MINUTES, SLICE_LAST_INDEX } from '@app/constants/utils-constants';
 import { GameService } from '@app/services/game/game.service';
+import { HistoryService } from '@app/services/history/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Game } from '@common/game';
 import { SessionEvents } from '@common/session.gateway.events';
@@ -32,9 +33,14 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     nbCluesLeft = 3;
 
     penalty: number = 0;
-
+    reward: number = 0;
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
-    constructor(private readonly dialog: MatDialog, private readonly inGameSocket: InGameService, private readonly gameService: GameService) {
+    constructor(
+        private readonly dialog: MatDialog,
+        private readonly inGameSocket: InGameService,
+        private readonly gameService: GameService,
+        private readonly historyService: HistoryService,
+    ) {
         this.isLoaded = false;
 
         this.isSolo = window.history.state.isSolo;
@@ -43,7 +49,6 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         }
         this.playerName = window.history.state.playerName;
         this.sessionId = window.history.state.sessionId;
-        // this.gameID = window.history.state.gameID;
     }
 
     @HostListener('window:keydown.i')
@@ -55,9 +60,10 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     }
 
     @HostListener('window:beforeunload', ['$event'])
-    unloadNotification($event: Event) {
-        // eslint-disable-next-line deprecation/deprecation
-        $event.returnValue = true; // L'équivalent non déprécié ne produit pas le même résultat
+    unloadNotification(event: BeforeUnloadEvent) {
+        event.preventDefault();
+        this.historyService.setLimitedTimeHistory(this.time);
+        event.returnValue = false;
     }
 
     async ngOnInit(): Promise<void> {
@@ -69,11 +75,13 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         const gameConsts = await this.gameService.getGameConstants();
         const startTime = gameConsts.time as number;
         this.penalty = gameConsts.penalty as number;
+        this.reward = gameConsts.reward as number;
         this.time = this.formatTime(startTime);
         this.inGameSocket.retrieveSocketId().then((userSocketId: string) => {
             this.userSocketId = userSocketId;
         });
         this.inGameSocket.listenOpponentLeaves(() => {
+            this.historyService.setPlayerQuit(this.time, this.isSolo);
             this.isSolo = true;
         });
         this.inGameSocket.listenGameEnded((timerFinished: boolean) => {
@@ -86,6 +94,9 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         this.inGameSocket.listenNewGame((data: [Game, number]) => {
             this.nDiffFound = data[1];
         });
+        this.historyService.initHistory('Temps limité', this.isSolo);
+        this.historyService.setPlayers(this.playerName, this.opponentName);
+        this.historyService.gameId = this.sessionId.toString();
     }
 
     playerExited() {
@@ -97,6 +108,8 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
         if (timerFinished) {
             message = `Vous n'avez plus de temps, vous avez trouvé ${this.nDiffFound} différences`;
         } else message = `Vous avez joué à tous les jeux, vous avez trouvé ${this.nDiffFound + 1} différences`;
+
+        this.historyService.setLimitedTimeHistory(this.time);
         this.dialog.closeAll();
         this.dialog.open(PopupDialogComponent, {
             closeOnNavigation: true,
@@ -119,11 +132,12 @@ export class LimitedTimeGamePageComponent implements OnInit, OnDestroy {
     }
 
     formatTime(time: number): string {
-        return `${Math.floor(time / TIME_CONST.minute).toString()}:${time % TIME_CONST.minute}`;
+        return `${Math.floor(time / CONVERT_TO_MINUTES).toString()}:${time % CONVERT_TO_MINUTES}`;
     }
 
     ngOnDestroy(): void {
         this.playerExited();
+        this.historyService.setPlayerQuit(this.time, this.isSolo);
         this.inGameSocket.disconnect();
     }
 }

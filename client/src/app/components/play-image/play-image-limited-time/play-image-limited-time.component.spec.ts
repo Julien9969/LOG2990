@@ -117,13 +117,13 @@ describe('PlayImageComponent', () => {
     });
 
     it('ngOnInit should set error counter to 0 and listen to differences found', () => {
-        component.errorCounter = 3;
+        component['errorCounter'] = 3;
         inGameServiceSpy.listenDifferenceFound.and.callFake((callback: (guess: GuessResult) => void) => {
             callback({ isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' });
         });
         const updateDiffFoundSpy = spyOn(component, 'updateDiffFound').and.callFake(() => {});
         component.ngOnInit();
-        expect(component.errorCounter).toEqual(0);
+        expect(component['errorCounter']).toEqual(0);
         expect(inGameServiceSpy.listenDifferenceFound).toHaveBeenCalled();
         expect(updateDiffFoundSpy).toHaveBeenCalledWith({
             isCorrect: false,
@@ -180,7 +180,7 @@ describe('PlayImageComponent', () => {
             component.updateDiffFound(guessResult);
 
             expect(audioServiceSpy.playAudio).toHaveBeenCalledWith('success');
-            expect(component.errorCounter).toEqual(0);
+            expect(component['errorCounter']).toEqual(0);
         });
         it('should handle a wrong guess', () => {
             const guessResult: GuessResult = { isCorrect: false, differencesByPlayer: [], differencePixelList: [], winnerName: 'winnerName' };

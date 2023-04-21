@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { SystemCode } from '@app/services/constantes.service';
+import { SystemCode } from '@app/services/chat/system-code';
 import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { ChatEvents } from '@common/chat.gateway.events';
@@ -71,7 +71,6 @@ export class ChatService {
     }
 
     receiveMessage(message: Message) {
-        // this.messageList.push(message);
         if (!this.newMessage) {
             this.messageList.push(message);
             this.newMessage = true;

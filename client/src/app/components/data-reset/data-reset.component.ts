@@ -14,14 +14,14 @@ export class DataResetComponent {
     deleteAllGames() {
         this.dialog.closeAll();
         const popup = this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['delete'] }).componentInstance;
-        popup.deleteMessage = 'Voulez-vous vraiment supprimer TOUTES les cartes de jeu?';
+        popup.deleteMessage = 'Voulez-vous vraiment supprimer TOUTES les cartes de jeu ?';
         popup.buttonCallback = this.gameService.deleteAllGames;
     }
 
     resetAllLeaderboards() {
         this.dialog.closeAll();
         const popup = this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['delete'] }).componentInstance;
-        popup.deleteMessage = 'Voulez-vous vraiment réinitialiser TOUS les meilleurs temps?';
+        popup.deleteMessage = 'Voulez-vous vraiment réinitialiser TOUS les meilleurs temps ?';
         popup.buttonCallback = this.gameService.resetAllLeaderboards;
     }
 }

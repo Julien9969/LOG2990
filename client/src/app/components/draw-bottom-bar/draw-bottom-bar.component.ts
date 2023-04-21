@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { DECIMAL_BASE } from '@app/constants/utils-constants';
 import { DrawMode } from '@app/interfaces/draw-mode';
 import { DrawService } from '@app/services/draw/draw.service';
 
@@ -27,18 +28,18 @@ export class DrawBottomBarComponent {
     }
 
     setToolSize(size: string) {
-        this.drawService.toolSize = parseInt(size, 10);
+        this.drawService.toolSize = parseInt(size, DECIMAL_BASE);
     }
 
-    drawModeActive() {
+    isDrawModeActive() {
         return this.drawService.mode === DrawMode.PENCIL;
     }
 
-    rectangleModeActive() {
+    isRectangleModeActive() {
         return this.drawService.mode === DrawMode.RECTANGLE;
     }
 
-    eraseModeActive() {
+    isEraseModeActive() {
         return this.drawService.mode === DrawMode.ERASER;
     }
 

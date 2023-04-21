@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
 import { PATH_TO_VALID_IMAGE, PATH_TO_WRONG_BIT_DEPTH_IMAGE, PATH_TO_WRONG_RES_IMAGE } from '@app/constants/utils-constants';
@@ -116,11 +117,15 @@ describe('validateImageService', () => {
         });
 
         it('should create an image from a File', async () => {
+            spyOn(Image.prototype, 'decode').and.callFake(() => {});
+            spyOn(URL, 'createObjectURL').and.callFake(() => '');
             expect(await service.generateImage(validFile)).toBeTruthy();
             expect((await service.generateImage(validFile)) instanceof HTMLImageElement).toBeTruthy();
         }, 20000);
 
         it('should create an image from an HTMLInputElement of type file', async () => {
+            spyOn(Image.prototype, 'decode').and.callFake(() => {});
+            spyOn(URL, 'createObjectURL').and.callFake(() => '');
             const dataTransfer = new DataTransfer();
 
             inputElement.type = 'file';

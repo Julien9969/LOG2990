@@ -25,7 +25,6 @@ export class PlayImageLimitedTimeComponent extends PlayImage implements AfterVie
     @Output() diffFoundUpdate: EventEmitter<[string, number][]> = new EventEmitter<[string, number][]>();
 
     errorMsgPosition: Coordinate;
-    errorCounter: number = 0;
 
     // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
     constructor(

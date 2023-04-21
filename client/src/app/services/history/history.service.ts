@@ -6,8 +6,10 @@ import { GameHistory } from '@common/game-history';
     providedIn: 'root',
 })
 export class HistoryService {
+    hasBeenSend: boolean;
     private currentGame: GameHistory;
-    private date: Date = new Date();
+    private date: Date;
+
     constructor(private readonly communicationService: CommunicationService) {}
 
     set gameId(gameId: string) {
@@ -22,13 +24,18 @@ export class HistoryService {
         this.communicationService.deleteHistory();
     }
 
-    initHistory(): void {
-        this.currentGame = { startDateTime: '', gameId: '', duration: '', gameMode: '', playerOne: '', playerTwo: '' };
+    initHistory(mode: string, isSolo: boolean): void {
+        this.date = new Date();
+        this.hasBeenSend = false;
+        this.currentGame = {
+            startDateTime: '',
+            gameId: '',
+            duration: '',
+            gameMode: mode + (isSolo ? ' solo' : ' multi'),
+            playerOne: '',
+            playerTwo: '',
+        };
         this.setStartDateTime();
-    }
-
-    setGameMode(gameMode: string, isSolo: boolean): void {
-        this.currentGame.gameMode = gameMode + (isSolo ? ' solo' : ' multi');
     }
 
     setPlayers(playerOne: string, playerTwo?: string): void {
@@ -38,13 +45,13 @@ export class HistoryService {
         }
     }
 
-    playerWon(duration: string): void {
+    setPlayerWon(duration: string): void {
         this.currentGame.duration = duration;
         this.currentGame.playerOne = '<b>' + this.currentGame.playerOne + '</b>';
         this.postHistory();
     }
 
-    playerQuit(duration: string, isolo?: boolean): void {
+    setPlayerQuit(duration: string, isolo?: boolean): void {
         this.currentGame.duration = duration;
         if (!isolo) {
             this.currentGame.playerTwo = '<s>' + this.currentGame.playerTwo + '</s>';
@@ -54,8 +61,16 @@ export class HistoryService {
         this.postHistory();
     }
 
+    setLimitedTimeHistory(duration: string): void {
+        this.currentGame.duration = duration;
+        this.postHistory();
+    }
+
     private postHistory(): void {
-        this.communicationService.postNewHistoryEntry(this.currentGame);
+        if (!this.hasBeenSend) {
+            this.communicationService.postNewHistoryEntry(this.currentGame);
+        }
+        this.hasBeenSend = true;
     }
 
     private setStartDateTime(): void {

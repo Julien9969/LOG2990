@@ -1,5 +1,5 @@
 import { ElementRef, EventEmitter } from '@angular/core';
-import { TIME_CONST } from '@app/constants/utils-constants';
+import { ERROR_TIMEOUT } from '@app/constants/utils-constants';
 import { AudioService } from '@app/services/audio/audio.service';
 import { CommunicationService } from '@app/services/communication/communication.service';
 import { ImageOperationService } from '@app/services/image-operation/image-operation.service';
@@ -16,8 +16,8 @@ export class PlayImage {
     imageCanvas1!: ElementRef<HTMLCanvasElement>;
     imageCanvas2!: ElementRef<HTMLCanvasElement>;
     errorMsgPosition: Coordinate;
-    errorCounter: number = 0;
     errorGuess: boolean = false;
+    protected errorCounter: number = 0;
 
     // eslint-disable-next-line max-params -- necéssaire pour le fonctionnement
     constructor(
@@ -41,7 +41,7 @@ export class PlayImage {
         this.errorGuess = true;
         window.setTimeout(() => {
             this.errorGuess = false;
-        }, TIME_CONST.secondInMillisecond);
+        }, ERROR_TIMEOUT);
         this.errorCounter++;
 
         if (this.errorCounter % 3 === 0) {

@@ -1,7 +1,7 @@
-export const TIME_CONST = {
-    secondInMillisecond: 1000,
-    minute: 60,
-};
+/* eslint-disable @typescript-eslint/no-magic-numbers -- Fichier de constantes*/
+export const ERROR_TIMEOUT = 1000;
+
+export const CONVERT_TO_MINUTES = 60;
 
 export enum MouseButton {
     Left = 0,
@@ -45,8 +45,7 @@ export const GROUP_SIZE = 4;
 
 // for game-creation-form.component
 
-export const SUCCESS_MESSAGE_DISPLAYED_TIME = 3000;
-export const ERROR_MESSAGE_DISPLAYED_TIME = 4000;
+export const MESSAGE_DISPLAYED_TIME = 4000;
 export const TIME_BEFORE_REDIRECT = 1000;
 
 export const ASCII_START_LOWERCASE_LETTERS = 97;
@@ -59,13 +58,14 @@ export const ASCII_SPACE = 32;
 
 export const MAX_TITLE_LENGTH = 25;
 
-export const NINE_PIXELS = 9;
-export const FIFTEEN_PIXELS = 15;
-export const ALLOWED_RADIUS = [0, 3, NINE_PIXELS, FIFTEEN_PIXELS];
+export const ALLOWED_RADIUS = [0, 3, 9, 15];
 
 export const DEFAULT_RADIUS = 3;
 
 export const DELAY_FOCUS = 100;
+
+// for audio.service
+export const VOLUME = 0.5;
 
 // for validate-image.service
 
@@ -77,6 +77,7 @@ export const PERMITTED_BITE_SIZE = 24;
 // for draw.service
 
 export const DEFAULT_TOOL_SIZE = 5;
+export const DECIMAL_BASE = 10;
 
 // for upload-image-square.component
 
@@ -93,3 +94,17 @@ export const VALID_IMAGE_ID = 1999;
 // for utility functions
 
 export const SLICE_LAST_INDEX = -1;
+
+/**
+ * constantes image-operation service
+ */
+
+export const RATIO_POINTER_IMAGE = 0.4;
+export const POINTER_X_OFFSET = 15;
+
+/**
+ * constantes game-action-logging service
+ */
+export const INIT_BASE_TIME_INCREMENT = 47;
+export const LAST_INDEX = -1;
+export const REPLAY_BASE_TIME_INCREMENT = 35;

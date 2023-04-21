@@ -40,6 +40,32 @@ describe('SocketClientService', () => {
         expect(isAlive).toBeFalsy();
     });
 
+    it('on should create a callback that call logAction', () => {
+        const event = 'helloWorld';
+        const data = 42;
+        const onSpy = spyOn(service['socket'], 'on');
+        const spy = spyOn(service.loggingService, 'logAction');
+        service.on(event, (newData) => {
+            expect(newData).toEqual(data);
+        });
+        onSpy.calls.mostRecent().args[1](data);
+        expect(spy).toHaveBeenCalled();
+        expect(spy).toHaveBeenCalledWith(event, data);
+    });
+
+    it('sendAndCallBack should create a callback that call logAction', () => {
+        const event = 'helloWorld';
+        const data = 42;
+        const emitSpy = spyOn(service['socket'], 'emit');
+        const spy = spyOn(service.loggingService, 'logAction');
+        service.sendAndCallBack(event, data, (newData) => {
+            expect(newData).toEqual(data);
+        });
+        emitSpy.calls.mostRecent().args[2](data);
+        expect(spy).toHaveBeenCalled();
+        expect(spy).toHaveBeenCalledWith(event, data);
+    });
+
     it('should call socket.on with an event', () => {
         const event = 'helloWorld';
         // eslint-disable-next-line @typescript-eslint/no-empty-function

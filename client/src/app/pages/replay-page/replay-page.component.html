@@ -9,23 +9,20 @@
             <app-play-image-classic [sessionID]="sessionId" [isReplayed]="true"> </app-play-image-classic>
             <app-sidebar [sessionID]="sessionId" [playerName]="playerName" [isSolo]="true"></app-sidebar>
         </div>
-        <div id="replay-controller">
-            <mat-toolbar color="primary" id="replay-toolbar">
-                <button mat-button (click)="resetAndReplay()">Rejouer</button>
-                <button mat-button (click)="pause()" [ngClass]="{ highlight: loggingService.speedMultiplier === 0 }">pause</button>
-                <button mat-button (click)="setReplaySpeed(1)" [ngClass]="{ highlight: speed === 1 }">1x</button>
-                <button mat-button (click)="setReplaySpeed(2)" [ngClass]="{ highlight: speed === 2 }">2x</button>
-                <button mat-button (click)="setReplaySpeed(4)" [ngClass]="{ highlight: speed === 4 }">4x</button>
-            </mat-toolbar>
-        </div>
         <div id="bottom-bar">
             <mat-toolbar color="primary">
-                <button mat-button (click)="openDialog('quit')" id="quit-button" aria-label="Quitter">
+                <button mat-button (click)="reloadWindow()" id="quit-button" aria-label="Quitter">
                     <mat-icon>home</mat-icon>
                     Quitter
                 </button>
-
-                <span>{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span>
+                <div>
+                            <button mat-button (click)="resetAndReplay()">Rejouer</button>
+                            <button mat-button (click)="pause()" [ngClass]="{ highlight: loggingService.speedMultiplier === 0 }">pause</button>
+                            <button mat-button (click)="setReplaySpeed(1)" [ngClass]="{ highlight: speed === 1 }">1x</button>
+                            <button mat-button (click)="setReplaySpeed(2)" [ngClass]="{ highlight: speed === 2 }">2x</button>
+                            <button mat-button (click)="setReplaySpeed(4)" [ngClass]="{ highlight: speed === 4 }">4x</button>
+                </div>
+                <span id="game-title">{{ gameInfos.name }} : Classique {{ gameInfos.isHard ? '[Difficile]' : '[Facile]' }}</span>
             </mat-toolbar>
         </div>
     </div>

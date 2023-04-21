@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { VOLUME as DEFAULT_VOLUME } from '@app/constants/utils-constants';
 
 enum SoundId {
     Success = 'success',
@@ -13,7 +14,7 @@ enum SoundId {
 export class AudioService {
     async playAudio(soundId: string): Promise<void> {
         const audioPlayer = new Audio();
-        audioPlayer.volume = 0.5;
+        audioPlayer.volume = DEFAULT_VOLUME;
         switch (soundId) {
             case SoundId.Success:
                 audioPlayer.src = 'assets/sounds/Success sound.mp3';

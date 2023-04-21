@@ -12,15 +12,13 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
     @Input() playerName: string;
     @Input() sessionID: number;
     @Input() isSolo: boolean;
-    @ViewChild('chatContainer') chatContainer: ElementRef<HTMLDivElement>;
-    @ViewChild('formGroup') formElement: ElementRef<HTMLFormElement>;
+    @ViewChild('chatContainer') private chatContainer: ElementRef<HTMLDivElement>;
 
     messageForm = this.formBuilder.group({
         text: '',
     });
 
     constructor(private formBuilder: FormBuilder, public chatService: ChatService, public imageOperationService: ImageOperationService) {
-        // this.chatService.formElement = this.formElement; // De branche de max, necessaire?
         this.chatService.start();
     }
 
@@ -35,8 +33,8 @@ export class SidebarComponent implements AfterViewInit, AfterViewChecked {
         }
     }
 
-    formatedTime(time: number): string {
-        return new Date(time).toUTCString();
+    formatTime(time: number): string {
+        return new Date(time).toUTCString().replace('GMT', '').trim();
     }
 
     send() {
