@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
 import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { LoggingCodes } from '@common/loggingCodes';
 import { SessionEvents } from '@common/session.gateway.events';
-import { REPLAY_BASE_TIME_INCREMENT } from '../constantes.service';
+import { REPLAY_BASE_TIME_INCREMENT } from '@app/constants/utils-constants';
 
 describe('GameActionLoggingService', () => {
     let service: GameActionLoggingService;
