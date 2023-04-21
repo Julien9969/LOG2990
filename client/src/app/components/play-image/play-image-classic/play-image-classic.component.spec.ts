@@ -72,6 +72,8 @@ describe('PlayImageComponent', () => {
             'handleClue',
             'reset',
         ]);
+
+        imageOperationServiceSpy['replayService'] = jasmine.createSpyObj('ReplayServiceMock', ['replay']);
         TestBed.configureTestingModule({
             imports: [HttpClientModule],
             declarations: [PlayImageClassicComponent],
