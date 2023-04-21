@@ -107,3 +107,4 @@ export const POINTER_X_OFFSET = 15;
  */
 export const INIT_BASE_TIME_INCREMENT = 47;
 export const LAST_INDEX = -1;
+export const REPLAY_BASE_TIME_INCREMENT = 35;
