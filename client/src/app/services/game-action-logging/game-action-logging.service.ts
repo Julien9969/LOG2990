@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
-import { INIT_BASE_TIME_INCREMENT, LAST_INDEX } from '@app/constants/utils-constants';
+import { REPLAY_BASE_TIME_INCREMENT } from '@app/constants/utils-constants';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Coordinate } from '@common/coordinate';
+import { Game } from '@common/game';
 import { GuessResult } from '@common/guess-result';
+import { LoggingCodes } from '@common/loggingCodes';
 import { SessionEvents } from '@common/session.gateway.events';
 @Injectable({
     providedIn: 'root',
@@ -16,13 +18,15 @@ export class GameActionLoggingService {
     getClueFunction: (data: { nClueLeft: number; diffList: Coordinate[] }) => void;
     messageFunction: (data: any) => void;
     clearChatFunction: () => void;
+    imageMain: ImageData;
+    imageAlt: ImageData;
+    gameInfos: Game;
     intervalPlayAll: any;
     isRecording: boolean = true; // moreLike Is not replaying
     startTime: number;
-    baseTimeIncrement = INIT_BASE_TIME_INCREMENT;
     speedMultiplier = 1;
     lastTimeReplayed: number = 0;
-    actionLog: [number, string, any][] = [];
+    actionLog: { time: number; code: string; data: any }[] = [];
 
     constructor() {
         this.setTimeZero();
@@ -35,39 +39,37 @@ export class GameActionLoggingService {
         return new Date().getTime() - this.startTime;
     }
     logAction(event: string, data: any) {
-        if (event === 'startSession' || event === 'getClientId') {
+        if (event === SessionEvents.StartClassicSession || event === SessionEvents.GetClientId) {
             this.actionLog = [];
             this.isRecording = true;
 
             this.setTimeZero();
         }
         if (this.isRecording) {
-            this.actionLog.push([this.getTimeSinceStart(), event, data]);
+            this.actionLog.push({ time: this.getTimeSinceStart(), code: event, data });
         }
     }
 
-    // TODO: refactor loggedAction as enum for readability
-    // TODO:use enums for messages
-    async replayAction(loggedAction: [number, string, any]) {
-        switch (loggedAction[1]) {
+    async replayAction(loggedAction: { time: number; code: string; data: any }) {
+        switch (loggedAction.code) {
             case SessionEvents.TimerUpdate:
-                this.timerUpdateFunction(loggedAction[2]);
+                this.timerUpdateFunction(loggedAction.data);
                 break;
             case SessionEvents.SubmitCoordinatesSoloGame:
             case SessionEvents.DifferenceFound:
-                this.diffFoundFunction(loggedAction[2]);
+                this.diffFoundFunction(loggedAction.data);
                 break;
-            case 'CHEATLOGGER':
-                await this.cheatFunction(loggedAction[2]);
+            case LoggingCodes.cheatLog:
+                await this.cheatFunction(loggedAction.data);
                 break;
             case ChatEvents.SystemMessageFromServer:
-                await this.systemErrorFunction(loggedAction[2]);
+                await this.systemErrorFunction(loggedAction.data);
                 break;
             case ChatEvents.MessageFromServer:
-                this.messageFunction(loggedAction[2]);
+                this.messageFunction(loggedAction.data);
                 break;
-            case 'HINTLOGGER':
-                this.getClueFunction(loggedAction[2]);
+            case LoggingCodes.clueLog:
+                this.getClueFunction(loggedAction.data);
                 break;
         }
     }
@@ -81,21 +83,22 @@ export class GameActionLoggingService {
             return;
         }
         this.intervalPlayAll = setInterval(() => {
-            time += this.baseTimeIncrement * this.speedMultiplier;
+            time += REPLAY_BASE_TIME_INCREMENT * this.speedMultiplier;
             this.replayActionsToTime(time);
-            if (this.lastTimeReplayed > this.actionLog.slice(LAST_INDEX)[0][0]) {
+            if (this.lastTimeReplayed > this.actionLog[this.actionLog.length - 1].time) {
                 this.isRecording = false;
                 clearInterval(this.intervalPlayAll);
             }
-        }, this.baseTimeIncrement);
+        }, REPLAY_BASE_TIME_INCREMENT);
     }
     clearReplayAll() {
         clearInterval(this.intervalPlayAll);
+        this.intervalPlayAll = 0;
     }
     replayActionsToTime(time: number) {
         this.actionLog
             .filter((action) => {
-                return action[0] < time && action[0] >= this.lastTimeReplayed;
+                return action.time < time && action.time >= this.lastTimeReplayed;
             })
             .forEach((action) => {
                 this.replayAction(action);

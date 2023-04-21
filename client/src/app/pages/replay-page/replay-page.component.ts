@@ -2,13 +2,9 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-import { CommunicationService } from '@app/services/communication/communication.service';
 import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
-import { SocketClientService } from '@app/services/socket-client/socket-client.service';
 import { Game } from '@common/game';
-import { SessionEvents } from '@common/session.gateway.events';
-import { WinnerInfo } from '@common/winner-info';
 @Component({
     selector: 'app-replay-page',
     templateUrl: './replay-page.component.html',
@@ -19,7 +15,6 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     playerName: string;
     opponentName: string;
     isLoaded: boolean;
-    isSolo: boolean;
 
     sessionId: number;
     gameInfos: Game;
@@ -35,18 +30,8 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     private wasCheatBlinkingBeforePause: boolean;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
-    constructor(
-        private readonly dialog: MatDialog,
-        private readonly communicationService: CommunicationService,
-        readonly socket: InGameService,
-        private readonly socketClient: SocketClientService,
-        private loggingService: GameActionLoggingService,
-    ) {
+    constructor(public loggingService: GameActionLoggingService, private readonly dialog: MatDialog, readonly socket: InGameService) {
         this.isLoaded = false;
-        this.isSolo = window.history.state.isSolo;
-        if (!this.isSolo) {
-            this.opponentName = window.history.state.opponentName;
-        }
         this.playerName = window.history.state.playerName;
         this.gameId = window.history.state.gameId;
         this.replay();
@@ -57,75 +42,25 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
             window.location.replace('/home');
         }
         this.getGameInfos();
-        this.socket.retrieveSocketId().then((userSocketId) => {
-            this.userSocketId = userSocketId;
-        });
-        this.socket.listenOpponentLeaves(() => {
-            this.openDialog(SessionEvents.OpponentLeftGame);
-        });
-        this.socket.listenPlayerWon((winnerInfo: WinnerInfo) => {
-            this.endGameDialog(winnerInfo);
-        });
-        this.socket.listenTimerUpdate((time: string) => {
-            this.time = time;
-        });
+
         this.loggingService.timerUpdateFunction = (time: string) => {
             this.time = time;
         };
-        this.socket.listenProvideName(this.playerName);
     }
 
     getGameInfos(): void {
-        this.communicationService.gameInfoGet(this.gameId).subscribe({
-            next: (response) => {
-                this.gameInfos = response as Game;
-                this.isLoaded = true;
-            },
-        });
-    }
-
-    handleDiffFoundUpdate(diffFoundByPlayer: [string, number][]) {
-        if (this.isSolo && diffFoundByPlayer.length === 1) this.nDiffFoundMainPlayer = diffFoundByPlayer[0][1];
-        else if (!this.isSolo && diffFoundByPlayer.length === 2) {
-            for (const diffFoundTuple of diffFoundByPlayer) {
-                if (this.userSocketId === diffFoundTuple[0]) this.nDiffFoundMainPlayer = diffFoundTuple[1];
-                else this.nDiffFoundOpponent = diffFoundTuple[1];
-            }
-        }
-    }
-
-    playerExited() {
-        this.socket.playerExited(this.sessionId);
-    }
-
-    endGameDialog(winnerInfo: WinnerInfo) {
-        let message = '';
-        if (winnerInfo.socketId === this.userSocketId) {
-            message = this.isSolo ? `Bravo! Vous avez gagné avec un temps de ${this.time}` : `Vous avez gagné, ${winnerInfo.name} est le vainqueur`;
-        } else message = `Vous avez perdu, ${winnerInfo.name} remporte la victoire`;
-        this.dialog.closeAll();
-        this.dialog.open(PopupDialogComponent, {
-            closeOnNavigation: true,
-            disableClose: true,
-            autoFocus: false,
-            data: ['endGame', message],
-        });
+        this.gameInfos = this.loggingService.gameInfos;
+        this.isLoaded = true;
     }
 
     openDialog(dialogTypes: string): void {
         this.dialog.closeAll();
 
-        switch (dialogTypes) {
-            case 'clue':
-                this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['clue'] });
-                break;
-            case 'quit':
-                this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
-                break;
-            case SessionEvents.OpponentLeftGame:
-                this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: ['opponentLeft'] });
+        if (dialogTypes === 'quit') {
+            this.dialog.open(PopupDialogComponent, { closeOnNavigation: true, autoFocus: false, data: ['quit'] });
         }
     }
+
     replay() {
         this.loggingService.clearReplayAll();
         this.loggingService.replayAllAction();
@@ -162,8 +97,6 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
         this.setReplaySpeed(0);
     }
     ngOnDestroy(): void {
-        this.playerExited();
-        this.socketClient.send(SessionEvents.LeaveRoom);
         this.socket.disconnect();
     }
 }
