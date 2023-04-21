@@ -1,8 +1,6 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { GameConstants } from '@common/game-constants';
-// import { Test, TestingModule } from '@nestjs/testing';
 import { DifferenceValidationService } from '@app/services/difference-validation/difference-validation.service';
 import { GameService } from '@app/services/game/game.service';
 import { Coordinate } from '@common/coordinate';
@@ -10,26 +8,13 @@ import { GuessResult } from '@common/guess-result';
 import mongoose from 'mongoose';
 import { SinonStubbedInstance, createStubInstance } from 'sinon';
 import { ClassicSession } from './classic-session';
-// import { Session } from './session';
 
-// export class GameServiceStub {
-//     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-//     yay = 123;
-//     getGameConstants(): GameConstants {
-//         return {
-//             time: 100,
-//             penalty: 5,
-//             reward: 10,
-//         };
-//     }
-// }
 jest.mock('mongoose');
 
 describe('Session tests', () => {
     let soloClassicSession: ClassicSession;
     let multiClassicSession: ClassicSession;
     let differenceValidationService: SinonStubbedInstance<DifferenceValidationService>;
-    // let session: SinonStubbedInstance<Session>;
     let gameServiceStub: GameService;
 
     beforeEach(async () => {
@@ -256,45 +241,6 @@ describe('Session tests', () => {
                 winnerName: '',
             });
         });
-
-        // it('tryguess detects when difference already found', () => {
-        //     jest.spyOn(multiClassicSession.differenceValidationService, 'validateGuess').mockImplementation(() => {
-        //         return true;
-        //     });
-        //     jest.spyOn(multiClassicSession.differenceValidationService, 'loadDifferences').mockImplementation(() => {
-        //         return null;
-        //     });
-        //     jest.spyOn(multiClassicSession.differenceValidationService, 'checkDifference').mockImplementation(() => {
-        //         return 5;
-        //     });
-        //     jest.spyOn(multiClassicSession.differenceValidationService, 'getDifferencePixelList').mockReturnValue([{ x: 11, y: 10 }]);
-        //     jest.spyOn(multiClassicSession, 'verifyGameWon').mockReturnValue('');
-
-        //     soloClassicSession.players[0].differencesFound = [5];
-
-        //     const result = multiClassicSession.tryGuess({ x: 11, y: 10 }, firstSocketId);
-        //     expect(result).toEqual({ isCorrect: false, differencesByPlayer: [[firstSocketId, 1]], differencePixelList: [], winnerName: '' });
-        // });
-
-        // it('tryguess returns incorrect result when no difference', () => {
-        //     jest.spyOn(DifferenceValidationService.prototype, 'validateGuess').mockImplementation(() => {
-        //         return true;
-        //     });
-        //     jest.spyOn(DifferenceValidationService.prototype, 'loadDifferences').mockImplementation(() => {
-        //         return null;
-        //     });
-        //     jest.spyOn(DifferenceValidationService.prototype, 'checkDifference').mockImplementation(() => {
-        //         return undefined;
-        //     });
-        //     jest.spyOn(DifferenceValidationService.prototype, 'getDifferencePixelList').mockImplementation(() => {
-        //         return [{ x: 11, y: 10 }];
-        //     });
-        //     jest.spyOn(Session.prototype, 'verifyGameWon').mockReturnValue('');
-        //     sessionMulti.differencesFoundByPlayer = [[firstSocketId, [5]]];
-
-        //     const result = sessionMulti.tryGuess({ x: 11, y: 10 }, firstSocketId);
-        //     expect(result).toEqual({ isCorrect: false, differencesByPlayer: [[firstSocketId, 1]], differencePixelList: [], winnerName: '' });
-        // });
     });
     describe('getNotFoundDifferences', () => {
         it('should return all the differences', () => {
@@ -310,23 +256,6 @@ describe('Session tests', () => {
             const returnedValue: Coordinate[][] = soloClassicSession.getNotFoundDifferences();
             expect(returnedValue).toEqual([[{ x: 11, y: 10 }], [{ x: 12, y: 10 }], [{ x: 13, y: 10 }], [{ x: 14, y: 10 }]]);
         });
-
-        // it('should return 4 of the differences', () => {
-        //     soloClassicSession.differenceValidationService.differenceCoordLists = [
-        //         [{ x: 11, y: 10 }],
-        //         [{ x: 12, y: 10 }],
-        //         [{ x: 13, y: 10 }],
-        //         [{ x: 14, y: 10 }],
-        //     ];
-        //     jest.spyOn(soloClassicSession, 'isDiffAlreadyFound' as any).mockImplementationOnce(() => {
-        //         return false;
-        //     });
-        //     jest.spyOn(soloClassicSession, 'isDiffAlreadyFound' as any).mockImplementation(() => {
-        //         return true;
-        //     });
-        //     const returnedValue: Coordinate[][] = soloClassicSession.getNotFoundDifferences();
-        //     expect(returnedValue).toEqual([[{ x: 11, y: 10 }], [{ x: 12, y: 10 }], [{ x: 13, y: 10 }], [{ x: 14, y: 10 }]]);
-        // });
 
         it('should return no differences', () => {
             soloClassicSession.differenceValidationService.differenceCoordLists = [

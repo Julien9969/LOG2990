@@ -100,7 +100,6 @@ describe('SquareInterfaceComponent', () => {
     });
 
     it('openFormDialog() should call the right function with the right parameters', () => {
-
         component.openFormDialog(testGame, true);
         expect(component['dialog'].closeAll).toHaveBeenCalled();
         expect(component['dialog'].open).toHaveBeenCalledWith(MatchMakingDialogComponent, {
@@ -124,10 +123,10 @@ describe('SquareInterfaceComponent', () => {
         for (let i = 0; i < GAMES_PER_PAGE; i++) {
             component.groupedGames[0].push(testGame);
         }
-        
-        spyOn(component['matchMaking'], 'roomCreatedForThisGame').and.returnValue(Promise.resolve(true));
+
+        spyOn(component['matchMaking'], 'isRoomCreated').and.returnValue(Promise.resolve(true));
         component.reachableGames();
-        expect(component['matchMaking'].roomCreatedForThisGame).toHaveBeenCalled();
+        expect(component['matchMaking'].isRoomCreated).toHaveBeenCalled();
         expect(component.someoneWaiting).toBeTruthy();
     });
 

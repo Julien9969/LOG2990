@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ERROR_MESSAGE_DISPLAYED_TIME } from '@app/constants/utils-constants';
+import { MESSAGE_DISPLAYED_TIME } from '@app/constants/utils-constants';
 
 @Component({
     selector: 'app-image-difference-popup',
@@ -23,7 +23,7 @@ export class ImageDifferencePopupComponent {
         this.isPressed = true;
         setTimeout(() => {
             this.isPressed = false;
-        }, ERROR_MESSAGE_DISPLAYED_TIME);
+        }, MESSAGE_DISPLAYED_TIME);
     }
 
     getImgDifferencesUrlSanitized() {

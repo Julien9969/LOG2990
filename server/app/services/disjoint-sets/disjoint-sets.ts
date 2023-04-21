@@ -4,6 +4,7 @@
  */
 
 import { CoordSetObject } from '@app/services/disjoint-sets/coord-set-object';
+import { DECIMAL_BASE } from '@app/services/constants/services.const';
 
 export class DisjointSet {
     private objects: CoordSetObject[] = [];
@@ -60,7 +61,7 @@ export class DisjointSet {
         const joinedSetsList = [];
 
         for (const id of Object.keys(this.relations)) {
-            rootId = this.findById(parseInt(id, 10));
+            rootId = this.findById(parseInt(id, DECIMAL_BASE));
 
             if (typeof joinedSet[rootId] === 'undefined') {
                 joinedSet[rootId] = [];

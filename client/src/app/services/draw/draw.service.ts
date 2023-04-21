@@ -9,24 +9,25 @@ import { Coordinate } from '@common/coordinate';
     providedIn: 'root',
 })
 export class DrawService {
-    startCoordinate: Coordinate = { x: 0, y: 0 };
-    lastPos: Coordinate = { x: 0, y: 0 };
-    mode = DrawMode.PENCIL;
-
-    toolSize = DEFAULT_TOOL_SIZE;
-    color = '#000000';
-
-    mainUndoStack: ImageData[] = [];
-    mainRedoStack: ImageData[] = [];
-    altUndoStack: ImageData[] = [];
-    altRedoStack: ImageData[] = [];
-
-    activeCanvas = ActiveCanvas.None;
-    startCanvasData: ImageData;
-    startFgData: ImageData;
-
     mainImageComponent: UploadImageSquareComponent;
     altImageComponent: UploadImageSquareComponent;
+
+    mode = DrawMode.PENCIL;
+
+    color = '#000000';
+    toolSize = DEFAULT_TOOL_SIZE;
+
+    private startCoordinate: Coordinate = { x: 0, y: 0 };
+    private lastPos: Coordinate = { x: 0, y: 0 };
+
+    private activeCanvas = ActiveCanvas.None;
+    private startCanvasData: ImageData;
+    private startForegroundData: ImageData;
+
+    private mainUndoStack: ImageData[] = [];
+    private mainRedoStack: ImageData[] = [];
+    private altUndoStack: ImageData[] = [];
+    private altRedoStack: ImageData[] = [];
 
     startAction(coordinate: Coordinate, canvas: ActiveCanvas) {
         if (this.activeCanvas !== ActiveCanvas.None) this.cancelAction();
@@ -37,7 +38,7 @@ export class DrawService {
         if (this.mode === DrawMode.RECTANGLE) {
             const activeComponent = canvas === ActiveCanvas.Main ? this.mainImageComponent : this.altImageComponent;
             this.startCanvasData = activeComponent.canvasContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-            this.startFgData = activeComponent.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+            this.startForegroundData = activeComponent.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
         }
     }
 
@@ -55,18 +56,18 @@ export class DrawService {
         switch (this.mode) {
             case DrawMode.PENCIL:
                 this.drawLine(coordinate, activeComponent.canvasContext);
-                this.drawLine(coordinate, activeComponent.fgContext);
+                this.drawLine(coordinate, activeComponent.foregroundContext);
                 break;
             case DrawMode.RECTANGLE:
                 // Retourne à l'état de départ pour re-render le rectangle ou le carré
                 activeComponent.canvasContext.putImageData(this.startCanvasData, 0, 0);
-                activeComponent.fgContext.putImageData(this.startFgData, 0, 0);
+                activeComponent.foregroundContext.putImageData(this.startForegroundData, 0, 0);
                 this.drawRectangle(coordinate, activeComponent.canvasContext, shiftPressed);
-                this.drawRectangle(coordinate, activeComponent.fgContext, shiftPressed);
+                this.drawRectangle(coordinate, activeComponent.foregroundContext, shiftPressed);
                 break;
             case DrawMode.ERASER:
-                this.replace(coordinate, activeComponent.canvasContext, activeComponent.bgImage);
-                this.erase(coordinate, activeComponent.fgContext);
+                this.replace(coordinate, activeComponent.canvasContext, activeComponent.backgroundImage);
+                this.erase(coordinate, activeComponent.foregroundContext);
                 break;
         }
     }
@@ -98,11 +99,11 @@ export class DrawService {
         this.saveStateToStacks(this.mainUndoStack, this.altUndoStack);
         this.clearRedoHistory();
 
-        const mainFg = this.mainImageComponent.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-        const altFg = this.altImageComponent.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        const mainForeground = this.mainImageComponent.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        const altForeground = this.altImageComponent.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
 
-        this.mainImageComponent.fgContext.putImageData(altFg, 0, 0);
-        this.altImageComponent.fgContext.putImageData(mainFg, 0, 0);
+        this.mainImageComponent.foregroundContext.putImageData(altForeground, 0, 0);
+        this.altImageComponent.foregroundContext.putImageData(mainForeground, 0, 0);
 
         this.renderStates();
     }
@@ -111,11 +112,11 @@ export class DrawService {
         this.saveStateToStacks(this.mainUndoStack, this.altUndoStack);
         this.clearRedoHistory();
         if (canvas === ActiveCanvas.Main) {
-            const altFg = this.altImageComponent.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-            this.mainImageComponent.fgContext.putImageData(altFg, 0, 0);
+            const altForeground = this.altImageComponent.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+            this.mainImageComponent.foregroundContext.putImageData(altForeground, 0, 0);
         } else if (canvas === ActiveCanvas.Alt) {
-            const mainFg = this.mainImageComponent.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-            this.altImageComponent.fgContext.putImageData(mainFg, 0, 0);
+            const mainForeground = this.mainImageComponent.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+            this.altImageComponent.foregroundContext.putImageData(mainForeground, 0, 0);
         }
 
         this.renderStates();
@@ -124,7 +125,7 @@ export class DrawService {
     clearForeground(canvas: ActiveCanvas) {
         this.saveStateToStacks(this.mainUndoStack, this.altUndoStack);
         this.clearRedoHistory();
-        const activeContext = canvas === ActiveCanvas.Main ? this.mainImageComponent.fgContext : this.altImageComponent.fgContext;
+        const activeContext = canvas === ActiveCanvas.Main ? this.mainImageComponent.foregroundContext : this.altImageComponent.foregroundContext;
         activeContext.clearRect(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
 
         this.renderStates();
@@ -137,13 +138,13 @@ export class DrawService {
 
     private saveStateToStacks(mainStack: ImageData[], altStack: ImageData[]) {
         // On sauvegarde le nouvel état de l'avant-plan des 2 images
-        mainStack.push(this.mainImageComponent.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
-        altStack.push(this.altImageComponent.fgContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
+        mainStack.push(this.mainImageComponent.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
+        altStack.push(this.altImageComponent.foregroundContext.getImageData(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
     }
 
     private loadStateFromStacks(mainStack: ImageData[], altStack: ImageData[]) {
-        this.mainImageComponent.fgContext.putImageData(mainStack.pop() as ImageData, 0, 0);
-        this.altImageComponent.fgContext.putImageData(altStack.pop() as ImageData, 0, 0);
+        this.mainImageComponent.foregroundContext.putImageData(mainStack.pop() as ImageData, 0, 0);
+        this.altImageComponent.foregroundContext.putImageData(altStack.pop() as ImageData, 0, 0);
     }
 
     private renderStates() {

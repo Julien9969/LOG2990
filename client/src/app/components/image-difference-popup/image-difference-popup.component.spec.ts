@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { SafeUrl } from '@angular/platform-browser';
-import { ERROR_MESSAGE_DISPLAYED_TIME } from '@app/constants/utils-constants';
+import { MESSAGE_DISPLAYED_TIME } from '@app/constants/utils-constants';
 import { ImageDifferencePopupComponent } from './image-difference-popup.component';
 
 describe('image-difference-popup', () => {
@@ -26,7 +26,7 @@ describe('image-difference-popup', () => {
         it('should set isPressed to true the false after a certain period of time', fakeAsync(() => {
             component.dispatchGameCreationRequest();
             expect(component.isPressed).toBeTrue();
-            tick(ERROR_MESSAGE_DISPLAYED_TIME);
+            tick(MESSAGE_DISPLAYED_TIME);
             expect(component.isPressed).toBeFalse();
         }));
 

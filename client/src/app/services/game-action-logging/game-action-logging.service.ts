@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
-import { REPLAY_BASE_TIME_INCREMENT } from '@app/services/constantes.service';
+import { REPLAY_BASE_TIME_INCREMENT } from '@app/constants/utils-constants';
 import { ChatEvents } from '@common/chat.gateway.events';
 import { Coordinate } from '@common/coordinate';
 import { Game } from '@common/game';
@@ -86,6 +86,7 @@ export class GameActionLoggingService {
             time += REPLAY_BASE_TIME_INCREMENT * this.speedMultiplier;
             this.replayActionsToTime(time);
             if (this.lastTimeReplayed > this.actionLog[this.actionLog.length - 1].time) {
+                this.isRecording = false;
                 clearInterval(this.intervalPlayAll);
             }
         }, REPLAY_BASE_TIME_INCREMENT);

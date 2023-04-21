@@ -13,14 +13,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
 import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
 import { PopupDialogComponent } from '@app/components/popup-dialog/popup-dialog.component';
-// import { PlayImageLimitedTimeComponent } from '@app/components/play-image/play-image-limited-time/play-image-limited-time.component';
 import { LimitedTimeGamePageComponent } from '@app/pages/limited-time-game-page/limited-time-game-page.component';
-// import { CommunicationService } from '@app/services/communication/communication.service';
 import { GameService } from '@app/services/game/game.service';
+import { HistoryService } from '@app/services/history/history.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
-// import { SocketClientService } from '@app/services/socket-client/socket-client.service';
-// import { of } from 'rxjs';
 
 @Component({
     selector: 'app-play-image-limited-time',
@@ -52,10 +49,9 @@ describe('LimitedTimeGamePageComponent', () => {
     let fixture: ComponentFixture<LimitedTimeGamePageComponent>;
     let dialogSpy: jasmine.SpyObj<MatDialog>;
     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
-    // let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
-    // let socketServiceSpy: jasmine.SpyObj<SocketClientService>;
     let gameServiceSpy: jasmine.SpyObj<GameService>;
     let inGameSocketSpy: jasmine.SpyObj<InGameService>;
+    let historyServiceSpy: jasmine.SpyObj<HistoryService>;
 
     const game = {
         id: '1',
@@ -79,8 +75,6 @@ describe('LimitedTimeGamePageComponent', () => {
     };
 
     beforeEach(async () => {
-        // socketServiceSpy = jasmine.createSpyObj('SocketClientService', ['send', 'on', 'sendAndCallBack', 'connect', 'isSocketAlive']);
-
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
         gameServiceSpy = jasmine.createSpyObj('GameService', ['getGameById', 'getGameConstants']);
@@ -97,7 +91,13 @@ describe('LimitedTimeGamePageComponent', () => {
         ]);
 
         inGameSocketSpy.retrieveSocketId.and.returnValue(new Promise((resolve) => resolve('socketId')));
-
+        historyServiceSpy = jasmine.createSpyObj('HistoryService', [
+            'setPlayerQuit',
+            'setPlayerWon',
+            'setLimitedTimeHistory',
+            'initHistory',
+            'setPlayers',
+        ]);
         gameServiceSpy.getGameConstants.and.returnValue(
             new Promise((resolve) => {
                 resolve(gameConstants);
@@ -109,10 +109,10 @@ describe('LimitedTimeGamePageComponent', () => {
             imports: [MatIconModule, MatToolbarModule],
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },
-                // { provide: SocketClientService, useValue: socketServiceSpy },
                 { provide: InGameService, useValue: inGameSocketSpy },
                 { provide: GameService, useValue: gameServiceSpy },
                 { provide: PlayImageLimitedTimeComponent, useValue: playImageComponentSpy },
+                { provide: HistoryService, useValue: historyServiceSpy },
             ],
         }).compileComponents();
     });
@@ -234,11 +234,10 @@ describe('LimitedTimeGamePageComponent', () => {
         });
     });
 
-    // Can't test by dispatching event because it will reload the page and make the test crash
+    // On ne peut pas lancer un event car celui-ci va recharger la page et faire planter les tests
     it('unloadNotification should set event.returnValue to true', () => {
-        const event = new Event('beforeunload');
+        const event: BeforeUnloadEvent = new Event('beforeunload');
         component.unloadNotification(event);
-        // eslint-disable-next-line deprecation/deprecation
         expect(event.returnValue).toEqual(true);
     });
 

@@ -49,22 +49,14 @@ describe('HistoryService', () => {
 
     it('initHistory should call setStartDateTime', () => {
         spyOn(service, 'setStartDateTime' as any).and.callFake(() => {});
-        service.initHistory();
+        service.initHistory('classique', true);
         expect(service['setStartDateTime']).toHaveBeenCalled();
+        expect(service['currentGame'].gameMode).toEqual('classique solo');
     });
 
-    it('setGameMode should set currentGame.gameMode to solo if isSolo is true', () => {
-        const gameMode = '42';
-        const isSolo = true;
-        service.setGameMode(gameMode, isSolo);
-        expect(service['currentGame'].gameMode).toEqual(gameMode + ' solo');
-    });
-
-    it('setGameMode should set currentGame.gameMode to multi if isSolo is false', () => {
-        const gameMode = '42';
-        const isSolo = false;
-        service.setGameMode(gameMode, isSolo);
-        expect(service['currentGame'].gameMode).toEqual(gameMode + ' multi');
+    it('initHistory should set game mode to multi if false passed', () => {
+        service.initHistory('classique', false);
+        expect(service['currentGame'].gameMode).toEqual('classique multi');
     });
 
     it('setPlayers should set currentGame.playerOne', () => {
@@ -81,29 +73,29 @@ describe('HistoryService', () => {
 
     it('playerWon should set currentGame.duration', () => {
         const duration = '42';
-        service.playerWon(duration);
+        service.setPlayerWon(duration);
         expect(service['currentGame'].duration).toEqual(duration);
     });
 
     it('playerWon should add <b> around currentGame.playerOne', () => {
         const playerOne = '42';
-        service.playerWon(playerOne);
+        service.setPlayerWon(playerOne);
         expect(service['currentGame'].playerOne).toEqual('<b>' + 'jose' + '</b>');
     });
 
     it('playerQuit should set currentGame.duration', () => {
         const duration = '42';
-        service.playerQuit(duration);
+        service.setPlayerQuit(duration);
         expect(service['currentGame'].duration).toEqual(duration);
     });
 
     it('playerQuit should add <s> around currentGame.playerTwo', () => {
-        service.playerQuit('', false);
+        service.setPlayerQuit('', false);
         expect(service['currentGame'].playerTwo).toEqual('<s>' + 'bob' + '</s>');
     });
 
     it('playerQuit should set currentGame.playerOne', () => {
-        service.playerQuit('', true);
+        service.setPlayerQuit('', true);
         expect(service['currentGame'].playerOne).toEqual('<s>' + 'jose' + '</s>');
     });
 
@@ -117,5 +109,12 @@ describe('HistoryService', () => {
         service['setStartDateTime']();
         const expectedStartDateTime = dateSpy.toLocaleDateString() + ' ' + dateSpy.toLocaleTimeString();
         expect(service['currentGame'].startDateTime).toEqual(expectedStartDateTime);
+    });
+
+    it('setLimitedTime history should set currentGame.gameMode', () => {
+        const historyPostSpy = spyOn(service, 'postHistory' as any).and.callFake(() => {});
+        service.setLimitedTimeHistory('1:00');
+        expect(service['currentGame'].duration).toEqual('1:00');
+        expect(historyPostSpy).toHaveBeenCalled();
     });
 });

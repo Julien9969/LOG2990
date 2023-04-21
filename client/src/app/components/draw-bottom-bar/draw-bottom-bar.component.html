@@ -2,9 +2,9 @@
 
     <span class="horizontal-bar">
         <p>Mode de dessin</p>
-        <mat-icon [ngClass]="{'active' : drawModeActive() }" (click)="setDrawMode()">draw</mat-icon>
-        <mat-icon [ngClass]="{'active' : rectangleModeActive() }" (click)="setRectangleMode()">rectangle</mat-icon>
-        <mat-icon [ngClass]="{'active' : eraseModeActive() }" (click)="setEraseMode()">highlight_remove</mat-icon>
+        <mat-icon [ngClass]="{'active' : isDrawModeActive() }" (click)="setDrawMode()">draw</mat-icon>
+        <mat-icon [ngClass]="{'active' : isRectangleModeActive() }" (click)="setRectangleMode()">rectangle</mat-icon>
+        <mat-icon [ngClass]="{'active' : isEraseModeActive() }" (click)="setEraseMode()">highlight_remove</mat-icon>
         <mat-icon (click)="undo()">undo</mat-icon>
         <mat-icon (click)="redo()">redo</mat-icon>
         <mat-icon (click)="swapForegrounds()">swap_horiz</mat-icon>

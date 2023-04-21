@@ -126,7 +126,7 @@ describe('InGameService', () => {
     it('listenGameEnded listen to SessionEvents.EndedGame that calls a callback', () => {
         const callbackSpy = jasmine.createSpy('callback');
         service.listenGameEnded(callbackSpy);
-        socketHelper.peerSideEmit(SessionEvents.EndedGame);
+        socketHelper.peerSideEmit(SessionEvents.LimitedTimeGameEnded);
         expect(callbackSpy).toHaveBeenCalled();
     });
 

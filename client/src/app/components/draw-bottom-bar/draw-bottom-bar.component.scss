@@ -39,12 +39,17 @@ mat-icon.active {
     color:rgb(161, 0, 0);
 }
 
-// mat-icon.color {
-//     color: ;
-// }
-
 input#colorSelect {
     visibility: hidden;
     margin: 0;
-    // display: none;
+}
+
+mat-icon {
+    font-size: 44px;
+    padding: 20px;
+    cursor: pointer;
+}
+
+mat-icon:hover {
+    color: rgb(236, 0, 0);
 }

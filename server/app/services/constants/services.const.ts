@@ -11,11 +11,7 @@ export const IMAGE_HEIGHT = 480;
  * Constantes de la classe session
  */
 
-// eslint-disable-next-line @typescript-eslint/no-inferrable-types
-export const NO_WINNER: null = null;
-
 export const TIME_CONST = {
-    secondInMilliseconds: 1000,
     minute: 60,
 };
 
@@ -39,6 +35,7 @@ export const GAME_MIN_DIFF_COUNT = 3;
 export const GAME_MAX_DIFF_COUNT = 9;
 export const HARD_GAME_MIN_DIFF_COUNT = 7;
 export const HARD_GAME_MAX_DIFF_PROPORTION = 0.15;
+export const DECIMAL_BASE = 10;
 
 /**
  * Constantes de gestion d'image
@@ -66,6 +63,7 @@ export const DEFAULT_GAME_LEADERBOARD: [string, number][] = [
 export const SESSION_ID_CAP = 10000;
 export const MULTIPLAYER_SESSION = 2;
 export const ONE_PLAYER = 1;
+export const MAXIMUM_LIMITED_TIME_GAME_TIME = 120;
 
 /**
  * Constantes de ClueService

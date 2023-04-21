@@ -21,11 +21,11 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
 
     constructor(private readonly logger: Logger, @InjectModel('Game') private gameModel: Model<GameDocument>) {}
 
-    get serverRooms(): Map<string, Set<string>> {
+    private get serverRooms(): Map<string, Set<string>> {
         return this.server.sockets.adapter.rooms;
     }
 
-    get connectedClients(): Map<string, Socket> {
+    private get connectedClients(): Map<string, Socket> {
         return this.server.sockets.sockets;
     }
 
@@ -216,7 +216,7 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
 
         this.serverRooms.forEach((socketIds, roomId) => {
             if (roomId.startsWith('gameRoom')) {
-                if (socketIds.size < 2 && !this.waitingRooms.find(roomId) && !this.acceptingRooms.find(roomId)) {
+                if (socketIds.size < 2 && this.notMatchMakingRoom(roomId)) {
                     const message = { playerName: "l'adversaire ", systemCode: 'userDisconnected' };
                     this.server.to(roomId).emit(ChatEvents.SystemMessageFromServer, message);
                     this.server.to(roomId).emit(SessionEvents.OpponentLeftGame);
@@ -228,6 +228,9 @@ export class MatchmakingGateway implements OnGatewayDisconnect {
         this.server.emit(MatchMakingEvents.UpdateRoomView);
     }
 
+    notMatchMakingRoom(roomId: string): boolean {
+        return !this.waitingRooms.find(roomId) && !this.acceptingRooms.find(roomId);
+    }
     removeOtherPlayer(client: Socket, roomId: string) {
         this.serverRooms.get(roomId).forEach((socketId) => {
             if (socketId !== client.id) {

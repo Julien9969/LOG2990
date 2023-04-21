@@ -276,6 +276,7 @@ export class SessionGateway {
     async sendNewGame(client: Socket, session: LimitedTimeSession) {
         const chosenGame = await session.decideNewGame();
         if (!chosenGame) {
+            session.stopTimer();
             this.limitedTimeGameEnded(client, false);
         }
         const data: [Game, number] = [chosenGame, session.nDifferencesFound];
@@ -334,9 +335,6 @@ export class SessionGateway {
                 session.stopTimer();
                 this.limitedTimeGameEnded(client, true);
             }
-            // for (const player of session.players) {
-            //     this.server.to(player.socketId).emit(SessionEvents.TimerUpdate, session.formatedTime);
-            // }
             client.emit(SessionEvents.TimerUpdate, session.formatedTime);
             client.rooms.forEach((roomId) => {
                 if (roomId.startsWith('gameRoom')) {
@@ -386,8 +384,9 @@ export class SessionGateway {
                 const positionInScoreBoard = await this.gameService.addToScoreboard(gameId, finishedGame);
                 if (positionInScoreBoard) {
                     await this.gameService.findById(gameId).then((game: Game) => {
-                        const hightScoreMessage = `${new Date().toTimeString().split(' ')[0]} - 
-                                ${winnerName} obtient la ${positionInScoreBoard} place dans les meilleurs temps du jeu ${game.name} en 
+                        const hightScoreMessage = `${winnerName} obtient la ${positionInScoreBoard} place dans les meilleurs temps du jeu ${
+                            game.name
+                        } en 
                             ${session.isSolo ? 'solo' : 'multijoueur'}`;
                         this.server.emit(ChatEvents.BroadcastNewHighScore, hightScoreMessage);
                     });
@@ -427,11 +426,11 @@ export class SessionGateway {
     }
 
     limitedTimeGameEnded(client: Socket, timer: boolean) {
-        client.emit(SessionEvents.EndedGame, timer);
+        client.emit(SessionEvents.LimitedTimeGameEnded, timer);
         client.rooms.forEach((roomId) => {
             if (roomId.startsWith('gameRoom')) {
                 this.logger.log('EndedGame has been sent: ' + client.id);
-                this.server.to(roomId).emit(SessionEvents.EndedGame, timer);
+                this.server.to(roomId).emit(SessionEvents.LimitedTimeGameEnded, timer);
             }
         });
     }

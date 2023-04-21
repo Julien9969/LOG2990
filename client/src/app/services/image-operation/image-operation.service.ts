@@ -1,7 +1,5 @@
 /* eslint-disable max-lines */ // Les modifications ajoutées sont nécessaires
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
-// import { BIT_PER_PIXEL, BLINK_COUNT, BLINK_PERIOD_MS, CANVAS, CHEAT_PERIOD_MS, RGB_GREEN, RGB_RED } from '@app/constants/utils-constants';
 import {
     BIT_PER_PIXEL,
     BLINK_COUNT,
@@ -12,8 +10,9 @@ import {
     IMAGE_WIDTH,
     RGB_GREEN,
     RGB_RED,
+    RATIO_POINTER_IMAGE,
+    POINTER_X_OFFSET,
 } from '@app/constants/utils-constants';
-import { RATIO_POINTER_IMAGE as POINTER_TO_CANVAS_RATIO, POINTER_X_OFFSET } from '@app/services/constantes.service';
 import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Coordinate } from '@common/coordinate';
@@ -23,13 +22,13 @@ import { LoggingCodes } from '@common/loggingCodes';
     providedIn: 'root',
 })
 export class ImageOperationService {
-    // attributs pour sauvegarder les ids des intervalles et en supporter plusieurs en même temps
-    intervalIds: number[] = [];
-    newestTimerId: number = 0;
-    oldestTimerId: number = 0;
-
     isChatFocused: boolean = false;
     cheatInterval: number;
+
+    // attributs pour sauvegarder les ids des intervalles et en supporter plusieurs en même temps
+    private intervalIds: number[] = [];
+    private newestTimerId: number = 0;
+    private oldestTimerId: number = 0;
 
     private originalImgContext: CanvasRenderingContext2D;
     private modifiedImgContext: CanvasRenderingContext2D;
@@ -51,10 +50,10 @@ export class ImageOperationService {
             clearInterval(interval);
         });
         this.intervalIds = [];
-        this.allDifferencesList = undefined as any;
+        this.allDifferencesList = undefined as unknown as Coordinate[][];
         clearInterval(this.cheatInterval);
         this.cheatInterval = 0;
-        this.cheatImagesData = undefined as any;
+        this.cheatImagesData = undefined as unknown as ImageData;
         this.newestTimerId = 0;
         this.oldestTimerId = 0;
     }
@@ -181,7 +180,6 @@ export class ImageOperationService {
                 diffList: [...this.allDifferencesList],
             });
             await this.createImageDataCheat(differencesInOneList);
-
             await this.cheatBlink();
         }
     }
@@ -316,21 +314,20 @@ export class ImageOperationService {
                 resolve();
             };
         });
-
-        const pointerHeight = Math.floor(IMAGE_HEIGHT * POINTER_TO_CANVAS_RATIO);
-        const pointerWidth = Math.floor(IMAGE_WIDTH * POINTER_TO_CANVAS_RATIO);
+        const pointerHeight = Math.floor(IMAGE_HEIGHT * RATIO_POINTER_IMAGE);
+        const pointerWidth = Math.floor(IMAGE_WIDTH * RATIO_POINTER_IMAGE);
 
         contextOriginalImg.drawImage(
             pointer,
             isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
-            difference.y - pointerHeight * POINTER_TO_CANVAS_RATIO,
+            difference.y - pointerHeight * RATIO_POINTER_IMAGE,
             pointerWidth,
             pointerHeight,
         );
         contextModifiedImg.drawImage(
             pointer,
             isPointerFlipped ? difference.x + POINTER_X_OFFSET : difference.x - pointerWidth - POINTER_X_OFFSET,
-            difference.y - pointerHeight * POINTER_TO_CANVAS_RATIO,
+            difference.y - pointerHeight * RATIO_POINTER_IMAGE,
             pointerWidth,
             pointerHeight,
         );
@@ -361,7 +358,6 @@ export class ImageOperationService {
                 differencesInOneList.push(...differenceList);
             }
         });
-
         this.updateBaseImagesSave(diffToRemove);
         this.createImageDataCheat(differencesInOneList);
     }
@@ -377,6 +373,7 @@ export class ImageOperationService {
             this.modifiedImageSave.data.set(originalPixel, pixelIndex);
         });
     }
+
     private isSameDifference(differenceList: Coordinate[], diffToRemove: Coordinate[]): boolean {
         return differenceList.length !== 0 && differenceList[0].x === diffToRemove[0].x && differenceList[0].y === diffToRemove[0].y;
     }

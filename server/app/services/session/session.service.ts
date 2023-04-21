@@ -69,7 +69,9 @@ export class SessionService {
     delete(id: number, socketId: string) {
         const game = this.findBySessionId(id);
         const index = this.activeSessions.indexOf(game);
-        if (this.activeSessions.length < index || index < 0) throw new Error(`Aucune session trouvee avec ce ID ${id}.`);
+        if (this.activeSessions.length < index || index < 0) {
+            throw new Error(`Aucune session trouvee avec ce ID ${id}.`);
+        }
 
         if (game.isTimeLimited) {
             const limitedTimeGame: LimitedTimeSession = game as LimitedTimeSession;

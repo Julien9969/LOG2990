@@ -1,52 +1,59 @@
 <div (mouseup)="onMouseUp()">
-    <p id="errorMessage" class="message" *ngIf="this.errorMessage">{{this.errorMessage}}</p>
-    <p id="successMessage" class="message" *ngIf="this.successMessage">{{this.successMessage}}</p>
+    <p id="errorMessage" class="message" *ngIf="this.errorMessage">{{ this.errorMessage }}</p>
+    <p id="successMessage" class="message" *ngIf="this.successMessage">{{ this.successMessage }}</p>
     <div class="formContainer">
         <form>
-            <input #title id="title" placeholder="Titre du nouveau jeu" (change)="setTitle(title.value)"/>
-            <div [ngClass]="isValid? 'hidden' : ''" class="flex">
-                <app-upload-image-square 
+            <input #title id="title" placeholder="Titre du nouveau jeu" (change)="setTitle(title.value)" />
+            <div [ngClass]="isValid ? 'hidden' : ''" class="flex">
+                <app-upload-image-square
                     #mainImageSquare
                     title="main"
-                    (mouseDown)="mainCanvasMouseDown($event)"
-                    (mouseMove)="mainCanvasMouseMove($event)"
+                    (mouseDown)="startMouseDownMainCanvas($event)"
+                    (mouseMove)="startMouseMoveMainCanvas($event)"
                     (invalidImageType)="showInvalidImageMessage()"
                     (clearForeground)="clearMainForeground()"
                     (replaceForeground)="replaceMainForeground()"
                 ></app-upload-image-square>
                 <div id="middleMenu">
-                    <label for="globalImageUploader-{{this.id}}" class="button">
+                    <label for="globalImageUploader-{{ this.id }}" class="button">
                         <mat-icon>arrow_upward</mat-icon>
                         téléverser les 2 images
                     </label>
                     <div>
                         <label>Rayon des cercles de différences</label>
-                        <input #radius type="range" min="0" max="3" step="1" value="1" (input)="setRadius(radius.value)"/>
-                        <span>{{this.differenceRadius}} pixels</span>
+                        <input #radius type="range" min="0" max="3" step="1" value="1" (input)="setRadius(radius.value)" />
+                        <span>{{ this.differenceRadius }} pixels</span>
                     </div>
                     <button type="button" (click)="this.compareImages()">Commencer l'analyse</button>
                 </div>
-                <input #globalImageUploader type="file" id="globalImageUploader-{{this.id}}" class="invisible" accept="image/BMP" (input)="setBothImages(globalImageUploader)"/>
-                <app-upload-image-square 
+                <input
+                    #globalImageUploader
+                    type="file"
+                    id="globalImageUploader-{{ this.id }}"
+                    class="invisible"
+                    accept="image/BMP"
+                    (input)="setBothImages(globalImageUploader)"
+                />
+                <app-upload-image-square
                     #altImageSquare
                     title="alt"
-                    (mouseDown)="altCanvasMouseDown($event)"
-                    (mouseMove)="altCanvasMouseMove($event)"
+                    (mouseDown)="startMouseDownAltCanvas($event)"
+                    (mouseMove)="startMouseMoveAltCanvas($event)"
                     (invalidImageType)="showInvalidImageMessage()"
                     (clearForeground)="clearAltForeground()"
                     (replaceForeground)="replaceAltForeground()"
                 ></app-upload-image-square>
             </div>
-            <app-image-difference-popup 
+            <app-image-difference-popup
                 *ngIf="this.isValid"
                 class="popup"
-                imgDifferencesUrl="{{this.differencesImageUrl}}" 
-                [nbDifferences]="this.nbDifferences" 
+                imgDifferencesUrl="{{ this.differencesImageUrl }}"
+                [nbDifferences]="this.nbDifferences"
                 [isHard]="this.isHard"
                 (createGame)="this.submitNewGame()"
                 (cancelGameCreation)="this.isValid = false"
-                ></app-image-difference-popup>
+            ></app-image-difference-popup>
         </form>
-        <app-draw-bottom-bar [ngClass]="isValid? 'hidden' : ''"></app-draw-bottom-bar>
+        <app-draw-bottom-bar [ngClass]="isValid ? 'hidden' : ''"></app-draw-bottom-bar>
     </div>
 </div>

@@ -65,14 +65,19 @@ export class SquareInterfaceComponent implements OnInit, AfterViewInit {
      */
     openFormDialog(game: Game, isSolo: boolean): void {
         this.dialog.closeAll();
-        const gameInfo = { id: game.id, isSolo };
-        this.dialog.open(MatchMakingDialogComponent, { closeOnNavigation: true, disableClose: true, autoFocus: false, data: gameInfo });
+
+        this.dialog.open(MatchMakingDialogComponent, {
+            closeOnNavigation: true,
+            disableClose: true,
+            autoFocus: false,
+            data: { id: game.id, isSolo },
+        });
     }
 
     async reachableGames(): Promise<void> {
         this.groupedGames.forEach((group, j) => {
             group.forEach((game, i) => {
-                this.matchMaking.roomCreatedForThisGame(game.id).then((isRoomOpen) => {
+                this.matchMaking.isRoomCreated(game.id).then((isRoomOpen) => {
                     this.someoneWaiting[j * GAMES_PER_PAGE + i] = isRoomOpen;
                 });
             });

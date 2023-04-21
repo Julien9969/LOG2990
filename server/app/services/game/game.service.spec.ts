@@ -236,6 +236,13 @@ describe('Game Service tests', () => {
         });
     });
 
+    it('getRandomGame returns a game', async () => {
+        jest.spyOn(gameService['gameModel'], 'find').mockReturnValue(Promise.resolve([stubGame]) as any);
+        const game = await gameService.getRandomGame();
+        expect(game).toEqual(stubGame);
+        expect(gameModel.find).toHaveBeenCalled();
+    });
+
     describe('compareImages method', () => {
         beforeEach(() => {
             jest.spyOn(gameService, 'verifyGameId' as any).mockImplementation(async () => {});
@@ -268,7 +275,9 @@ describe('Game Service tests', () => {
                 differenceImageId: 0,
             };
 
-            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImages').mockResolvedValue(new Error());
+            jest.spyOn(DifferenceDetectionService.prototype as any, 'compareImages').mockResolvedValue(
+                new Error('Le jeu nécessite une image ou rayon.'),
+            );
             jest.spyOn(DifferenceDetectionService.prototype as any, 'getComparisonResult').mockReturnValue(mockResult);
 
             const result = await gameService.compareImages(stubInputGame, Buffer.from([]), Buffer.from([]), new DifferenceDetectionService());

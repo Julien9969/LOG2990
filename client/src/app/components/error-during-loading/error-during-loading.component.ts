@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 /**
- * @title Fenetre modale en cas d'erreur de chargement des jeux
+ * @title Fenêtre modale en cas d'erreur de chargement des jeux
  */
 @Component({
     selector: 'app-name-form-dialog',

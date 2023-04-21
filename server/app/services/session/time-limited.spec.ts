@@ -13,7 +13,6 @@ describe('Session tests', () => {
     let soloSession: LimitedTimeSession;
     let multiSession: LimitedTimeSession;
     let differenceValidationService: SinonStubbedInstance<DifferenceValidationService>;
-    // let session: SinonStubbedInstance<Session>;
     let gameServiceStub: GameService;
     let multiPlayers: Player[];
 

@@ -22,7 +22,7 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 /**
- * Controlleur de games. Les jeux crées sont permanents et la synchronisation entre la memoire serveur et la permanence est automatique
+ * Contrôleur de games. Les jeux crées sont permanents et la synchronisation entre la mémoire serveur et la permanence est automatique
  */
 @Controller('games')
 export class GamesController {
@@ -44,8 +44,8 @@ export class GamesController {
         if (!input || !input.name) {
             throw new HttpException('Nom du jeu absent.', HttpStatus.BAD_REQUEST);
         }
-        if (!files || !files.mainFile || !files.altFile || input.radius === undefined) {
-            throw new HttpException('Le jeu necessite 2 images et un rayon.', HttpStatus.BAD_REQUEST);
+        if (this.notValidGameImageInput(files) || !input.radius) {
+            throw new HttpException('Le jeu nécessite 2 images et un rayon.', HttpStatus.BAD_REQUEST);
         }
 
         // Conversion de type du rayon, puisque les forms html envoient des string
@@ -75,6 +75,11 @@ export class GamesController {
         return await this.gameService.findAll();
     }
 
+    /**
+     * Obtient les trois constantes de jeu
+     *
+     * @returns Un objet GameConstants avec les trois constantes.
+     */
     @Get('constants')
     getGameConstants() {
         return this.gameService.getGameConstants();
@@ -132,7 +137,7 @@ export class GamesController {
     /**
      * Detruit un element jeu specifique, dans la memoire de la session et dans la persistance
      *
-     * @param params une id de l'element game a detruire
+     * @param params une id de l'element game a détruire
      */
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -161,5 +166,9 @@ export class GamesController {
         } catch (err) {
             throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private notValidGameImageInput(files: GameImageInput): boolean {
+        return !files || !files.mainFile || !files.altFile;
     }
 }

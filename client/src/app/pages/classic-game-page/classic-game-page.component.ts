@@ -14,13 +14,11 @@ import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
 @Component({
     selector: 'app-game-page',
-    templateUrl: './game-page.component.html',
-    styleUrls: ['./game-page.component.scss'],
+    templateUrl: './classic-game-page.component.html',
+    styleUrls: ['./classic-game-page.component.scss'],
 })
-export class GamePageComponent implements OnInit, OnDestroy {
+export class ClassicGamePageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayImageClassicComponent) playImageComponent: PlayImageClassicComponent;
-    // @ViewChild('appPlayImage') playImageComponent: PlayImageClassicComponent;
-    userSocketId: string;
 
     playerName: string;
     opponentName: string;
@@ -28,15 +26,17 @@ export class GamePageComponent implements OnInit, OnDestroy {
     isSolo: boolean;
 
     sessionId: number;
-    gameID: string;
     gameInfos: Game;
 
-    nDiffFoundMainPlayer: number = 0;
-    nDiffFoundOpponent: number = 0;
+    nDiffFoundMainPlayer: number;
+    nDiffFoundOpponent: number;
 
-    time: string = '0:00';
-    nbCluesLeft = 3;
-    penalty: number = 0;
+    time: string;
+    nbCluesLeft: number;
+    penalty: number;
+
+    private gameID: string;
+    private userSocketId: string;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire
     constructor(
@@ -48,6 +48,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
         private readonly historyService: HistoryService,
         private readonly gameService: GameService,
     ) {
+        this.time = '0:00';
+        this.nbCluesLeft = 3;
+        this.nDiffFoundMainPlayer = 0;
+        this.nDiffFoundOpponent = 0;
+        this.penalty = 0;
+
         this.isLoaded = false;
         this.isSolo = window.history.state.isSolo;
         if (!this.isSolo) {
@@ -62,7 +68,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     @HostListener('window:beforeunload', ['$event'])
     unloadHandler(event: BeforeUnloadEvent) {
         event.preventDefault();
-        this.historyService.playerQuit(this.time, this.isSolo);
+        this.historyService.setPlayerQuit(this.time, this.isSolo);
         event.returnValue = false;
     }
 
@@ -85,7 +91,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             this.userSocketId = userSocketId;
         });
         this.inGameSocket.listenOpponentLeaves(() => {
-            this.historyService.playerQuit(this.time);
+            this.historyService.setPlayerQuit(this.time);
             this.openDialog(SessionEvents.OpponentLeftGame);
         });
         this.inGameSocket.listenPlayerWon((winnerInfo: WinnerInfo) => {
@@ -129,14 +135,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
         let message = '';
         if (winnerInfo.socketId === this.userSocketId) {
             message = this.isSolo ? `Bravo! Vous avez gagné avec un temps de ${this.time}` : `Vous avez gagné, ${winnerInfo.name} est le vainqueur`;
-            this.historyService.playerWon(this.time);
+            this.historyService.setPlayerWon(this.time);
         } else message = `Vous avez perdu, ${winnerInfo.name} remporte la victoire`;
+        this.historyService.hasBeenSend = true;
         this.dialog.closeAll();
         this.dialog.open(PopupDialogComponent, {
             closeOnNavigation: true,
             disableClose: true,
             autoFocus: false,
-            data: ['endGame', message, { gameId: this.gameID, playerName: this.playerName }],
+            data: ['endGame', message, { gameId: this.gameID, playerName: this.playerName, hasReplay: true }],
         });
     }
 
@@ -159,12 +166,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.playerExited();
         this.socketClient.send(SessionEvents.LeaveRoom);
         this.inGameSocket.disconnect();
+        if (this.gameInfos.differenceCount !== this.nDiffFoundMainPlayer) this.historyService.setPlayerQuit(this.time, this.isSolo);
     }
 
     private initHistory() {
-        this.historyService.initHistory();
+        this.historyService.initHistory('Classique', this.isSolo);
         this.historyService.setPlayers(this.playerName, this.opponentName);
-        this.historyService.gameId = this.gameID;
-        this.historyService.setGameMode('TODO', this.isSolo);
+        this.historyService.gameId = this.sessionId.toString();
     }
 }

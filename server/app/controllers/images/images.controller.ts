@@ -56,7 +56,7 @@ export class ImageController {
         ]),
     )
     async compareImages(@UploadedFiles() files: GameImageInput, @Body() input: { radius: string }): Promise<ImageComparisonResult> {
-        if (!files || !files.mainFile || !files.altFile || !input || input.radius === undefined) {
+        if (this.notValidGameImageInput(files) || this.notValidRadius(input)) {
             throw new HttpException('Il manque des parametres dans le body.', HttpStatus.BAD_REQUEST);
         }
         const mainImageBitmap = files.mainFile[0].buffer;
@@ -71,5 +71,25 @@ export class ImageController {
         }
 
         return result;
+    }
+
+    /**
+     * Vérifie la validité d'une image
+     *
+     * @param files la nouvelle image
+     * @returns un boolean vrai si l'image est valide, faux si l'image est invalide
+     */
+    private notValidGameImageInput(files: GameImageInput): boolean {
+        return !files || !files.mainFile || !files.altFile;
+    }
+
+    /**
+     * Vérifie la validité d'une entrée
+     *
+     * @param radius le nouveau radius
+     * @returns un boolean vrai si le nouveau radius est valide, faux si le nouveau radius est invalide
+     */
+    private notValidRadius(radius: { radius: string }): boolean {
+        return !radius || !radius.radius;
     }
 }

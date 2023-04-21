@@ -158,7 +158,7 @@ export class InGameService {
      * @param callback the callback function that handles a game ending
      */
     listenGameEnded(callback: (timerFinished: boolean) => void) {
-        this.socketService.on(SessionEvents.EndedGame, (timerFinished: boolean) => {
+        this.socketService.on(SessionEvents.LimitedTimeGameEnded, (timerFinished: boolean) => {
             callback(timerFinished);
         });
     }

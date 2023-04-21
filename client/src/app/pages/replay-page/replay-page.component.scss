@@ -69,10 +69,16 @@ mat-toolbar {
 app-play-image {
     height: 100%;
 }
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
 
 app-sidebar {
     width: 100%;
     padding: 5px;
+    height: 80%;
 }
 .highlight {
     background-color: rgba(82, 69, 94, 0.656);
@@ -89,23 +95,28 @@ app-sidebar {
 #bottom-bar {
     z-index: 1;
     font-size: 150%;
-
-    button {
-        border: 2px;
-        border-style: solid;
-        font-size: 100%;
-        mat-icon {
-            font-size: 120%;
-            margin-bottom: 5px;
-        }
-
-        &:hover {
-            background-color: gray;
-        }
-    }
-
     span {
         font-size: 150%;
         margin: auto;
+    }
+}
+
+#game-title
+{
+    transform: translate(-50%);
+}
+
+button {
+    border: 2px;
+    border-style: solid;
+    font-size : 100%;
+    margin-right: 5px;
+    mat-icon {
+        font-size : 120%;
+        margin-bottom: 5px;
+    }
+
+    &:hover {
+        background-color: gray;
     }
 }

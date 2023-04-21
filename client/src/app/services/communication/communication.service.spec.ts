@@ -4,7 +4,6 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 import { PATH_TO_VALID_IMAGE } from '@app/constants/utils-constants';
 import { CommunicationService } from '@app/services/communication/communication.service';
-import { communicationMessage } from '@common/communicationMessage';
 import { Game } from '@common/game';
 import { GameConstants } from '@common/game-constants';
 import { GameHistory } from '@common/game-history';
@@ -30,51 +29,6 @@ describe('CommunicationService', () => {
 
     it('should be created', () => {
         expect(service).toBeTruthy();
-    });
-
-    it('should return expected message (HttpClient called once)', () => {
-        const expectedMessage: communicationMessage = { body: 'Hello', title: 'World' };
-
-        // check the content of the mocked call
-        service.basicGet().subscribe({
-            next: (response: communicationMessage) => {
-                expect(response.title).toEqual(expectedMessage.title);
-                expect(response.body).toEqual(expectedMessage.body);
-            },
-            error: fail,
-        });
-
-        const req = httpMock.expectOne(`${baseUrl}/example`);
-        expect(req.request.method).toBe('GET');
-        // actually send the request
-        req.flush(expectedMessage);
-    });
-
-    it('should not return any message when sending a POST request (HttpClient called once)', () => {
-        const sentMessage: communicationMessage = { body: 'Hello', title: 'World' };
-        // subscribe to the mocked call
-        service.basicPost(sentMessage).subscribe({
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            next: () => {},
-            error: fail,
-        });
-        const req = httpMock.expectOne(`${baseUrl}/example/send`);
-        expect(req.request.method).toBe('POST');
-        // actually send the request
-        req.flush(sentMessage);
-    });
-
-    it('should handle http error safely', () => {
-        service.basicGet().subscribe({
-            next: (response: communicationMessage) => {
-                expect(response).toBeUndefined();
-            },
-            error: fail,
-        });
-
-        const req = httpMock.expectOne(`${baseUrl}/example`);
-        expect(req.request.method).toBe('GET');
-        req.error(new ProgressEvent('Random error occurred'));
     });
 
     describe('postRequest', () => {
