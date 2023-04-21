@@ -23,10 +23,9 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
     nDiffFoundOpponent: number = 0;
 
     time: string = '0:00';
+    speed: number = 1;
 
     private gameId: string;
-    private speed: number = 1;
-    private userSocketId: string;
     private wasCheatBlinkingBeforePause: boolean;
 
     // eslint-disable-next-line max-params -- Le nombre de paramètres est nécessaire

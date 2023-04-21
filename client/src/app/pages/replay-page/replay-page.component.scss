@@ -69,10 +69,16 @@ mat-toolbar {
 app-play-image {
     height: 100%;
 }
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
 
 app-sidebar {
     width: 100%;
     padding: 5px;
+    height: 80%;
 }
 .highlight {
     background-color: rgba(82, 69, 94, 0.656);
@@ -97,7 +103,7 @@ app-sidebar {
 
 #game-title
 {
-    transform: translate(-30%);
+    transform: translate(-50%);
 }
 
 button {
