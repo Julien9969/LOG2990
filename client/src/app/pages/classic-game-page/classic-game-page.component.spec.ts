@@ -23,7 +23,7 @@ import { Coordinate } from '@common/coordinate';
 import { GameConstants } from '@common/game-constants';
 import { WinnerInfo } from '@common/winner-info';
 import { of } from 'rxjs';
-import { GamePageComponent } from './game-page.component';
+import { ClassicGamePageComponent } from './classic-game-page.component';
 
 @Component({
     selector: 'app-play-image-classic',
@@ -52,8 +52,8 @@ export class StubAppSidebarComponent {
 }
 
 describe('GamePageComponent', () => {
-    let component: GamePageComponent;
-    let fixture: ComponentFixture<GamePageComponent>;
+    let component: ClassicGamePageComponent;
+    let fixture: ComponentFixture<ClassicGamePageComponent>;
     let dialogSpy: jasmine.SpyObj<MatDialog>;
     let playImageComponentSpy: jasmine.SpyObj<StubPlayImageComponent>;
     let communicationServiceSpy: jasmine.SpyObj<CommunicationService>;
@@ -111,7 +111,7 @@ describe('GamePageComponent', () => {
         dialogSpy = jasmine.createSpyObj('DialogMock', ['open', 'closeAll']);
 
         TestBed.configureTestingModule({
-            declarations: [GamePageComponent, StubPlayImageComponent, StubAppSidebarComponent],
+            declarations: [ClassicGamePageComponent, StubPlayImageComponent, StubAppSidebarComponent],
             imports: [MatIconModule, MatToolbarModule],
             providers: [
                 { provide: MatDialog, useValue: dialogSpy },
@@ -127,7 +127,7 @@ describe('GamePageComponent', () => {
 
     beforeEach(() => {
         window.history.pushState({ isSolo: true, gameID: '1', playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-        fixture = TestBed.createComponent(GamePageComponent);
+        fixture = TestBed.createComponent(ClassicGamePageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -297,7 +297,7 @@ describe('GamePageComponent', () => {
     });
     it('constructor should define opponentName if isSolo is false', () => {
         window.history.pushState({ isSolo: false, gameID: '12', playerName: 'test', opponentName: 'test2', sessionId: 1 }, '', '');
-        const newComponent = TestBed.createComponent(GamePageComponent);
+        const newComponent = TestBed.createComponent(ClassicGamePageComponent);
         newComponent.componentInstance['gameInfos'] = { differenceCount: 0 } as any;
         expect(newComponent.componentInstance.opponentName).toBeDefined();
         newComponent.destroy();

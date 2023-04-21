@@ -14,10 +14,10 @@ import { SessionEvents } from '@common/session.gateway.events';
 import { WinnerInfo } from '@common/winner-info';
 @Component({
     selector: 'app-game-page',
-    templateUrl: './game-page.component.html',
-    styleUrls: ['./game-page.component.scss'],
+    templateUrl: './classic-game-page.component.html',
+    styleUrls: ['./classic-game-page.component.scss'],
 })
-export class GamePageComponent implements OnInit, OnDestroy {
+export class ClassicGamePageComponent implements OnInit, OnDestroy {
     @ViewChild(PlayImageClassicComponent) playImageComponent: PlayImageClassicComponent;
 
     playerName: string;
