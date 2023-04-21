@@ -1,5 +1,4 @@
 /* eslint-disable max-lines */ // Les modifications ajoutées sont nécessaires
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 import {
     BIT_PER_PIXEL,
@@ -50,10 +49,10 @@ export class ImageOperationService {
             clearInterval(interval);
         });
         this.intervalIds = [];
-        this.allDifferencesList = undefined as any;
+        this.allDifferencesList = undefined as unknown as Coordinate[][];
         clearInterval(this.cheatInterval);
         this.cheatInterval = 0;
-        this.cheatImagesData = undefined as any;
+        this.cheatImagesData = undefined as unknown as ImageData;
         this.newestTimerId = 0;
         this.oldestTimerId = 0;
     }

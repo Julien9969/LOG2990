@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
@@ -206,6 +207,52 @@ describe('ImageOperationService', () => {
         expect(setSpy).toHaveBeenCalledTimes(differences.length);
     });
 
+    it('reset should put every thing to 0', () => {
+        service['cheatInterval'] = 1;
+        service['allDifferencesList'] = [
+            [
+                { x: 1, y: 1 },
+                { x: 1, y: 1 },
+            ],
+            [{ x: 2, y: 2 }],
+        ];
+        service['newestTimerId'] = 1;
+        service['oldestTimerId'] = 1;
+        service['intervalIds'] = [1, 2, 3];
+        service.reset();
+        expect(service['cheatInterval']).toEqual(0);
+        expect(service['allDifferencesList']).toEqual(undefined as any);
+        expect(service['newestTimerId']).toEqual(0);
+        expect(service['oldestTimerId']).toEqual(0);
+    });
+
+    it('getSpeedMultiplier should return 1 / this.replayService.speedMultiplier', () => {
+        service['replayService'].isRecording = false;
+        service['replayService'].speedMultiplier = 2;
+        expect(service.getSpeedMultiplier()).toEqual(0.5);
+    });
+
+    it('handleCheatReplay should call disableCheat if isStarting is false', () => {
+        spyOn(service, 'disableCheat').and.callFake(() => {});
+        service.handleCheatReplay(false, [], [[]]);
+        expect(service.disableCheat).toHaveBeenCalled();
+    });
+
+    it('handleCheatReplay should call createImageDataCheat if isStarting is true', async () => {
+        spyOn(CanvasRenderingContext2D.prototype, 'putImageData').and.callFake(() => {});
+        spyOn(service, 'createImageDataCheat').and.callFake(async (_pixelList: Coordinate[]): Promise<void> => {});
+        spyOn(service, 'cheatBlink').and.callFake(async (): Promise<void> => {});
+        await service.handleCheatReplay(true, [], [[{ x: 1, y: 1 }]]);
+        expect(service.createImageDataCheat).toHaveBeenCalled();
+    });
+
+    it('clearAllInterval should call clearInterval on all intervalIds', () => {
+        service['intervalIds'] = [1, 2, 3];
+        service.clearAllIntervals();
+        expect(service['intervalIds']).toEqual([]);
+        expect(service['cheatInterval']).toEqual(0);
+    });
+
     it('isSameDifference should return true if the list are the same', () => {
         const list1 = [{ x: 1, y: 1 }];
         const list2 = [{ x: 1, y: 1 }];
@@ -216,6 +263,24 @@ describe('ImageOperationService', () => {
         const list1 = [{ x: 1, y: 1 }];
         const list2 = [{ x: 2, y: 2 }];
         expect(service['isSameDifference'](list1, list2)).toEqual(false);
+    });
+
+    it('createImagesDataClue should call createlastClueImageData if nbCluesLeft is 0', async () => {
+        spyOn(service, 'createlastClueImageData' as any);
+        await service['createImagesDataClue'](0, differences);
+        expect(service['createlastClueImageData']).toHaveBeenCalled();
+    });
+
+    it('createImagesDataClue should nat call set clueOriginalImageData to a new ImageData', async () => {
+        await service['createImagesDataClue'](1, differences);
+        const setSpy = spyOn(Uint8ClampedArray.prototype, 'set').and.callFake(() => {});
+        expect(setSpy).not.toHaveBeenCalled();
+    });
+
+    it('createlastClueImageData sould call drawImage on the context', async () => {
+        const drawSpy = spyOn(CanvasRenderingContext2D.prototype, 'drawImage').and.callFake(() => {});
+        await service['createlastClueImageData'](differences as any);
+        expect(drawSpy).toHaveBeenCalled();
     });
 
     describe('handleClue', () => {
