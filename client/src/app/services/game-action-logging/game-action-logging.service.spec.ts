@@ -6,7 +6,7 @@ import { LoggingCodes } from '@common/loggingCodes';
 import { SessionEvents } from '@common/session.gateway.events';
 import { REPLAY_BASE_TIME_INCREMENT } from '../constantes.service';
 
-fdescribe('GameActionLoggingService', () => {
+describe('GameActionLoggingService', () => {
     let service: GameActionLoggingService;
     const dummyData = {};
     const dummyActionLog = [
