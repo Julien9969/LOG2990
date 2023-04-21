@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
 import { PATH_TO_VALID_IMAGE, PATH_TO_WRONG_BIT_DEPTH_IMAGE, PATH_TO_WRONG_RES_IMAGE } from '@app/constants/utils-constants';

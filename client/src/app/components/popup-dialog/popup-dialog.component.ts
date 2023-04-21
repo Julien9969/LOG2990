@@ -23,7 +23,7 @@ export class PopupDialogComponent implements OnInit {
 
     // eslint-disable-next-line max-params -- les parametres sont necessaires
     constructor(
-        @Inject(MAT_DIALOG_DATA) public data: [string, string, { gameId: string; playerName: string, hasReplay: boolean }],
+        @Inject(MAT_DIALOG_DATA) public data: [string, string, { gameId: string; playerName: string; hasReplay: boolean }],
         private imageOperationService: ImageOperationService,
         public dialogRef: MatDialogRef<PopupDialogComponent>,
         private audioService: AudioService,
