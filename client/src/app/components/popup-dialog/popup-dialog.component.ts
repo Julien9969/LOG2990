@@ -19,9 +19,11 @@ export class PopupDialogComponent implements OnInit {
     deleteMessage: string;
     buttonCallback: () => Promise<void>;
 
+    hasReplay: boolean;
+
     // eslint-disable-next-line max-params -- les parametres sont necessaires
     constructor(
-        @Inject(MAT_DIALOG_DATA) public data: [string, string, { gameId: string; playerName: string }],
+        @Inject(MAT_DIALOG_DATA) public data: [string, string, { gameId: string; playerName: string, hasReplay: boolean }],
         private imageOperationService: ImageOperationService,
         public dialogRef: MatDialogRef<PopupDialogComponent>,
         private audioService: AudioService,
@@ -34,6 +36,7 @@ export class PopupDialogComponent implements OnInit {
         if (this.templateName === 'endGame') {
             this.audioService.playAudio('win');
             this.message = this.data[1];
+            this.hasReplay = this.data[2].hasReplay;
         }
     }
     replay() {
