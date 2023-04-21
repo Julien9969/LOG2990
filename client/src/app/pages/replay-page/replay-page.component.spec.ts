@@ -43,7 +43,7 @@ export class StubAppSidebarComponent {
     @Input() isReplayed: boolean;
 }
 
-describe('GamePageComponent', () => {
+fdescribe('GamePageComponent', () => {
     let component: ReplayPageComponent;
     let fixture: ComponentFixture<ReplayPageComponent>;
     let gameActionLoggingServiceSpy: jasmine.SpyObj<GameActionLoggingService>;
@@ -105,6 +105,7 @@ describe('GamePageComponent', () => {
             imageOperationService: {
                 clearAllIntervals: () => {},
                 cheatBlink: () => {},
+                cheatInterval: 1,
             },
         } as any;
     });
@@ -130,9 +131,21 @@ describe('GamePageComponent', () => {
     });
 
     it('pause should call setReplaySpeed if speedMultiplier', () => {
+        component['loggingService'].speedMultiplier = 0;
+        spyOn(component, 'setReplaySpeed').and.callThrough();
+        component.pause();
+        expect(component.setReplaySpeed).toHaveBeenCalled();
+    });
+
+    it('pause should call setReplaySpeed if speedMultiplier is not 0', () => {
         component['loggingService'].speedMultiplier = 1;
         spyOn(component, 'setReplaySpeed').and.callThrough();
         component.pause();
         expect(component.setReplaySpeed).toHaveBeenCalled();
+    });
+
+    it('ngOndestroy should call disconnect', () => {
+        component.ngOnDestroy();
+        expect(inGameServiceSpy.disconnect).toHaveBeenCalled();
     });
 });
