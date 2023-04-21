@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { PlayImageClassicComponent } from '@app/components/play-image/play-image-classic/play-image-classic.component';
+import { SLICE_LAST_INDEX } from '@app/constants/utils-constants';
 import { GameActionLoggingService } from '@app/services/game-action-logging/game-action-logging.service';
 import { InGameService } from '@app/services/in-game/in-game.service';
 import { Game } from '@common/game';
@@ -36,7 +37,9 @@ export class ReplayPageComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         if (this.gameId === undefined) {
-            window.location.replace('/home');
+            // Redirection à la page principale
+            const pagePath = window.location.pathname.split('/').slice(0, SLICE_LAST_INDEX);
+            window.location.replace(pagePath.join('/'));
         }
         this.getGameInfos();
 
