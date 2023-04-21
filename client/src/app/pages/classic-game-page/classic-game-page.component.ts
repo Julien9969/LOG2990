@@ -33,7 +33,7 @@ export class ClassicGamePageComponent implements OnInit, OnDestroy {
 
     time: string;
     nbCluesLeft: number;
-    penalty: number = 0;
+    penalty: number;
 
     private gameID: string;
     private userSocketId: string;
@@ -52,6 +52,7 @@ export class ClassicGamePageComponent implements OnInit, OnDestroy {
         this.nbCluesLeft = 3;
         this.nDiffFoundMainPlayer = 0;
         this.nDiffFoundOpponent = 0;
+        this.penalty = 0;
 
         this.isLoaded = false;
         this.isSolo = window.history.state.isSolo;
