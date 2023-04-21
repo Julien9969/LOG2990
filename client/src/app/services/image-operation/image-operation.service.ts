@@ -45,7 +45,6 @@ export class ImageOperationService {
     private clueModifiedImageData: ImageData;
 
     constructor(private readonly inGameService: InGameService, public replayService: GameActionLoggingService) {}
-    // constructor(private readonly inGameService: InGameService) {}
 
     reset() {
         this.intervalIds.forEach((interval) => {
