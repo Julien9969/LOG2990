@@ -339,5 +339,13 @@ describe('MatchMakingDialogComponent', () => {
             expect(component.dialogInfos.template).toEqual('gameDelete');
             expect(component.dialogInfos.message).toEqual('');
         });
+
+        it('validateAndContinue should accept opponent if pairing dialog', () => {
+            const acceptOpponentSpy = spyOn(component, 'acceptOpponent').and.callFake(async () => {});
+            component.dialogInfos.template = 'acceptPairing';
+            component.validateAndContinue();
+
+            expect(acceptOpponentSpy).toHaveBeenCalled();
+        });
     });
 });

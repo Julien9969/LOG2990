@@ -41,9 +41,21 @@ describe('PopupDialogComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('onInit should call playWinSound if templateName is endGame', () => {
+    it('onInit should call playWinSound if templateName is endGame and set hasReplay', () => {
         component.templateName = 'endGame';
+        component.data[2] = {
+            gameId: '',
+            playerName: '',
+            hasReplay: true,
+        };
         component.ngOnInit();
         expect(audioServiceSpy.playAudio).toHaveBeenCalled();
+        expect(component.hasReplay).toBeTrue();
+    });
+
+    it('replay should clear all image operation intervals and navigate to replay page', () => {
+        component.replay();
+        expect(imageOperationServiceSpy.clearAllIntervals).toHaveBeenCalled();
+        expect(routerSpy.navigate).toHaveBeenCalled();
     });
 });

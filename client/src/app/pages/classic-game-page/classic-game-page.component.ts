@@ -142,7 +142,7 @@ export class ClassicGamePageComponent implements OnInit, OnDestroy {
             closeOnNavigation: true,
             disableClose: true,
             autoFocus: false,
-            data: ['endGame', message, { gameId: this.gameID, playerName: this.playerName }],
+            data: ['endGame', message, { gameId: this.gameID, playerName: this.playerName, hasReplay: true }],
         });
     }
 

@@ -239,7 +239,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`, { gameId: '1', playerName: 'test' }],
+                data: ['endGame', `Bravo! Vous avez gagné avec un temps de ${component.time}`, { gameId: '1', playerName: 'test', hasReplay: true }],
             });
         });
         it('multi: when this client is the winner should give the winner s message', () => {
@@ -253,7 +253,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`, { gameId: '1', playerName: 'test' }],
+                data: ['endGame', `Vous avez gagné, ${winnerInfo.name} est le vainqueur`, { gameId: '1', playerName: 'test', hasReplay: true }],
             });
         });
         it('multi: when this client is the loser should give the loser s message', () => {
@@ -267,7 +267,7 @@ describe('GamePageComponent', () => {
                 closeOnNavigation: true,
                 disableClose: true,
                 autoFocus: false,
-                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`, { gameId: '1', playerName: 'test' }],
+                data: ['endGame', `Vous avez perdu, ${winnerInfo.name} remporte la victoire`, { gameId: '1', playerName: 'test', hasReplay: true }],
             });
         });
 

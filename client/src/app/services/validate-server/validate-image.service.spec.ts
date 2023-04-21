@@ -116,11 +116,15 @@ describe('validateImageService', () => {
         });
 
         it('should create an image from a File', async () => {
+            spyOn(Image.prototype, 'decode').and.callFake(() => {});
+            spyOn(URL, 'createObjectURL').and.callFake(() => '');
             expect(await service.generateImage(validFile)).toBeTruthy();
             expect((await service.generateImage(validFile)) instanceof HTMLImageElement).toBeTruthy();
         }, 20000);
 
         it('should create an image from an HTMLInputElement of type file', async () => {
+            spyOn(Image.prototype, 'decode').and.callFake(() => {});
+            spyOn(URL, 'createObjectURL').and.callFake(() => '');
             const dataTransfer = new DataTransfer();
 
             inputElement.type = 'file';
