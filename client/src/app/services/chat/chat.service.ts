@@ -19,7 +19,7 @@ export class ChatService {
         this.loggingService.systemErrorFunction = (data: { systemCode: string; playerName: string }) => {
             this.receiveMessage(this.createSystemMessage(data.systemCode, data.playerName));
         };
-        this.loggingService.messageFunction = (data) => {
+        this.loggingService.messageFunction = (data: Message) => {
             this.receiveMessage(data);
         };
         this.loggingService.clearChatFunction = () => {
