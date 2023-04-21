@@ -36,7 +36,7 @@ export class PopupDialogComponent implements OnInit {
         if (this.templateName === 'endGame') {
             this.audioService.playAudio('win');
             this.message = this.data[1];
-            this.hasReplay = this.data[2].hasReplay;
+            this.hasReplay = this.data[2]?.hasReplay;
         }
     }
     replay() {
